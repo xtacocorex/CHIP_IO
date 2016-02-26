@@ -20,7 +20,7 @@ classifiers = ['Development Status :: 3 - Alpha',
                'Topic :: System :: Hardware']
 
 setup(name             = 'CHIP_IO',
-      version          = '0.0.2',
+      version          = '0.0.5',
       author           = 'Robert Wolterman',
       author_email     = 'robert.wolterman@gmail.com',
       description      = 'A module to control CHIP IO channels',
@@ -30,7 +30,7 @@ setup(name             = 'CHIP_IO',
       url              = 'https://github.com/xtacocorex/CHIP_IO/',
       classifiers      = classifiers,
       packages         = find_packages(),
-      ext_modules      = [Extension('CHIP_IO.GPIO', ['source/py_gpio.c', 'source/event_gpio.c', 'source/constants.c', 'source/common.c'], extra_compile_args=['-Wno-format-security'])]) #,
-#                          Extension('CHIP_IO.PWM', ['source/py_pwm.c', 'source/c_pwm.c', 'source/constants.c', 'source/common.c'], extra_compile_args=['-Wno-format-security']),
+      ext_modules      = [Extension('CHIP_IO.GPIO', ['source/py_gpio.c', 'source/event_gpio.c', 'source/constants.c', 'source/common.c'], extra_compile_args=['-Wno-format-security']),
+                          Extension('CHIP_IO.PWM', ['source/py_pwm.c', 'source/c_pwm.c', 'source/constants.c', 'source/common.c'], extra_compile_args=['-Wno-format-security'])]) #,
 #                          Extension('CHIP_IO.ADC', ['source/py_adc.c', 'source/c_adc.c', 'source/constants.c', 'source/common.c'], extra_compile_args=['-Wno-format-security']),
 #                          Extension('CHIP_IO.SPI', ['source/spimodule.c', 'source/constants.c', 'source/common.c'], extra_compile_args=['-Wno-format-security'])])
