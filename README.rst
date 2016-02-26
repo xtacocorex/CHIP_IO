@@ -11,12 +11,12 @@ Manual::
     sudo python setup.py install
     cd ..
     sudo rm -rf CHIP_IO
-    
+
 **Usage**
 
 Using the library is very similar to the excellent RPi.GPIO library used on the Raspberry Pi. Below are some examples.
 
-**GPIO Setup** 
+**GPIO Setup**
 
 Import the library, and setup as GPIO.OUT or GPIO.IN::
 
@@ -27,12 +27,12 @@ You can also refer to the pin number::
 
     GPIO.setup("U14_31", GPIO.OUT)
 
-**GPIO Output** 
+**GPIO Output**
 
 Setup the pin for output, and write GPIO.HIGH or GPIO.LOW. Or you can use 1 or 0.::
 
     import CHIP_IO.GPIO as GPIO
-    GPIO.setup("CSID0", GPIO.OUT) 
+    GPIO.setup("CSID0", GPIO.OUT)
     GPIO.output("CSID0", GPIO.HIGH)
 
 **GPIO Input**
@@ -41,9 +41,9 @@ Inputs work similarly to outputs.::
 
     import CHIP_IO.GPIO as GPIO
     GPIO.setup("CSID0", GPIO.IN)
-    
+
 Polling inputs::
-    
+
     if GPIO.input("CSID0"):
       print("HIGH")
     else:
@@ -55,15 +55,26 @@ Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::
 
 Detecting events::
 
-    GPIO.add_event_detect("CSID0", GPIO.FALLING) 
-    #your amazing code here 
-    #detect wherever: 
+    GPIO.add_event_detect("CSID0", GPIO.FALLING)
+    #your amazing code here
+    #detect wherever:
     if GPIO.event_detected("CSID0"):
       print "event detected!"
 
 **PWM**::
 
-    Not implemented yet
+    import CHIP_IO.PWM as PWM
+    #PWM.start(channel, duty, freq=2000, polarity=0)
+    #duty values are valid 0 (off) to 100 (on)
+    PWM.start("PWM0", 50)
+    PWM.set_duty_cycle("PWM0", 25.5)
+    PWM.set_frequency("PWM0", 10)
+
+    PWM.stop("PWM0")
+    PWM.cleanup()
+
+    #set polarity to 1 on start:
+    PWM.start("PWM0", 50, 2000, 1)
 
 **ADC**::
 
@@ -73,15 +84,15 @@ Detecting events::
 
 Install py.test to run the tests. You'll also need the python compiler package for py.test.::
 
-    opkg update && opkg install python-compiler 
-    #Either pip or easy_install 
-    pip install -U pytest 
+    opkg update && opkg install python-compiler
+    #Either pip or easy_install
+    pip install -U pytest
     easy_install -U pytest
 
 Execute the following in the root of the project::
 
     py.test
-    
+
 **Credits**
 
 The CHIP IO Python library was originally forked from the Adafruit Beaglebone IO Python Library.
@@ -91,4 +102,3 @@ The BeagleBone IO Python library was originally forked from the excellent MIT Li
 
 CHIP IO port by Robert Wolterman, released under the MIT License.
 Beaglebone IO Library Written by Justin Cooper, Adafruit Industries. BeagleBone IO Python library is released under the MIT License.
-
