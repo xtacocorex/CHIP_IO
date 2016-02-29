@@ -13,7 +13,7 @@ class TestPwmSetup:
         pwm_test = '/sys/class/pwm/pwmchip0/pwm0'
 
         assert os.path.exists(pwm_test)
-        duty = open(pwm_test + '/duty').read()
+        duty = open(pwm_test + '/duty_cycle').read()
         period = open(pwm_test + '/period').read()
         assert int(duty) == 0
         assert int(period) == 500000
@@ -25,12 +25,12 @@ class TestPwmSetup:
         pwm_test = '/sys/class/pwm/pwmchip0/pwm0'
 
         assert os.path.exists(pwm_test)
-        duty = open(pwm_test + '/duty').read()
+        duty = open(pwm_test + '/duty_cycle').read()
         period = open(pwm_test + '/period').read()
         polarity = open(pwm_test + '/polarity').read()
         assert int(duty) == 0
         assert int(period) == 500000
-        assert int(polarity) == 1
+        assert string(polarity) == "inverted"
         PWM.cleanup()
 
     def test_start_pwm_with_polarity_default(self):
@@ -39,12 +39,12 @@ class TestPwmSetup:
         pwm_test = '/sys/class/pwm/pwmchip0/pwm0'
 
         assert os.path.exists(pwm_test)
-        duty = open(pwm_test + '/duty').read()
+        duty = open(pwm_test + '/duty_cycle').read()
         period = open(pwm_test + '/period').read()
         polarity = open(pwm_test + '/polarity').read()
         assert int(duty) == 0
         assert int(period) == 500000
-        assert int(polarity) == 0
+        assert string(polarity) == "normal"
         PWM.cleanup()
 
     def test_start_pwm_with_polarity_zero(self):
@@ -53,12 +53,12 @@ class TestPwmSetup:
         pwm_test = '/sys/class/pwm/pwmchip0/pwm0'
 
         assert os.path.exists(pwm_test)
-        duty = open(pwm_test + '/duty').read()
+        duty = open(pwm_test + '/duty_cycle').read()
         period = open(pwm_test + '/period').read()
         polarity = open(pwm_test + '/polarity').read()
         assert int(duty) == 0
         assert int(period) == 500000
-        assert int(polarity) == 0
+        assert string(polarity) == "normal"
         PWM.cleanup()
 
     def test_pwm_start_invalid_pwm_key(self):
@@ -113,13 +113,13 @@ class TestPwmSetup:
         pwm_test = '/sys/class/pwm/pwmchip0/pwm0'
 
         assert os.path.exists(pwm_test)
-        duty = open(pwm_test + '/duty').read()
+        duty = open(pwm_test + '/duty_cycle').read()
         period = open(pwm_test + '/period').read()
         assert int(duty) == 0
         assert int(period) == 500000
 
         PWM.set_duty_cycle("PWM0", 100)
-        duty = open(pwm_test + '/duty').read()
+        duty = open(pwm_test + '/duty_cycle').read()
         period = open(pwm_test + '/period').read()
         assert int(duty) == 500000
         assert int(period) == 500000

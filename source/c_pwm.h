@@ -33,4 +33,5 @@ int pwm_start(const char *key, float duty, float freq, int polarity);
 int pwm_disable(const char *key);
 int pwm_set_frequency(const char *key, float freq);
 int pwm_set_duty_cycle(const char *key, float duty);
+int pwm_set_enable(const char *key, int enable);
 void pwm_cleanup(void);
