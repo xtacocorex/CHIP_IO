@@ -1,35 +1,73 @@
 #!/usr/bin/python
 
 import CHIP_IO.GPIO as GPIO
-import time, os
+import time, os, threading
 
-print "SETUP CSIDO"
+def myfuncallback(channel):
+    print "CALLBACK LIKE DRAKE IN HOTLINE BLING"
+    
+def loopfunction():
+    print "LOOP FUNCTION"
+    for i in xrange(20):
+        if i % 2:
+            print "SETTING CSID0 LOW"
+            GPIO.output("CSID0",GPIO.LOW)
+        else:
+            print "SETTING CSID0 HIGH"
+            GPIO.output("CSID0",GPIO.HIGH)
+        print "SLEEPING"
+        time.sleep(1)
+    
+print "SETUP XIO-P0"
+GPIO.setup("XIO-P0", GPIO.IN)
+
+print "SETUP CSID0"
 GPIO.setup("CSID0", GPIO.OUT)
 
-#print os.path.exists('/sys/class/gpio/gpio132')
+# VERIFY SIMPLE FUNCTIONALITY
+print "VERIFY SIMPLE FUNCTIONALITY"
 
-print "SETUP XIO-P1"
-GPIO.setup("XIO-P1", GPIO.IN)
-#GPIO.setup("U14_13", GPIO.IN)
-
-print "READING XIO-P1"
+print "READING XIO-PI"
 GPIO.output("CSID0", GPIO.HIGH)
-print "HIGH", GPIO.input("XIO-P1")
+print "HIGH", GPIO.input("XIO-P0")
 
 GPIO.output("CSID0", GPIO.LOW)
-GPIO.output("CSID0", GPIO.LOW)
-time.sleep(1)
-print "LOW", GPIO.input("XIO-P1")
+print "LOW", GPIO.input("XIO-P0")
 
-GPIO.output("CSID0", GPIO.HIGH)
-GPIO.output("CSID0", GPIO.HIGH)
-print "HIGH", GPIO.input("XIO-P1")
-time.sleep(1)
+# ==============================================
+# EDGE DETECTION - EXPANDED GPIO
+print "SETTING UP EDGE DETECTION"
+GPIO.add_event_detect("XIO-P0",GPIO.FALLING,myfuncallback)
 
-GPIO.output("CSID0", GPIO.LOW)
-GPIO.output("CSID0", GPIO.LOW)
-print "LOW", GPIO.input("XIO-P1")
+print "VERIFYING EDGE DETECT"
+f = open("/sys/class/gpio/gpio408/edge","r")
+edge = f.read()
+f.close()
+print "EDGE: %s" % edge
+
+# LOOP WRITING ON CSID0 TO HOPEFULLY GET CALLBACK TO WORK
+print "WAITING FOR CALLBACKS"
+loopfunction()
+
+print "PRESS CONTROL-C TO EXIT IF SCRIPT GETS STUCK"
+GPIO.remove_event_detect("XIO-P0")
+try:
+    # WAIT FOR EDGE
+    t = threading.Thread(target=loopfunction)
+    t.start()
+    print "WAITING FOR EDGE"
+    GPIO.wait_for_edge("XIO-P0",GPIO.FALLING)
+    print "WE'VE FALLEN LIKE COOLIO'S CAREER"
+    print "ATTEMPTING TO CANCEL THE TIMER"
+    t.cancel()
+except:
+    pass
+
+print "TESTING ERRORS THROWN WHEN SPECIFYING EDGE DETECTION ON UNAUTHORIZED GPIO"
+GPIO.setup("CSID1",GPIO.IN)
+GPIO.add_event_detect("CSID1",GPIO.FALLING,myfuncallback)
 
 print "CLEANUP"
+GPIO.remove_event_detect("XIO-P0")
 GPIO.cleanup()
 

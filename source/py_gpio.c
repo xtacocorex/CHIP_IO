@@ -268,6 +268,12 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
    if (get_gpio_number(channel, &gpio))
        return NULL;
 
+   // check to ensure gpio is on the expanded pins as those are the only ones that allow for edge settings
+   if (gpio < 408) {
+     PyErr_SetString(PyExc_RuntimeError, "Callbacks currently available on XIO-P0 to XIO-P7 only");
+     return NULL;
+   }
+
    // check channel is set up as an input
    if (!module_setup || gpio_direction[gpio] != INPUT)
    {
@@ -308,6 +314,12 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
 
    if (get_gpio_number(channel, &gpio))
        return NULL;
+
+   // check to ensure gpio is on the expanded pins as those are the only ones that allow for edge settings
+   if (gpio < 408) {
+     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on XIO-P0 to XIO-P7 only");
+     return NULL;
+   }
 
    // check channel is set up as an input
    if (!module_setup || gpio_direction[gpio] != INPUT)
@@ -356,6 +368,12 @@ static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
 
    if (get_gpio_number(channel, &gpio))
         return NULL;
+
+   // check to ensure gpio is on the expanded pins as those are the only ones that allow for edge settings
+   if (gpio < 408) {
+     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on XIO-P0 to XIO-P7 only");
+     return NULL;
+   }
 
    // remove all python callbacks for gpio
    while (cb != NULL)
@@ -412,6 +430,12 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
 
    if (get_gpio_number(channel, &gpio))
       return NULL;
+
+   // check to ensure gpio is on the expanded pins as those are the only ones that allow for edge settings
+   if (gpio < 408) {
+     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on XIO-P0 to XIO-P7 only");
+     return NULL;
+   }
 
    // check channel is setup as an input
    if (!module_setup || gpio_direction[gpio] != INPUT)

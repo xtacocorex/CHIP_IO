@@ -165,7 +165,7 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
 }
 
 
-static const char moduledocstring[] = "PWM functionality of a CHIP using Python";
+static const char moduledocstring[] = "Hardware PWM functionality of a CHIP using Python";
 
 PyMethodDef pwm_methods[] = {
     {"start", (PyCFunction)py_start_channel, METH_VARARGS | METH_KEYWORDS, "Set up and start the PWM channel.  channel can be in the form of 'PWM0', or 'U13_18'"},
@@ -178,7 +178,7 @@ PyMethodDef pwm_methods[] = {
 };
 
 #if PY_MAJOR_VERSION > 2
-static struct PyModuleDef bbpwmmodule = {
+static struct PyModuleDef chippwmmodule = {
     PyModuleDef_HEAD_INIT,
     "PWM",       // name of module
     moduledocstring,  // module documentation, may be NULL
@@ -196,7 +196,7 @@ PyMODINIT_FUNC initPWM(void)
     PyObject *module = NULL;
 
 #if PY_MAJOR_VERSION > 2
-    if ((module = PyModule_Create(&bbpwmmodule)) == NULL)
+    if ((module = PyModule_Create(&chippwmmodule)) == NULL)
        return NULL;
 #else
     if ((module = Py_InitModule3("PWM", pwm_methods, moduledocstring)) == NULL)
