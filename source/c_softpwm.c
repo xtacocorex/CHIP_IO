@@ -99,7 +99,7 @@ int initialize_pwm(void)
     return 0;
 }
 
-int pwm_set_frequency(const char *key, float freq) {
+int softpwm_set_frequency(const char *key, float freq) {
     int len;
     char buffer[20];
     unsigned long period_ns;
@@ -126,7 +126,7 @@ int pwm_set_frequency(const char *key, float freq) {
     return 1;
 }
 
-int pwm_set_polarity(const char *key, int polarity) {
+int softpwm_set_polarity(const char *key, int polarity) {
     int len;
     char buffer[9]; /* allow room for trailing NUL byte */
     struct pwm_exp *pwm;
@@ -153,7 +153,7 @@ int pwm_set_polarity(const char *key, int polarity) {
     return 0;
 }
 
-int pwm_set_duty_cycle(const char *key, float duty) {
+int softpwm_set_duty_cycle(const char *key, float duty) {
     int len;
     char buffer[20];
     struct pwm_exp *pwm;
@@ -175,7 +175,7 @@ int pwm_set_duty_cycle(const char *key, float duty) {
     return 0;
 }
 
-int pwm_set_enable(const char *key, int enable)
+int softpwm_set_enable(const char *key, int enable)
 {
     int len;
     char buffer[20];
@@ -198,7 +198,7 @@ int pwm_set_enable(const char *key, int enable)
     return 0;
 }
 
-int pwm_start(const char *key, float duty, float freq, int polarity)
+int softpwm_start(const char *key, float duty, float freq, int polarity)
 {
     char pwm_base_path[45];
     char period_path[50];
@@ -272,15 +272,15 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
         pwm->next = new_pwm;
     }
 
-    pwm_set_frequency(key, freq);
-    pwm_set_polarity(key, polarity);
-    pwm_set_enable(key, 1);
-    pwm_set_duty_cycle(key, duty);
+    softpwm_set_frequency(key, freq);
+    softpwm_set_polarity(key, polarity);
+    softpwm_set_enable(key, 1);
+    softpwm_set_duty_cycle(key, duty);
 
     return 1;
 }
 
-int pwm_disable(const char *key)
+int softpwm_disable(const char *key)
 {
     struct pwm_exp *pwm, *temp, *prev_pwm = NULL;
     char fragment[18];
@@ -292,10 +292,10 @@ int pwm_disable(const char *key)
     int gpio = 0;
 
     // Disable the PWM
-    pwm_set_frequency(key, 0);
-    pwm_set_polarity(key, 0);
-    pwm_set_enable(key, 0);
-    pwm_set_duty_cycle(key, 0);
+    softpwm_set_frequency(key, 0);
+    softpwm_set_polarity(key, 0);
+    softpwm_set_enable(key, 0);
+    softpwm_set_duty_cycle(key, 0);
 
     if ((fd = open("/sys/class/pwm/pwmchip0/unexport", O_WRONLY)) < 0)
     {
@@ -336,9 +336,9 @@ int pwm_disable(const char *key)
     return 0;
 }
 
-void pwm_cleanup(void)
+void softpwm_cleanup(void)
 {
     while (exported_pwms != NULL) {
-        pwm_disable(exported_pwms->key);
+        softpwm_disable(exported_pwms->key);
     }
 }
