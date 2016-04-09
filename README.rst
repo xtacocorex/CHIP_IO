@@ -1,4 +1,5 @@
-# CHIP_IO
+CHIP_IO
+============================
 A CHIP GPIO library
 
 Manual::
@@ -51,14 +52,17 @@ Polling inputs::
 
 Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::
 
+This only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP
+
     GPIO.wait_for_edge(channel, GPIO.RISING)
 
 Detecting events::
 
-    GPIO.add_event_detect("CSID0", GPIO.FALLING)
+    GPIO.setup("XIO-P0", GPIO.IN)
+    GPIO.add_event_detect("XIO-P0", GPIO.FALLING)
     #your amazing code here
     #detect wherever:
-    if GPIO.event_detected("CSID0"):
+    if GPIO.event_detected("XIO-P0"):
       print "event detected!"
 
 **PWM**::
