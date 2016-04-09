@@ -35,8 +35,34 @@ GPIO.output("CSID0", GPIO.LOW)
 print "LOW", GPIO.input("XIO-P0")
 
 # ==============================================
+# EDGE DETECTION - AP-EINT1
+print "SETTING UP EDGE DETECTION ON AP-EINT1"
+GPIO.setup("AP-EINT1", GPIO.IN)
+GPIO.add_event_detect("AP-EINT1",GPIO.FALLING)
+
+print "VERIFYING EDGE DETECT"
+f = open("/sys/class/gpio/gpio193/edge","r")
+edge = f.read()
+f.close()
+print "EDGE: %s" % edge
+GPIO.remove_event_detect("AP-EINT1")
+
+# ==============================================
+# EDGE DETECTION - AP-EINT3
+print "SETTING UP EDGE DETECTION ON AP-EINT3"
+GPIO.setup("AP-EINT3", GPIO.IN)
+GPIO.add_event_detect("AP-EINT3",GPIO.FALLING)
+
+print "VERIFYING EDGE DETECT"
+f = open("/sys/class/gpio/gpio35/edge","r")
+edge = f.read()
+f.close()
+print "EDGE: %s" % edge
+GPIO.remove_event_detect("AP-EINT3")
+
+# ==============================================
 # EDGE DETECTION - EXPANDED GPIO
-print "SETTING UP EDGE DETECTION"
+print "SETTING UP EDGE DETECTION ON XIO-P0"
 GPIO.add_event_detect("XIO-P0",GPIO.FALLING,myfuncallback)
 
 print "VERIFYING EDGE DETECT"

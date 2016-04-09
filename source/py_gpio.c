@@ -268,9 +268,9 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
    if (get_gpio_number(channel, &gpio))
        return NULL;
 
-   // check to ensure gpio is on the expanded pins as those are the only ones that allow for edge settings
-   if (gpio < 408) {
-     PyErr_SetString(PyExc_RuntimeError, "Callbacks currently available on XIO-P0 to XIO-P7 only");
+   // check to ensure gpio is one of the allowed pins
+   if (gpio != 35 && gpio != 193 && (gpio <= 415 && gpio >= 408)) {
+     PyErr_SetString(PyExc_RuntimeError, "Callbacks currently available on AP-EINT1, AP-EINT3, and XIO-P0 to XIO-P7 only");
      return NULL;
    }
 
@@ -315,9 +315,9 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
    if (get_gpio_number(channel, &gpio))
        return NULL;
 
-   // check to ensure gpio is on the expanded pins as those are the only ones that allow for edge settings
-   if (gpio < 408) {
-     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on XIO-P0 to XIO-P7 only");
+   // check to ensure gpio is one of the allowed pins
+   if (gpio != 35 && gpio != 193 && (gpio <= 415 && gpio >= 408)) {
+     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on AP-EINT1, AP-EINT3, and XIO-P0 to XIO-P7 only");
      return NULL;
    }
 
@@ -369,9 +369,9 @@ static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
    if (get_gpio_number(channel, &gpio))
         return NULL;
 
-   // check to ensure gpio is on the expanded pins as those are the only ones that allow for edge settings
-   if (gpio < 408) {
-     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on XIO-P0 to XIO-P7 only");
+   // check to ensure gpio is one of the allowed pins
+   if (gpio != 35 && gpio != 193 && (gpio <= 415 && gpio >= 408)) {
+     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on AP-EINT1, AP-EINT3, and XIO-P0 to XIO-P7 only");
      return NULL;
    }
 
@@ -431,9 +431,9 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
    if (get_gpio_number(channel, &gpio))
       return NULL;
 
-   // check to ensure gpio is on the expanded pins as those are the only ones that allow for edge settings
-   if (gpio < 408) {
-     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on XIO-P0 to XIO-P7 only");
+   // check to ensure gpio is one of the allowed pins
+   if (gpio != 35 && gpio != 193 && (gpio <= 415 && gpio >= 408)) {
+     PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on AP-EINT1, AP-EINT3, and XIO-P0 to XIO-P7 only");
      return NULL;
    }
 
@@ -514,7 +514,7 @@ static PyObject *py_setwarnings(PyObject *self, PyObject *args)
 static const char moduledocstring[] = "GPIO functionality of a CHIP using Python";
 
 PyMethodDef gpio_methods[] = {
-   {"setup", (PyCFunction)py_setup_channel, METH_VARARGS | METH_KEYWORDS, "Set up the GPIO channel, direction and (optional) pull/up down control\nchannel        - Either: RPi board pin number (not BCM GPIO 00..nn number).  Pins start from 1\n                 or    : BCM GPIO number\ndirection      - INPUT or OUTPUT\n[pull_up_down] - PUD_OFF (default), PUD_UP or PUD_DOWN\n[initial]      - Initial value for an output channel"},
+   {"setup", (PyCFunction)py_setup_channel, METH_VARARGS | METH_KEYWORDS, "Set up the GPIO channel, direction and (optional) pull/up down control\nchannel        - Either: CHIP board pin number (not R8 GPIO 00..nn number).  Pins start from 1\n                 or    : CHIP GPIO name\ndirection      - INPUT or OUTPUT\n[pull_up_down] - PUD_OFF (default), PUD_UP or PUD_DOWN\n[initial]      - Initial value for an output channel"},
    {"cleanup", py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
    {"output", py_output_gpio, METH_VARARGS, "Output to a GPIO channel\ngpio  - gpio channel\nvalue - 0/1 or False/True or LOW/HIGH"},
    {"input", py_input_gpio, METH_VARARGS, "Input from a GPIO channel.  Returns HIGH=1=True or LOW=0=False\ngpio - gpio channel"},
