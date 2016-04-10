@@ -35,8 +35,11 @@ SOFTWARE.
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <time.h>
 #include "c_pwm.h"
 #include "common.h"
+#include "event_gpio.h"
 
 #define KEYLEN 7
 
@@ -46,23 +49,19 @@ SOFTWARE.
 int pwm_initialized = 0;
 
 // pwm exports
-struct pwm_exp
+struct softpwm
 {
     char key[KEYLEN+1]; /* leave room for terminating NUL byte */
-    int period_fd;
-    int duty_fd;
-    int polarity_fd;
-    int enable_fd;
-    int enable;
-    unsigned long duty;
-    unsigned long period_ns;
-    struct pwm_exp *next;
+    unsigned long on_ns;
+    unsigned long off_ns;
+    pthread_t thread;
+    struct softpwm *next;
 };
-struct pwm_exp *exported_pwms = NULL;
+struct softpwm *exported_pwms = NULL;
 
-struct pwm_exp *lookup_exported_pwm(const char *key)
+struct softpwm *lookup_exported_pwm(const char *key)
 {
-    struct pwm_exp *pwm = exported_pwms;
+    struct softpwm *pwm = exported_pwms;
 
     while (pwm != NULL)
     {
@@ -75,35 +74,11 @@ struct pwm_exp *lookup_exported_pwm(const char *key)
     return NULL; /* standard for pointers */
 }
 
-int initialize_pwm(void)
-{
-    if  (!pwm_initialized) {
-        int fd, len;
-        char str_gpio[2];
-        // Per https://github.com/NextThingCo/CHIP-linux/pull/4
-        // we need to export 0 here to enable pwm0
-        int gpio = 0;
-
-        if ((fd = open("/sys/class/pwm/pwmchip0/export", O_WRONLY)) < 0)
-        {
-            return -1;
-        }
-        len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
-        write(fd, str_gpio, len);
-        close(fd);
-
-        pwm_initialized = 1;
-        return 1;
-    }
-
-    return 0;
-}
-
 int softpwm_set_frequency(const char *key, float freq) {
     int len;
     char buffer[20];
     unsigned long period_ns;
-    struct pwm_exp *pwm;
+    struct softpwm *pwm;
 
     if (freq <= 0.0)
         return -1;
@@ -129,7 +104,7 @@ int softpwm_set_frequency(const char *key, float freq) {
 int softpwm_set_polarity(const char *key, int polarity) {
     int len;
     char buffer[9]; /* allow room for trailing NUL byte */
-    struct pwm_exp *pwm;
+    struct softpwm *pwm;
 
     pwm = lookup_exported_pwm(key);
 
@@ -156,7 +131,7 @@ int softpwm_set_polarity(const char *key, int polarity) {
 int softpwm_set_duty_cycle(const char *key, float duty) {
     int len;
     char buffer[20];
-    struct pwm_exp *pwm;
+    struct softpwm *pwm;
 
     if (duty < 0.0 || duty > 100.0)
         return -1;
@@ -179,7 +154,7 @@ int softpwm_set_enable(const char *key, int enable)
 {
     int len;
     char buffer[20];
-    struct pwm_exp *pwm;
+    struct softpwm *pwm;
 
     if (enable != 0 || enable != 1)
         return -1;
@@ -198,66 +173,65 @@ int softpwm_set_enable(const char *key, int enable)
     return 0;
 }
 
+void* softpwm_toggle(void *key)
+{
+  struct softpwm *pwm;
+  unsigned int gpio;
+  struct timespec tim;
+  unsigned int sec;
+
+  get_gpio_number(key, &gpio);
+  pwm = lookup_exported_pwm((char*)key);
+
+  while (1) {
+    sec = (unsigned int)(pwm->on_ns/1e9);
+    tim.tv_sec = sec;
+    tim.tv_nsec = pwm->on_ns - (sec*1e9);
+    gpio_set_value(gpio, HIGH);
+    nanosleep(&tim, NULL);
+    sec = (unsigned int)(pwm->off_ns/1e9);
+    tim.tv_sec = sec;
+    tim.tv_nsec = pwm->off_ns - (sec*1e9);
+    gpio_set_value(gpio, LOW);
+    nanosleep(&tim, NULL);
+  }
+}
+
 int softpwm_start(const char *key, float duty, float freq, int polarity)
 {
-    char pwm_base_path[45];
-    char period_path[50];
-    char duty_path[50];
-    char enable_path[50];
-    char polarity_path[55];
-    int period_fd, duty_fd, polarity_fd, enable_fd;
-    struct pwm_exp *new_pwm, *pwm;
+    struct softpwm *new_pwm, *pwm;
+    pthread_t *new_thread;
+    unsigned int gpio;
+    unsigned long period_ns;
+    unsigned long on_ns;
+    int ret;
 
-    if(!pwm_initialized) {
-        initialize_pwm();
-    }
-
-    //setup the pwm base path, the chip only has one pwm
-    snprintf(pwm_base_path, sizeof(pwm_base_path), "/sys/class/pwm/pwmchip0/%d", "pwm0");
-
-    //create the path for the period and duty
-    snprintf(enable_path, sizeof(enable_path), "%s/enable", pwm_base_path);
-    snprintf(period_path, sizeof(period_path), "%s/period", pwm_base_path);
-    snprintf(duty_path, sizeof(duty_path), "%s/duty_cycle", pwm_base_path);
-    snprintf(polarity_path, sizeof(polarity_path), "%s/polarity", pwm_base_path);
-
-    //add period and duty fd to pwm list
-    if ((enable_fd = open(enable_path, O_RDWR)) < 0)
-        return -1;
-
-    if ((period_fd = open(period_path, O_RDWR)) < 0) {
-        close(enable_fd);
-        return -1;
-    }
-
-
-    if ((duty_fd = open(duty_path, O_RDWR)) < 0) {
-        //error, close already opened period_fd.
-        close(enable_fd);
-        close(period_fd);
-        return -1;
-    }
-
-    if ((polarity_fd = open(polarity_path, O_RDWR)) < 0) {
-        //error, close already opened period_fd and duty_fd.
-        close(enable_fd);
-        close(period_fd);
-        close(duty_fd);
-        return -1;
-    }
+    get_gpio_number(key, &gpio);
+    gpio_export(gpio);
+    gpio_set_direction(gpio, OUTPUT);
 
     // add to list
-    new_pwm = malloc(sizeof(struct pwm_exp));
+    new_pwm = malloc(sizeof(struct softpwm));
     if (new_pwm == 0) {
         return -1; // out of memory
     }
 
+    // calculate period and on time from freq
+    period_ns = (unsigned long)(1e9 / freq);
+    on_ns = (unsigned long)(period_ns * (duty/100));
+
+    // create thread for pwm
+    ret = pthread_create(new_thread, NULL, softpwm_toggle, (void *)key);
+    if (ret){
+       printf("ERROR; return code from pthread_create() is %d\n", ret);
+       exit(-1);
+    }
+
     strncpy(new_pwm->key, key, KEYLEN);  /* can leave string unterminated */
     new_pwm->key[KEYLEN] = '\0'; /* terminate string */
-    new_pwm->period_fd = period_fd;
-    new_pwm->duty_fd = duty_fd;
-    new_pwm->polarity_fd = polarity_fd;
-    new_pwm->enable_fd = enable_fd;
+    new_pwm->on_ns = on_ns;
+    new_pwm->off_ns = period_ns - on_ns;
+    new_pwm->thread = *new_thread;
     new_pwm->next = NULL;
 
     if (exported_pwms == NULL)
@@ -272,17 +246,14 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
         pwm->next = new_pwm;
     }
 
-    softpwm_set_frequency(key, freq);
     softpwm_set_polarity(key, polarity);
-    softpwm_set_enable(key, 1);
-    softpwm_set_duty_cycle(key, duty);
 
     return 1;
 }
 
 int softpwm_disable(const char *key)
 {
-    struct pwm_exp *pwm, *temp, *prev_pwm = NULL;
+    struct softpwm *pwm, *temp, *prev_pwm = NULL;
     char fragment[18];
 
     int fd, len;
