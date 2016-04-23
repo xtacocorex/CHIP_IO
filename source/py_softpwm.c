@@ -53,6 +53,8 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
     int polarity = 0;
     static char *kwlist[] = {"channel", "duty_cycle", "frequency", "polarity", NULL};
 
+    printf("Made it to CHIPIO softpwm start");
+
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ffi", kwlist, &channel, &duty_cycle, &frequency, &polarity)) {
         return NULL;
     }
@@ -156,7 +158,7 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
         return NULL;
     }
 
-    if (pwm_set_frequency(key, frequency) == -1) {
+    if (softpwm_set_frequency(key, frequency) == -1) {
         PyErr_SetString(PyExc_RuntimeError, "You must start() the PWM channel first");
         return NULL;
     }
