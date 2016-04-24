@@ -44,25 +44,27 @@ SOFTWARE.
 
 #define KEYLEN 7
 
-#define NOTCHIPHW
-
 #define PERIOD 0
 #define DUTY 1
 
 int pwm_initialized = 0;
 
-// pwm exports
+struct pwm_params
+{
+  float duty;
+  float freq;
+  bool enabled;
+  bool stop_flag;
+  int polarity;
+};
+
 struct softpwm
 {
     char key[KEYLEN+1]; /* leave room for terminating NUL byte */
-
-    float duty;
-    float freq;
+    struct pwm_params params;
+    pthread_mutex_t* params_lock;
     pthread_t thread;
     struct softpwm *next;
-    bool enabled;
-    bool stop_flag;
-    int polarity;
 };
 struct softpwm *exported_pwms = NULL;
 
@@ -93,7 +95,9 @@ int softpwm_set_frequency(const char *key, float freq) {
         return -1;
     }
 
-    pwm->freq = freq;
+    pthread_mutex_lock(pwm->params_lock);
+    pwm->params.freq = freq;
+    pthread_mutex_unlock(pwm->params_lock);
 
     return 1;
 }
@@ -111,7 +115,9 @@ int softpwm_set_polarity(const char *key, int polarity) {
         return -1;
     }
 
-    pwm->polarity = polarity;
+    pthread_mutex_lock(pwm->params_lock);
+    pwm->params.polarity = polarity;
+    pthread_mutex_unlock(pwm->params_lock);
 
     return 0;
 }
@@ -128,7 +134,9 @@ int softpwm_set_duty_cycle(const char *key, float duty) {;
         return -1;
     }
 
-    pwm->duty = duty;
+    pthread_mutex_lock(pwm->params_lock);
+    pwm->params.duty = duty;
+    pthread_mutex_unlock(pwm->params_lock);
 
     return 0;
 }
@@ -149,17 +157,31 @@ void* softpwm_thread_toggle(void *key)
    */
   unsigned int freq_local = 0;
   unsigned int duty_local = 0;
+  unsigned int polarity_local = 0;
+  bool stop_flag_local = false;
+  bool enabled_local = false;
+  bool recalculate_timing = false;
 
   get_gpio_number(key, &gpio);
   pwm = lookup_exported_pwm((char*)key);
 
-  while (pwm->enabled) {
+  while (!stop_flag_local) {
+    pthread_mutex_lock(pwm->params_lock);
+    if ((freq_local != pwm->params.freq) || (duty_local != pwm->params.duty)) {
+      recalculate_timing = true;
+    }
+    freq_local = pwm->params.freq;
+    duty_local = pwm->params.duty;
+    enabled_local = pwm->params.enabled;
+    stop_flag_local = pwm->params.stop_flag;
+    polarity_local = pwm->params.polarity;
+    pthread_mutex_unlock(pwm->params_lock);
     /* If freq or duty has been changed, update the
      * sleep times
      */
-    if ((freq_local != pwm->freq) || (duty_local != pwm->duty)) {
-      period_ns = (unsigned long)(1e9 / pwm->freq);
-      on_ns = (unsigned long)(period_ns * (pwm->duty/100));
+    if (recalculate_timing) {
+      period_ns = (unsigned long)(1e9 / freq_local);
+      on_ns = (unsigned long)(period_ns * (duty_local/100));
       off_ns = period_ns - on_ns;
       sec = (unsigned int)(on_ns/1e9); /* Intentional truncation */
       tim_on.tv_sec = sec;
@@ -167,50 +189,27 @@ void* softpwm_thread_toggle(void *key)
       sec = (unsigned int)(off_ns/1e9); /* Intentional truncation */
       tim_off.tv_sec = sec;
       tim_off.tv_nsec = off_ns - (sec*1e9);
-      freq_local = pwm->freq;
-      duty_local = pwm->duty;
+      recalculate_timing = false;
     }
 
-    /* Set gpio */
-    if (pwm->polarity)
+    if (enabled_local)
     {
-#ifdef NOTCHIPHW
-      printf("Setting gpio high");
-#else
-      gpio_set_value(gpio, HIGH);
-#endif
+      /* Set gpio */
+      if (polarity_local)
+        gpio_set_value(gpio, HIGH);
+      else
+        gpio_set_value(gpio, LOW);
 
-    }
-    else
-    {
-#ifdef NOTCHIPHW
-      printf("Setting gpio low");
-#else
-      //gpio_set_value(gpio, LOW);
-#endif
-    }
+      nanosleep(&tim_on, NULL);
 
-    nanosleep(&tim_on, NULL);
+      /* Unset gpio */
+      if (polarity_local)
+        gpio_set_value(gpio, LOW);
+      else
+        gpio_set_value(gpio, HIGH);
 
-    /* Unset gpio */
-    if (pwm->polarity)
-    {
-#ifdef NOTCHIPHW
-      printf("Setting gpio low");
-#else
-      gpio_set_value(gpio, LOW);
-#endif
+      nanosleep(&tim_off, NULL);
     }
-    else
-    {
-#ifdef NOTCHIPHW
-      printf("Setting gpio high");
-#else
-      gpio_set_value(gpio, HIGH);
-#endif
-    }
-
-    nanosleep(&tim_off, NULL);
   }
 
   /* This pwm has been disabled */
@@ -221,14 +220,13 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
 {
     struct softpwm *new_pwm, *pwm;
     pthread_t *new_thread;
+    pthread_mutex_t *new_params_lock;
     unsigned int gpio;
     int ret;
 
     get_gpio_number(key, &gpio);
-#ifndef NOTCHIPHW
     gpio_export(gpio);
     gpio_set_direction(gpio, OUTPUT);
-#endif
 
     // add to list
     new_pwm = malloc(sizeof(struct softpwm));
@@ -236,10 +234,17 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
         return -1; // out of memory
     }
 
+    new_params_lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+    if (new_pwm == 0) {
+        return -1; // out of memory
+    }
+    pthread_mutex_init(new_params_lock, NULL);
+
     strncpy(new_pwm->key, key, KEYLEN);  /* can leave string unterminated */
     new_pwm->key[KEYLEN] = '\0'; /* terminate string */
-    new_pwm->enabled = false;
-    new_pwm->stop_flag = false;
+    new_pwm->params.enabled = false;
+    new_pwm->params.stop_flag = false;
+    new_pwm->params_lock = new_params_lock;
     new_pwm->next = NULL;
 
     if (exported_pwms == NULL)
@@ -265,7 +270,9 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
        exit(-1);
     }
     new_pwm->thread = *new_thread;
-    new_pwm->enabled = true;
+    pthread_mutex_lock(new_params_lock);
+    new_pwm->params.enabled = true;
+    pthread_mutex_unlock(new_params_lock);
 
     return 1;
 }
@@ -286,11 +293,11 @@ int softpwm_disable(const char *key)
     {
         if (strcmp(pwm->key, key) == 0)
         {
-            pwm->stop_flag = true;
+            pthread_mutex_lock(pwm->params_lock);
+            pwm->params.stop_flag = true;
+            pthread_mutex_unlock(pwm->params_lock);
             get_gpio_number(key, &gpio);
-#ifndef NOTCHIPHW
             gpio_unexport(gpio);
-#endif
 
             if (prev_pwm == NULL)
             {
@@ -302,6 +309,7 @@ int softpwm_disable(const char *key)
 
             temp = pwm;
             pwm = pwm->next;
+            free(temp->params_lock);
             free(temp);
         } else {
             prev_pwm = pwm;
