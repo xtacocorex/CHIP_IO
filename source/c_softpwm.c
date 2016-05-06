@@ -41,6 +41,7 @@ SOFTWARE.
 #include "c_pwm.h"
 #include "common.h"
 #include "event_gpio.h"
+#include "Python.h"
 
 #define KEYLEN 7
 
@@ -141,7 +142,7 @@ int softpwm_set_duty_cycle(const char *key, float duty) {;
     return 0;
 }
 
-void* softpwm_thread_toggle(void *key)
+void *softpwm_thread_toggle(void *key)
 {
   struct softpwm *pwm;
   unsigned int gpio;
@@ -155,12 +156,13 @@ void* softpwm_thread_toggle(void *key)
   /* Used to determine if something has
    * has changed
    */
-  unsigned int freq_local = 0;
-  unsigned int duty_local = 0;
+  float freq_local = 0;
+  float duty_local = 0;
   unsigned int polarity_local = 0;
   bool stop_flag_local = false;
   bool enabled_local = false;
   bool recalculate_timing = false;
+
 
   get_gpio_number(key, &gpio);
   pwm = lookup_exported_pwm((char*)key);
@@ -194,23 +196,37 @@ void* softpwm_thread_toggle(void *key)
 
     if (enabled_local)
     {
-      /* Set gpio */
-      if (polarity_local)
-        gpio_set_value(gpio, HIGH);
-      else
-        gpio_set_value(gpio, LOW);
+
+      /* Force 0 duty cycle to be 0 */
+      if (duty_local != 0)
+      {
+        /* Set gpio */
+        if (polarity_local)
+          gpio_set_value(gpio, HIGH);
+        else
+          gpio_set_value(gpio, LOW);
+      }
 
       nanosleep(&tim_on, NULL);
 
-      /* Unset gpio */
-      if (polarity_local)
-        gpio_set_value(gpio, LOW);
-      else
-        gpio_set_value(gpio, HIGH);
+      /* Force 100 duty cycle to be 100 */
+      if (duty_local != 100)
+      {
+        /* Unset gpio */
+        if (polarity_local)
+          gpio_set_value(gpio, LOW);
+        else
+          gpio_set_value(gpio, HIGH);
+      }
 
       nanosleep(&tim_off, NULL);
     }
   }
+
+  if (polarity_local)
+    gpio_set_value(gpio, LOW);
+  else
+    gpio_set_value(gpio, HIGH);
 
   /* This pwm has been disabled */
   pthread_exit(NULL);
@@ -219,7 +235,7 @@ void* softpwm_thread_toggle(void *key)
 int softpwm_start(const char *key, float duty, float freq, int polarity)
 {
     struct softpwm *new_pwm, *pwm;
-    pthread_t *new_thread;
+    pthread_t new_thread;
     pthread_mutex_t *new_params_lock;
     unsigned int gpio;
     int ret;
@@ -233,7 +249,6 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
     if (new_pwm == 0) {
         return -1; // out of memory
     }
-
     new_params_lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
     if (new_pwm == 0) {
         return -1; // out of memory
@@ -259,17 +274,18 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
         pwm->next = new_pwm;
     }
 
-    softpwm_set_duty_cycle(key, duty);
-    softpwm_set_frequency(key, freq);
-    softpwm_set_polarity(key, polarity);
+    softpwm_set_duty_cycle(new_pwm->key, duty);
+    softpwm_set_frequency(new_pwm->key, freq);
+    softpwm_set_polarity(new_pwm->key, polarity);
 
     // create thread for pwm
-    ret = pthread_create(new_thread, NULL, softpwm_thread_toggle, (void *)key);
+    ret = pthread_create(&new_thread, NULL, softpwm_thread_toggle, (void *)new_pwm->key);
     if (ret) {
-       printf("ERROR; return code from pthread_create() is %d\n", ret);
+       PySys_WriteStderr("DEBUG; soft_pwm ERROR IN pthread_create\n");
        exit(-1);
     }
-    new_pwm->thread = *new_thread;
+
+    new_pwm->thread = new_thread;
     pthread_mutex_lock(new_params_lock);
     new_pwm->params.enabled = true;
     pthread_mutex_unlock(new_params_lock);
@@ -282,11 +298,6 @@ int softpwm_disable(const char *key)
     struct softpwm *pwm, *temp, *prev_pwm = NULL;
     unsigned int gpio = 0;
 
-    // Disable the PWM
-    softpwm_set_frequency(key, 0);
-    softpwm_set_polarity(key, 0);
-    softpwm_set_duty_cycle(key, 0);
-
     // remove from list
     pwm = exported_pwms;
     while (pwm != NULL)
@@ -297,6 +308,7 @@ int softpwm_disable(const char *key)
             pwm->params.stop_flag = true;
             pthread_mutex_unlock(pwm->params_lock);
             get_gpio_number(key, &gpio);
+            gpio_set_value(gpio, LOW);
             gpio_unexport(gpio);
 
             if (prev_pwm == NULL)
