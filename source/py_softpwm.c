@@ -50,17 +50,15 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
     char *channel;
     float frequency = 2000.0;
     float duty_cycle = 0.0;
-    int polarity = 0;
+    int polarity = 1;
     static char *kwlist[] = {"channel", "duty_cycle", "frequency", "polarity", NULL};
-
-    printf("Made it to CHIPIO softpwm start");
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ffi", kwlist, &channel, &duty_cycle, &frequency, &polarity)) {
         return NULL;
     }
 
     if (!get_key(channel, key)) {
-        PyErr_SetString(PyExc_ValueError, "Invalid PWM key or name.");
+        PyErr_SetString(PyExc_ValueError, "Invalid SOFTPWM key or name.");
         return NULL;
     }
 
