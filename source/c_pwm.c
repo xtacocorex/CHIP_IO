@@ -147,7 +147,7 @@ int pwm_set_polarity(const char *key, int polarity) {
     else
     {
         len = snprintf(buffer, sizeof(buffer), "%s", "inverted");
-    }
+    } 
     write(pwm->polarity_fd, buffer, len);
 
     return 0;
