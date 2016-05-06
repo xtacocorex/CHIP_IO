@@ -201,7 +201,7 @@ void *softpwm_thread_toggle(void *key)
       if (duty_local != 0)
       {
         /* Set gpio */
-        if (polarity_local)
+        if (!polarity_local)
           gpio_set_value(gpio, HIGH);
         else
           gpio_set_value(gpio, LOW);
@@ -213,7 +213,7 @@ void *softpwm_thread_toggle(void *key)
       if (duty_local != 100)
       {
         /* Unset gpio */
-        if (polarity_local)
+        if (!polarity_local)
           gpio_set_value(gpio, LOW);
         else
           gpio_set_value(gpio, HIGH);
@@ -223,7 +223,7 @@ void *softpwm_thread_toggle(void *key)
     }
   }
 
-  if (polarity_local)
+  if (!polarity_local)
     gpio_set_value(gpio, LOW);
   else
     gpio_set_value(gpio, HIGH);

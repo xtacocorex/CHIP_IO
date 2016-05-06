@@ -50,7 +50,7 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
     char *channel;
     float frequency = 2000.0;
     float duty_cycle = 0.0;
-    int polarity = 1;
+    int polarity = 0;
     static char *kwlist[] = {"channel", "duty_cycle", "frequency", "polarity", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ffi", kwlist, &channel, &duty_cycle, &frequency, &polarity)) {
