@@ -80,6 +80,24 @@ Detecting events::
     #set polarity to 1 on start:
     PWM.start("PWM0", 50, 2000, 1)
 
+**SOFTPWM**::
+
+    import CHIP_IO.SOFTPWM as PWM
+    #PWM.start(channel, duty, freq=2000, polarity=0)
+    #duty values are valid 0 (off) to 100 (on)
+    #you can choose any pin
+    PWM.start("XIO-P7", 50)
+    PWM.set_duty_cycle("XIO-P7", 25.5)
+    PWM.set_frequency("XIO-P7", 10)
+
+    PWM.stop("XIO-P7")
+    PWM.cleanup()
+
+    #set polarity to 1 on start:
+    PWM.start("XIO-P7", 50, 2000, 1)
+
+Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for anything that needs high precision or reliability.
+
 **ADC**::
 
     Not Implemented yet
