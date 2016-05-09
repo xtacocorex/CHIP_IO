@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2016 Robert Wolterman
+Copyright (c) 2016 Brady Hurlburt
 
 Original BBIO Author Justin Cooper
-Modified for CHIP_IO Author Robert Wolterman
+Modified for CHIP_IO Author Brady Hurlburt
 
 This file incorporates work covered by the following copyright and
 permission notice, all modified code adopts the original license:
