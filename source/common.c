@@ -204,10 +204,10 @@ int lookup_gpio_by_key(const char *key)
   for (p = table; p->key != NULL; ++p) {
       if (strcmp(p->key, key) == 0) {
           // FIGURE OUT IF WE'RE AN XIO PIN USING THE DEFAULT PINS
-          if (p->gpio >= 408) {
+          if (p->gpio >= OLDXIOBASE) {
             int gbase = get_xio_base();
             if (gbase != -1) {
-              return gbase - (p->gpio - OLDXIOBASE);
+              return (gbase + (p->gpio - OLDXIOBASE));
             } else {
               return 0;
             }
@@ -225,10 +225,10 @@ int lookup_gpio_by_name(const char *name)
   for (p = table; p->name != NULL; ++p) {
       if (strcmp(p->name, name) == 0) {
           // FIGURE OUT IF WE'RE AN XIO PIN USING THE DEFAULT PINS
-          if (p->gpio >= 408) {
+          if (p->gpio >= OLDXIOBASE) {
             int gbase = get_xio_base();
             if (gbase != -1) {
-              return gbase - (p->gpio - OLDXIOBASE);
+              return (gbase + (p->gpio - OLDXIOBASE));
             } else {
               return 0;
             }
