@@ -6,7 +6,7 @@ Manual::
 
     sudo ntpdate pool.ntp.org
     sudo apt-get update
-    sudo apt-get install build-essential python-dev python-pip -y
+    sudo apt-get install git build-essential python-dev python-pip -y
     git clone git://github.com/xtacocorex/CHIP_IO.git
     cd CHIP_IO
     sudo python setup.py install
@@ -65,6 +65,12 @@ Detecting events::
     if GPIO.event_detected("XIO-P0"):
       print "event detected!"
 
+**GPIO Cleanup**
+
+To clean up the GPIO when done, do the following::
+
+    GPIO.cleanup()
+
 **PWM**::
 
     import CHIP_IO.PWM as PWM
@@ -106,10 +112,7 @@ Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for 
 
 Install py.test to run the tests. You'll also need the python compiler package for py.test.::
 
-    opkg update && opkg install python-compiler
-    #Either pip or easy_install
-    pip install -U pytest
-    easy_install -U pytest
+    sudo apt-get install python-pytest
 
 Execute the following in the root of the project::
 

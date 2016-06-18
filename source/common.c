@@ -40,6 +40,12 @@ SOFTWARE.
 #include <dirent.h>
 #include <time.h>
 #include "common.h"
+#include <stdio.h>
+#include <dirent.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <assert.h>
 
 int setup_error = 0;
 int module_setup = 0;
@@ -137,12 +143,77 @@ pins_t table[] = {
     { NULL, NULL, 0 }
 };
 
+// CREDIT FOR THIS FUNCTION DUE TO HOWIE KATZ OF NTC AND STEVE FORD
+// THIS WILL FIND THE PROPER XIO BASE SYSFS NUMBER
+// PORTED TO C FORM HOWIE'S PYTHON CODE WITH THE HELP OF STEVE:
+// https://gist.github.com/howientc/606545e0ff47e2cda61f14fca5c46eee
+// HAT TIP TO:
+// http://stackoverflow.com/questions/8149569/scan-a-directory-to-find-files-in-c
+// http://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c
+#define GPIO_PATH "/sys/class/gpio"
+#define EXPANDER "pcf8574a\n"
+#define OLDXIOBASE 408
+int get_xio_base()
+{
+  int xiobase = -1;
+  char label_file[80];
+  FILE *label_fp;
+  char base_file[80];
+  FILE *base_fp;
+  char input_line[80];
+
+  DIR *dir;
+  struct dirent *ent;
+  struct stat sbuf;
+
+  if ((dir = opendir (GPIO_PATH)) != NULL) {
+    while ((ent = readdir (dir)) != NULL) {
+      lstat(ent->d_name,&sbuf);
+      if (S_ISDIR(sbuf.st_mode)) {
+        if (strcmp(".",ent->d_name) == 0 || strcmp("..",ent->d_name) == 0) {
+          continue;
+        }
+        //printf ("%s\n", ent->d_name);
+        sprintf(label_file, "%s/%s/label", GPIO_PATH, ent->d_name);
+        //printf("label_file='%s'\n", label_file);
+        label_fp = fopen(label_file, "r");
+        if (label_fp != NULL) {
+          fgets(input_line, sizeof(input_line), label_fp);  assert(strlen(input_line) < sizeof(input_line)-1);
+          fclose(label_fp);
+          if (strcmp(input_line, EXPANDER) == 0) {
+            /* Found the expander, get the contents of base */
+            sprintf(base_file, "%s/%s/base", GPIO_PATH, ent->d_name);
+            base_fp = fopen(base_file, "r");  assert(base_fp != NULL);
+            fgets(input_line, sizeof(input_line), base_fp);  assert(strlen(input_line) < sizeof(input_line)-1);
+            fclose(base_fp);
+            xiobase = atoi(input_line);
+            break;  /* Found it, exit the while */
+          }
+        }
+      }
+    }
+    closedir (dir);
+  }
+
+  return xiobase; 
+}
+
 int lookup_gpio_by_key(const char *key)
 {
   pins_t *p;
   for (p = table; p->key != NULL; ++p) {
       if (strcmp(p->key, key) == 0) {
-          return p->gpio;
+          // FIGURE OUT IF WE'RE AN XIO PIN USING THE DEFAULT PINS
+          if (p->gpio >= 408) {
+            int gbase = get_xio_base();
+            if (gbase != -1) {
+              return gbase - (p->gpio - OLDXIOBASE);
+            } else {
+              return 0;
+            }
+          } else {
+            return p->gpio;
+         }
       }
   }
   return 0;
@@ -153,7 +224,17 @@ int lookup_gpio_by_name(const char *name)
   pins_t *p;
   for (p = table; p->name != NULL; ++p) {
       if (strcmp(p->name, name) == 0) {
-          return p->gpio;
+          // FIGURE OUT IF WE'RE AN XIO PIN USING THE DEFAULT PINS
+          if (p->gpio >= 408) {
+            int gbase = get_xio_base();
+            if (gbase != -1) {
+              return gbase - (p->gpio - OLDXIOBASE);
+            } else {
+              return 0;
+            }
+          } else {
+            return p->gpio;
+         }
       }
   }
   return 0;
