@@ -44,12 +44,6 @@ SOFTWARE.
 
 #define FILENAME_BUFFER_SIZE 128
 
-int gpio_mode;
-int gpio_direction[120];
-
-char ctrl_dir[35];
-char ocp_dir[25];
-
 int get_xio_base();
 int get_gpio_number(const char *key, unsigned int *gpio);
 int get_pwm_key(const char *input, char *key);

@@ -36,12 +36,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include "stdlib.h"
 #include "Python.h"
 #include "constants.h"
 #include "common.h"
 #include "event_gpio.h"
 
 static int gpio_warnings = 1;
+
+int max_gpio = -1;
+int *gpio_direction = NULL;
 
 struct py_callback
 {
@@ -58,12 +62,24 @@ static int init_module(void)
 {
     int i;
 
-    for (i=0; i<430; i++)
+    max_gpio = 1024;
+    gpio_direction = (int *)malloc(max_gpio * sizeof(int));
+    for (i=0; i<max_gpio; i++)
         gpio_direction[i] = -1;
 
     module_setup = 1;
 
     return 0;
+}
+
+
+static void set_gpio_direction(int gpio, int direction)
+{
+  if (gpio >= max_gpio) {  /* Does gpio_direction need to be expanded? */
+    max_gpio = gpio + (gpio / 2);
+    gpio_direction = (int *)realloc(gpio_direction, max_gpio * sizeof(int));
+  }
+  gpio_direction[gpio] = direction;
 }
 
 // python function cleanup()
@@ -121,7 +137,7 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
      }
    }
 
-   gpio_direction[gpio] = direction;
+   set_gpio_direction(gpio, direction);
 
    Py_RETURN_NONE;
 }
