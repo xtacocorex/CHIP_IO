@@ -58,7 +58,7 @@ static int init_module(void)
 {
     int i;
 
-    for (i=0; i<430; i++)
+    for (i=0; i<1024; i++)
         gpio_direction[i] = -1;
 
     module_setup = 1;
@@ -113,7 +113,7 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
 
    gpio_export(gpio);
    gpio_set_direction(gpio, direction);
-   if (gpio < 408) {
+   if (gpio < get_xio_base()) {
      if (direction == OUTPUT) {
          gpio_set_value(gpio, initial);
      } else {
@@ -269,7 +269,9 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
        return NULL;
 
    // check to ensure gpio is one of the allowed pins
-   if (gpio != 35 && gpio != 193 && !(gpio <= 415 && gpio >= 408)) {
+   // TODO: ERROR CHECKING ON THE RETURN OF get_xio_base()
+   int xiobase = get_xio_base();
+   if (gpio != 35 && gpio != 193 && !(gpio <= xiobase+7 && gpio >= xiobase)) {
      PyErr_SetString(PyExc_RuntimeError, "Callbacks currently available on AP-EINT1, AP-EINT3, and XIO-P0 to XIO-P7 only");
      return NULL;
    }
@@ -316,7 +318,9 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
        return NULL;
 
    // check to ensure gpio is one of the allowed pins
-   if (gpio != 35 && gpio != 193 && !(gpio <= 415 && gpio >= 408)) {
+   // TODO: ERROR CHECKING ON THE RETURN OF get_xio_base()
+   int xiobase = get_xio_base();
+   if (gpio != 35 && gpio != 193 && !(gpio <= xiobase+7 && gpio >= xiobase)) {
      PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on AP-EINT1, AP-EINT3, and XIO-P0 to XIO-P7 only");
      return NULL;
    }
@@ -370,7 +374,9 @@ static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
         return NULL;
 
    // check to ensure gpio is one of the allowed pins
-   if (gpio != 35 && gpio != 193 && !(gpio <= 415 && gpio >= 408)) {
+   // TODO: ERROR CHECKING ON THE RETURN OF get_xio_base()
+   int xiobase = get_xio_base();
+   if (gpio != 35 && gpio != 193 && !(gpio <= xiobase+7 && gpio >= xiobase)) {
      PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on AP-EINT1, AP-EINT3, and XIO-P0 to XIO-P7 only");
      return NULL;
    }
@@ -432,7 +438,9 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
       return NULL;
 
    // check to ensure gpio is one of the allowed pins
-   if (gpio != 35 && gpio != 193 && !(gpio <= 415 && gpio >= 408)) {
+   // TODO: ERROR CHECKING ON THE RETURN OF get_xio_base()
+   int xiobase = get_xio_base();
+   if (gpio != 35 && gpio != 193 && !(gpio <= xiobase+7 && gpio >= xiobase)) {
      PyErr_SetString(PyExc_RuntimeError, "Edge Detection currently available on AP-EINT1, AP-EINT3, and XIO-P0 to XIO-P7 only");
      return NULL;
    }
