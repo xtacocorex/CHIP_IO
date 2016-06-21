@@ -45,7 +45,7 @@ SOFTWARE.
 #define FILENAME_BUFFER_SIZE 128
 
 int gpio_mode;
-int gpio_direction[120];
+int gpio_direction[1024];
 
 char ctrl_dir[35];
 char ocp_dir[25];
