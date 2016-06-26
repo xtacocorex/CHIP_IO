@@ -36,10 +36,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#define MODE_UNKNOWN -1
-#define BOARD        10
-#define BCM          11
-
 #define ARRAY_SIZE(a)  (sizeof(a) / sizeof(a[0]))
 
 // See http://blog.geeky-boy.com/2016/06/of-compiler-warnings-and-asserts-in.html
@@ -49,6 +45,29 @@ SOFTWARE.
     fflush(stderr); \
     abort(); \
 } } while (0)
+
+// See http://blog.geeky-boy.com/2016/06/snprintf-bug-detector-or-bug-preventer.html
+#define BUF2SMALL(b) do {\
+  ASSRT(strnlen(b, sizeof(b)) < sizeof(b)-1);\
+} while (0)
+
+#define MODE_UNKNOWN -1
+#define BOARD        10
+#define BCM          11
+
+// In the pins_t structure, the "base_method" field tells how
+// the "gpio" field should be interpreted.
+#define BASE_METHOD_AS_IS 1  /* use the gpio value directly */
+#define BASE_METHOD_XIO   2  /* add the gpio value to the XIO base */
+
+typedef struct pins_t {
+    const char *name;
+    const char *key;
+    int gpio;           /* port number to use under /sys/class/gpio */
+    int base_method;    /* modifier for port number; see BASE_METHOD_... */
+    int pwm_mux_mode;
+    int ain;
+} pins_t;
 
 #define FILENAME_BUFFER_SIZE 128
 

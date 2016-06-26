@@ -446,7 +446,7 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
    unsigned int gpio;
    int edge, result;
    char *channel;
-   char error[30];
+   char error[81];
 
    if (!PyArg_ParseTuple(args, "si", &channel, &edge))
       return NULL;
@@ -487,7 +487,7 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
       PyErr_SetString(PyExc_RuntimeError, "Edge detection events already enabled for this GPIO channel");
       return NULL;
    } else {
-      sprintf(error, "Error #%d waiting for edge", result);
+      snprintf(error, sizeof(error), "Error #%d waiting for edge", result); BUF2SMALL(error);
       PyErr_SetString(PyExc_RuntimeError, error);
       return NULL;
    }
@@ -536,6 +536,26 @@ static PyObject *py_setwarnings(PyObject *self, PyObject *args)
    Py_RETURN_NONE;
 }
 
+// Internal unit tests
+extern int num_get_xio_base;
+static PyObject *py_selftest(PyObject *self, PyObject *args)
+{
+  int input;
+  if (!PyArg_ParseTuple(args, "i", &input))
+    return NULL;
+
+  ASSRT(num_get_xio_base == 0);
+  int base = get_xio_base();  ASSRT(base > 0 && base < 1024);
+  ASSRT(num_get_xio_base == 1);
+  int second_base = get_xio_base();  ASSRT(second_base == base);
+  ASSRT(num_get_xio_base == 1);  /* make sure it didn't do the full calc a second time. */
+
+  int value = input;
+
+  PyObject *py_value = Py_BuildValue("i", value);
+  return py_value;
+}
+
 static const char moduledocstring[] = "GPIO functionality of a CHIP using Python";
 
 PyMethodDef gpio_methods[] = {
@@ -550,6 +570,7 @@ PyMethodDef gpio_methods[] = {
    {"wait_for_edge", py_wait_for_edge, METH_VARARGS, "Wait for an edge.\ngpio - gpio channel\nedge - RISING, FALLING or BOTH"},
    {"gpio_function", py_gpio_function, METH_VARARGS, "Return the current GPIO function (IN, OUT, ALT0)\ngpio - gpio channel"},
    {"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
+   {"selftest", py_selftest, METH_VARARGS, "Internal unit tests"},
    {NULL, NULL, 0, NULL}
 };
 

@@ -49,20 +49,6 @@ SOFTWARE.
 int setup_error = 0;
 int module_setup = 0;
 
-// In the pins_t structure, the "base_method" field tells how
-// the "gpio" field should be interpreted.
-#define BASE_METHOD_AS_IS 1  /* use the gpio value directly */
-#define BASE_METHOD_XIO   2  /* add the gpio value to the XIO base */
-
-typedef struct pins_t {
-    const char *name;
-    const char *key;
-    int gpio;           /* port number to use under /sys/class/gpio */
-    int base_method;    /* modifier for port number; see BASE_METHOD_... */
-    int pwm_mux_mode;
-    int ain;
-} pins_t;
-
 // I have no idea if this table is correct, we shall see - Robert Wolterman
 pins_t pins_info[] = {
   { "GND",       "U13_1",  0, BASE_METHOD_AS_IS, -1, -1},
@@ -158,11 +144,12 @@ pins_t pins_info[] = {
 // http://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c
 #define GPIO_PATH "/sys/class/gpio"
 #define EXPANDER "pcf8574a\n"
+int num_get_xio_base = 0;  /* for self-test purposes */
 int get_xio_base(void)
 {
-  char label_file[80];
+  char label_file[FILENAME_BUFFER_SIZE];
   FILE *label_fp;
-  char base_file[80];
+  char base_file[FILENAME_BUFFER_SIZE];
   FILE *base_fp;
   char input_line[80];
   // Makes use of static variable xio_base_address to maintain state between
@@ -182,22 +169,20 @@ int get_xio_base(void)
         if (strcmp(".",ent->d_name) == 0 || strcmp("..",ent->d_name) == 0) {
           continue;  /* skip "." and ".." entries */
         }
-        //printf ("%s\n", ent->d_name);
-        sprintf(label_file, "%s/%s/label", GPIO_PATH, ent->d_name);
-        //printf("label_file='%s'\n", label_file);
+        snprintf(label_file, sizeof(label_file), "%s/%s/label", GPIO_PATH, ent->d_name); BUF2SMALL(label_file);
         label_fp = fopen(label_file, "r");
         if (label_fp != NULL) {
-          char *s = fgets(input_line, sizeof(input_line), label_fp);
-            ASSRT(s == input_line && strlen(input_line) < sizeof(input_line)-1);
+          char *s = fgets(input_line, sizeof(input_line), label_fp); BUF2SMALL(input_line); ASSRT(s);
           fclose(label_fp);
           if (strcmp(input_line, EXPANDER) == 0) {
             /* Found the expander, get the contents of base */
-            sprintf(base_file, "%s/%s/base", GPIO_PATH, ent->d_name);
+            snprintf(base_file, sizeof(base_file), "%s/%s/base", GPIO_PATH, ent->d_name); BUF2SMALL(base_file);
             base_fp = fopen(base_file, "r");  ASSRT(base_fp != NULL);
             s = fgets(input_line, sizeof(input_line), base_fp);
               ASSRT(s == input_line && strlen(input_line) < sizeof(input_line)-1);
             fclose(base_fp);
             xio_base_address = atoi(input_line);  /* remember the result */
+            num_get_xio_base++;  /* for self-test purposes */
           }
         }  /* if label file is open */
       }  /* if isdir */
@@ -411,15 +396,15 @@ int build_path(const char *partial_path, const char *prefix, char *full_path, si
 
 int get_spi_bus_path_number(unsigned int spi)
 {
-  char path[80];
-  char ocp_dir[30];
+  char path[FILENAME_BUFFER_SIZE];
+  char ocp_dir[FILENAME_BUFFER_SIZE];
 
-  build_path("/sys/devices", "ocp", ocp_dir, sizeof(ocp_dir));
+  build_path("/sys/devices", "ocp", ocp_dir, sizeof(ocp_dir)); BUF2SMALL(ocp_dir);
 
   if (spi == 0) {
-    snprintf(path, sizeof(path), "%s/48030000.spi/spi_master/spi1", ocp_dir);
+    snprintf(path, sizeof(path), "%s/48030000.spi/spi_master/spi1", ocp_dir); BUF2SMALL(path);
   } else {
-    snprintf(path, sizeof(path), "%s/481a0000.spi/spi_master/spi1", ocp_dir);
+    snprintf(path, sizeof(path), "%s/481a0000.spi/spi_master/spi1", ocp_dir); BUF2SMALL(path);
   }
 
   DIR* dir = opendir(path);

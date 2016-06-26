@@ -84,14 +84,14 @@ int epfd = -1;
 int gpio_export(unsigned int gpio)
 {
     int fd, len;
-    char str_gpio[10];
+    char str_gpio[16];
     struct gpio_exp *new_gpio, *g;
 
     if ((fd = open("/sys/class/gpio/export", O_WRONLY)) < 0)
     {
         return -1;
     }
-    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
+    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
     ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
     close(fd);
 
@@ -181,7 +181,7 @@ int open_value_file(unsigned int gpio)
     char filename[MAX_FILENAME];
 
     // create file descriptor of value file
-    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio);
+    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio); BUF2SMALL(filename);
 
     if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0)
     return -1;
@@ -192,7 +192,7 @@ int open_value_file(unsigned int gpio)
 int gpio_unexport(unsigned int gpio)
 {
     int fd, len;
-    char str_gpio[10];
+    char str_gpio[16];
     struct gpio_exp *g, *temp, *prev_g = NULL;
 
     close_value_fd(gpio);
@@ -200,7 +200,7 @@ int gpio_unexport(unsigned int gpio)
     if ((fd = open("/sys/class/gpio/unexport", O_WRONLY)) < 0)
         return -1;
 
-    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
+    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
     ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
     close(fd);
 
@@ -228,10 +228,10 @@ int gpio_unexport(unsigned int gpio)
 int gpio_set_direction(unsigned int gpio, unsigned int in_flag)
 {
         int fd;
-        char filename[40];
-        char direction[10] = { 0 };
+        char filename[MAX_FILENAME];
+        char direction[16] = { 0 };
 
-        snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio);
+        snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio); BUF2SMALL(filename);
         if ((fd = open(filename, O_WRONLY)) < 0)
             return -1;
 
@@ -250,9 +250,9 @@ int gpio_get_direction(unsigned int gpio, unsigned int *value)
 {
     int fd;
     char direction[4] = { 0 };
-    char filename[40];
+    char filename[MAX_FILENAME];
 
-    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio);
+    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio); BUF2SMALL(filename);
     if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0)
         return -1;
 
@@ -272,9 +272,9 @@ int gpio_set_value(unsigned int gpio, unsigned int value)
 {
     int fd;
     char filename[MAX_FILENAME];
-    char vstr[10];
+    char vstr[16];
 
-    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio);
+    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio); BUF2SMALL(filename);
 
     if ((fd = open(filename, O_WRONLY)) < 0)
         return -1;
@@ -316,9 +316,9 @@ int gpio_get_value(unsigned int gpio, unsigned int *value)
 int gpio_set_edge(unsigned int gpio, unsigned int edge)
 {
         int fd;
-        char filename[40];
+        char filename[MAX_FILENAME];
 
-        snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio);
+        snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio); BUF2SMALL(filename);
 
         if ((fd = open(filename, O_WRONLY)) < 0)
         return -1;

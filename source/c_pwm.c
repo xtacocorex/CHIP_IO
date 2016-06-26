@@ -79,7 +79,7 @@ int initialize_pwm(void)
 {
     if  (!pwm_initialized) {
         int fd, len;
-        char str_gpio[2];
+        char str_gpio[80];
         // Per https://github.com/NextThingCo/CHIP-linux/pull/4
         // we need to export 0 here to enable pwm0
         int gpio = 0;
@@ -88,7 +88,7 @@ int initialize_pwm(void)
         {
             return -1;
         }
-        len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
+        len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
         ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
         close(fd);
 
@@ -101,7 +101,7 @@ int initialize_pwm(void)
 
 int pwm_set_frequency(const char *key, float freq) {
     int len;
-    char buffer[20];
+    char buffer[80];
     unsigned long period_ns;
     struct pwm_exp *pwm;
 
@@ -119,7 +119,7 @@ int pwm_set_frequency(const char *key, float freq) {
     if (period_ns != pwm->period_ns) {
         pwm->period_ns = period_ns;
 
-        len = snprintf(buffer, sizeof(buffer), "%lu", period_ns);
+        len = snprintf(buffer, sizeof(buffer), "%lu", period_ns); BUF2SMALL(buffer);
         ssize_t s = write(pwm->period_fd, buffer, len);  ASSRT(s == len);
     }
 
@@ -128,7 +128,7 @@ int pwm_set_frequency(const char *key, float freq) {
 
 int pwm_set_polarity(const char *key, int polarity) {
     int len;
-    char buffer[9]; /* allow room for trailing NUL byte */
+    char buffer[80];
     struct pwm_exp *pwm;
 
     pwm = lookup_exported_pwm(key);
@@ -142,11 +142,11 @@ int pwm_set_polarity(const char *key, int polarity) {
     }
 
     if (polarity == 0) {
-        len = snprintf(buffer, sizeof(buffer), "%s", "normal");
+        len = snprintf(buffer, sizeof(buffer), "%s", "normal"); BUF2SMALL(buffer);
     }
     else
     {
-        len = snprintf(buffer, sizeof(buffer), "%s", "inverted");
+        len = snprintf(buffer, sizeof(buffer), "%s", "inverted"); BUF2SMALL(buffer);
     } 
     ssize_t s = write(pwm->polarity_fd, buffer, len);  ASSRT(s == len);
 
@@ -155,7 +155,7 @@ int pwm_set_polarity(const char *key, int polarity) {
 
 int pwm_set_duty_cycle(const char *key, float duty) {
     int len;
-    char buffer[20];
+    char buffer[80];
     struct pwm_exp *pwm;
 
     if (duty < 0.0 || duty > 100.0)
@@ -169,7 +169,7 @@ int pwm_set_duty_cycle(const char *key, float duty) {
 
     pwm->duty = (unsigned long)(pwm->period_ns * (duty / 100.0));
 
-    len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty);
+    len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty); BUF2SMALL(buffer);
     ssize_t s = write(pwm->duty_fd, buffer, len);  ASSRT(s == len);
 
     return 0;
@@ -178,7 +178,7 @@ int pwm_set_duty_cycle(const char *key, float duty) {
 int pwm_set_enable(const char *key, int enable)
 {
     int len;
-    char buffer[20];
+    char buffer[80];
     struct pwm_exp *pwm;
 
     if (enable != 0 || enable != 1)
@@ -192,7 +192,7 @@ int pwm_set_enable(const char *key, int enable)
 
     pwm->enable = enable;
 
-    len = snprintf(buffer, sizeof(buffer), "%d", pwm->enable);
+    len = snprintf(buffer, sizeof(buffer), "%d", pwm->enable); BUF2SMALL(buffer);
     ssize_t s = write(pwm->enable_fd, buffer, len);  ASSRT(s == len);
 
     return 0;
@@ -200,11 +200,11 @@ int pwm_set_enable(const char *key, int enable)
 
 int pwm_start(const char *key, float duty, float freq, int polarity)
 {
-    char pwm_base_path[45];
-    char period_path[50];
-    char duty_path[50];
-    char enable_path[50];
-    char polarity_path[55];
+    char pwm_base_path[80];
+    char period_path[80];
+    char duty_path[80];
+    char enable_path[80];
+    char polarity_path[80];
     int period_fd, duty_fd, polarity_fd, enable_fd;
     struct pwm_exp *new_pwm, *pwm;
 
@@ -213,13 +213,13 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     }
 
     //setup the pwm base path, the chip only has one pwm
-    snprintf(pwm_base_path, sizeof(pwm_base_path), "/sys/class/pwm/pwmchip0/pwm%d", 0);
+    snprintf(pwm_base_path, sizeof(pwm_base_path), "/sys/class/pwm/pwmchip0/pwm%d", 0); BUF2SMALL(pwm_base_path);
 
     //create the path for the period and duty
-    snprintf(enable_path, sizeof(enable_path), "%s/enable", pwm_base_path);
-    snprintf(period_path, sizeof(period_path), "%s/period", pwm_base_path);
-    snprintf(duty_path, sizeof(duty_path), "%s/duty_cycle", pwm_base_path);
-    snprintf(polarity_path, sizeof(polarity_path), "%s/polarity", pwm_base_path);
+    snprintf(enable_path, sizeof(enable_path), "%s/enable", pwm_base_path); BUF2SMALL(enable_path);
+    snprintf(period_path, sizeof(period_path), "%s/period", pwm_base_path); BUF2SMALL(period_path);
+    snprintf(duty_path, sizeof(duty_path), "%s/duty_cycle", pwm_base_path); BUF2SMALL(duty_path);
+    snprintf(polarity_path, sizeof(polarity_path), "%s/polarity", pwm_base_path); BUF2SMALL(polarity_path);
 
     //add period and duty fd to pwm list
     if ((enable_fd = open(enable_path, O_RDWR)) < 0)
@@ -285,7 +285,7 @@ int pwm_disable(const char *key)
     struct pwm_exp *pwm, *temp, *prev_pwm = NULL;
 
     int fd, len;
-    char str_gpio[2];
+    char str_gpio[80];
     // Per https://github.com/NextThingCo/CHIP-linux/pull/4
     // we need to export 0 here to enable pwm0
     int gpio = 0;
@@ -300,7 +300,7 @@ int pwm_disable(const char *key)
     {
         return -1;
     }
-    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
+    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
     ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
     close(fd);
 
