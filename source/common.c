@@ -45,11 +45,9 @@ SOFTWARE.
 #include <string.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <assert.h>
 
 int setup_error = 0;
 int module_setup = 0;
-int xio_base_address = -1;  /* not yet initialized */
 
 // In the pins_t structure, the "base_method" field tells how
 // the "gpio" field should be interpreted.
@@ -150,6 +148,7 @@ pins_t pins_info[] = {
     { NULL, NULL, 0 }
 };
 
+
 // CREDIT FOR THIS FUNCTION DUE TO HOWIE KATZ OF NTC AND STEVE FORD
 // THIS WILL FIND THE PROPER XIO BASE SYSFS NUMBER
 // PORTED TO C FORM HOWIE'S PYTHON CODE WITH THE HELP OF STEVE:
@@ -159,51 +158,55 @@ pins_t pins_info[] = {
 // http://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c
 #define GPIO_PATH "/sys/class/gpio"
 #define EXPANDER "pcf8574a\n"
-#define OLDXIOBASE 408
-int get_xio_base()
+int get_xio_base(void)
 {
-  int xiobase = -1;
   char label_file[80];
   FILE *label_fp;
   char base_file[80];
   FILE *base_fp;
   char input_line[80];
+  // Makes use of static variable xio_base_address to maintain state between
+  // calls.  First time this is called, xio_base_address is -1, so the actual
+  // base address is calculated and stored in xio_base_address.  Subsequent
+  // calls just use the previously-calculated value.
+  static int xio_base_address = -1;
 
   DIR *dir;
   struct dirent *ent;
   struct stat sbuf;
 
-  if ((dir = opendir (GPIO_PATH)) != NULL) {
-    while ((ent = readdir (dir)) != NULL) {
+  if (xio_base_address == -1 && (dir = opendir (GPIO_PATH)) != NULL) {
+    while (xio_base_address == -1 && (ent = readdir (dir)) != NULL) {
       lstat(ent->d_name,&sbuf);
       if (S_ISDIR(sbuf.st_mode)) {
         if (strcmp(".",ent->d_name) == 0 || strcmp("..",ent->d_name) == 0) {
-          continue;
+          continue;  /* skip "." and ".." entries */
         }
         //printf ("%s\n", ent->d_name);
         sprintf(label_file, "%s/%s/label", GPIO_PATH, ent->d_name);
         //printf("label_file='%s'\n", label_file);
         label_fp = fopen(label_file, "r");
         if (label_fp != NULL) {
-          fgets(input_line, sizeof(input_line), label_fp);  assert(strlen(input_line) < sizeof(input_line)-1);
+          char *s = fgets(input_line, sizeof(input_line), label_fp);
+            ASSRT(s == input_line && strlen(input_line) < sizeof(input_line)-1);
           fclose(label_fp);
           if (strcmp(input_line, EXPANDER) == 0) {
             /* Found the expander, get the contents of base */
             sprintf(base_file, "%s/%s/base", GPIO_PATH, ent->d_name);
-            base_fp = fopen(base_file, "r");  assert(base_fp != NULL);
-            fgets(input_line, sizeof(input_line), base_fp);  assert(strlen(input_line) < sizeof(input_line)-1);
+            base_fp = fopen(base_file, "r");  ASSRT(base_fp != NULL);
+            s = fgets(input_line, sizeof(input_line), base_fp);
+              ASSRT(s == input_line && strlen(input_line) < sizeof(input_line)-1);
             fclose(base_fp);
-            xiobase = atoi(input_line);
-            break;  /* Found it, exit the while */
+            xio_base_address = atoi(input_line);  /* remember the result */
           }
-        }
-      }
-    }
+        }  /* if label file is open */
+      }  /* if isdir */
+    }  /* while */
     closedir (dir);
   }
 
-  return xiobase; 
-}
+  return xio_base_address; 
+}  /* get_xio_base */
 
 
 int gpio_number(pins_t *pin)
@@ -216,16 +219,13 @@ int gpio_number(pins_t *pin)
       break;
 
     case BASE_METHOD_XIO:
-      if (xio_base_address == -1) {
-        xio_base_address = get_xio_base();  /* only call this the first time */
-      }
-      gpio_num = pin->gpio + xio_base_address;
+      gpio_num = pin->gpio + get_xio_base();
       break;
   }
 
-  assert(gpio_num != -1);
+  ASSRT(gpio_num != -1);
   return gpio_num;
-}
+}  /* gpio_number */
 
 
 int lookup_gpio_by_key(const char *key)
@@ -397,11 +397,11 @@ int build_path(const char *partial_path, const char *prefix, char *full_path, si
 
             if (found_string != NULL && (ep->d_name - found_string) == 0) {
                 snprintf(full_path, full_path_len, "%s/%s", partial_path, ep->d_name);
-                (void) closedir (dp);
+                closedir (dp);
                 return 1;
             }
         }
-        (void) closedir (dp);
+        closedir (dp);
     } else {
         return 0;
     }

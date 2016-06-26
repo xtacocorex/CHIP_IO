@@ -89,7 +89,7 @@ int initialize_pwm(void)
             return -1;
         }
         len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
-        write(fd, str_gpio, len);
+        ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
         close(fd);
 
         pwm_initialized = 1;
@@ -120,7 +120,7 @@ int pwm_set_frequency(const char *key, float freq) {
         pwm->period_ns = period_ns;
 
         len = snprintf(buffer, sizeof(buffer), "%lu", period_ns);
-        write(pwm->period_fd, buffer, len);
+        ssize_t s = write(pwm->period_fd, buffer, len);  ASSRT(s == len);
     }
 
     return 1;
@@ -148,7 +148,7 @@ int pwm_set_polarity(const char *key, int polarity) {
     {
         len = snprintf(buffer, sizeof(buffer), "%s", "inverted");
     } 
-    write(pwm->polarity_fd, buffer, len);
+    ssize_t s = write(pwm->polarity_fd, buffer, len);  ASSRT(s == len);
 
     return 0;
 }
@@ -170,7 +170,7 @@ int pwm_set_duty_cycle(const char *key, float duty) {
     pwm->duty = (unsigned long)(pwm->period_ns * (duty / 100.0));
 
     len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty);
-    write(pwm->duty_fd, buffer, len);
+    ssize_t s = write(pwm->duty_fd, buffer, len);  ASSRT(s == len);
 
     return 0;
 }
@@ -193,7 +193,7 @@ int pwm_set_enable(const char *key, int enable)
     pwm->enable = enable;
 
     len = snprintf(buffer, sizeof(buffer), "%d", pwm->enable);
-    write(pwm->enable_fd, buffer, len);
+    ssize_t s = write(pwm->enable_fd, buffer, len);  ASSRT(s == len);
 
     return 0;
 }
@@ -213,7 +213,7 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     }
 
     //setup the pwm base path, the chip only has one pwm
-    snprintf(pwm_base_path, sizeof(pwm_base_path), "/sys/class/pwm/pwmchip0/%d", "pwm0");
+    snprintf(pwm_base_path, sizeof(pwm_base_path), "/sys/class/pwm/pwmchip0/pwm%d", 0);
 
     //create the path for the period and duty
     snprintf(enable_path, sizeof(enable_path), "%s/enable", pwm_base_path);
@@ -283,7 +283,6 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
 int pwm_disable(const char *key)
 {
     struct pwm_exp *pwm, *temp, *prev_pwm = NULL;
-    char fragment[18];
 
     int fd, len;
     char str_gpio[2];
@@ -302,7 +301,7 @@ int pwm_disable(const char *key)
         return -1;
     }
     len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
-    write(fd, str_gpio, len);
+    ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
     close(fd);
 
     // remove from list

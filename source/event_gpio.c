@@ -92,7 +92,7 @@ int gpio_export(unsigned int gpio)
         return -1;
     }
     len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
-    write(fd, str_gpio, len);
+    ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
     close(fd);
 
     // add to list
@@ -201,7 +201,7 @@ int gpio_unexport(unsigned int gpio)
         return -1;
 
     len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio);
-    write(fd, str_gpio, len);
+    ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
     close(fd);
 
     // remove from list
@@ -241,7 +241,7 @@ int gpio_set_direction(unsigned int gpio, unsigned int in_flag)
             strncpy(direction, "in", ARRAY_SIZE(direction) - 1);
         }
 
-        write(fd, direction, strlen(direction));
+        ssize_t s = write(fd, direction, strlen(direction));  ASSRT(s == strlen(direction));
         close(fd);
         return 0;
 }
@@ -257,7 +257,7 @@ int gpio_get_direction(unsigned int gpio, unsigned int *value)
         return -1;
 
     lseek(fd, 0, SEEK_SET);
-    read(fd, &direction, sizeof(direction) - 1);
+    ssize_t s = read(fd, &direction, sizeof(direction) - 1);  ASSRT(s > 0);
 
     if (strcmp(direction, "out") == 0) {
         *value = OUTPUT;
@@ -285,7 +285,7 @@ int gpio_set_value(unsigned int gpio, unsigned int value)
         strncpy(vstr, "0", ARRAY_SIZE(vstr) - 1);
     }
 
-    write(fd, vstr, strlen(vstr));
+    ssize_t s = write(fd, vstr, strlen(vstr));  ASSRT(s == strlen(vstr));
     close(fd);
     return 0;
 }
@@ -302,7 +302,7 @@ int gpio_get_value(unsigned int gpio, unsigned int *value)
     }
 
     lseek(fd, 0, SEEK_SET);
-    read(fd, &ch, sizeof(ch));
+    ssize_t s = read(fd, &ch, sizeof(ch));  ASSRT(s > 0);
 
     if (ch != '0') {
         *value = 1;
@@ -323,7 +323,7 @@ int gpio_set_edge(unsigned int gpio, unsigned int edge)
         if ((fd = open(filename, O_WRONLY)) < 0)
         return -1;
 
-        write(fd, stredge[edge], strlen(stredge[edge]) + 1);
+        ssize_t s = write(fd, stredge[edge], strlen(stredge[edge]) + 1);  ASSRT(s == strlen(stredge[edge]) + 1);
         close(fd);
         return 0;
 }
