@@ -41,7 +41,7 @@ SOFTWARE.
 // See http://blog.geeky-boy.com/2016/06/of-compiler-warnings-and-asserts-in.html
 #define ASSRT(cond_expr) do { \
   if (!(cond_expr)) { \
-    fprintf(stderr, "ASSRT failed at %s:%d (%s)", __FILE__, __LINE__, #cond_expr); \
+    fprintf(stderr, "ASSRT failed at %s:%d (%s)\n", __FILE__, __LINE__, #cond_expr); \
     fflush(stderr); \
     abort(); \
 } } while (0)
@@ -75,6 +75,7 @@ int setup_error;
 int module_setup;
 
 int get_xio_base(void);
+int gpio_number(pins_t *pin);
 int lookup_gpio_by_key(const char *key);
 int lookup_gpio_by_name(const char *name);
 int lookup_ain_by_key(const char *key);
@@ -89,3 +90,6 @@ int get_pwm_key(const char *input, char *key);
 int get_adc_ain(const char *key, unsigned int *ain);
 int build_path(const char *partial_path, const char *prefix, char *full_path, size_t full_path_len);
 int get_spi_bus_path_number(unsigned int spi);
+void dyn_int_array_set(void **in_array, int i, int val, int initial_val);
+int dyn_int_array_get(void **in_array, int i, int initial_val);
+void dyn_int_array_delete(void **in_array);

@@ -45,7 +45,7 @@ SOFTWARE.
 static int gpio_warnings = 1;
 
 int max_gpio = -1;
-int *gpio_direction = NULL;
+void *gpio_direction = NULL;
 
 struct py_callback
 {
@@ -60,26 +60,15 @@ static struct py_callback *py_callbacks = NULL;
 
 static int init_module(void)
 {
-    int i;
-
-    max_gpio = 1024;
-    gpio_direction = (int *)malloc(max_gpio * sizeof(int));
-    for (i=0; i<max_gpio; i++)
-        gpio_direction[i] = -1;
-
     module_setup = 1;
 
     return 0;
 }
 
 
-static void set_gpio_direction(int gpio, int direction)
+static void remember_gpio_direction(int gpio, int direction)
 {
-  if (gpio >= max_gpio) {  /* Does gpio_direction need to be expanded? */
-    max_gpio = gpio + (gpio / 2);
-    gpio_direction = (int *)realloc(gpio_direction, max_gpio * sizeof(int));
-  }
-  gpio_direction[gpio] = direction;
+  dyn_int_array_set(&gpio_direction, gpio, direction, -1);
 }
 
 // python function cleanup()
@@ -124,21 +113,23 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
       return NULL;
    }
 
-   if (get_gpio_number(channel, &gpio))
-       return NULL;
-
-   gpio_export(gpio);
-   gpio_set_direction(gpio, direction);
-   // For some reason, the following code doesn't work for XIOs.  Skip.
-   if (!(gpio >= lookup_gpio_by_name("XIO-P0") && gpio <= lookup_gpio_by_name("XIO-P7"))) {
-     if (direction == OUTPUT) {
-         gpio_set_value(gpio, initial);
-     } else {
-         gpio_set_value(gpio, pud);
-     }
+   if (get_gpio_number(channel, &gpio)) {
+      PyErr_SetString(PyExc_ValueError, "Invalid value for channel");
+      return NULL;
    }
 
-   set_gpio_direction(gpio, direction);
+   int result = gpio_export(gpio);
+   if (result < 0) {
+      PyErr_SetString(PyExc_ValueError, "Channel in use (already exported)");
+      return NULL;
+   }
+   gpio_set_direction(gpio, direction);
+   // For some reason, the following code doesn't work for XIOs.  Skip.
+   if (direction == OUTPUT) {
+       gpio_set_value(gpio, initial);
+   }
+
+   remember_gpio_direction(gpio, direction);
 
    Py_RETURN_NONE;
 }
@@ -153,16 +144,22 @@ static PyObject *py_output_gpio(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "si", &channel, &value))
         return NULL;
 
-    if (get_gpio_number(channel, &gpio))
+    if (get_gpio_number(channel, &gpio)) {
+        PyErr_SetString(PyExc_RuntimeError, "Invalid channel");
         return NULL;
+    }
 
-    if (!module_setup || gpio_direction[gpio] != OUTPUT)
+    if (!module_setup || dyn_int_array_get(&gpio_direction, gpio, -1) != OUTPUT)
     {
         PyErr_SetString(PyExc_RuntimeError, "The GPIO channel has not been setup() as an OUTPUT");
         return NULL;
     }
 
-    gpio_set_value(gpio, value);
+    int result = gpio_set_value(gpio, value);
+    if (result < 0) {
+        PyErr_SetString(PyExc_RuntimeError, "Could not write to channel");
+        return NULL;
+    }
 
     Py_RETURN_NONE;
 }
@@ -178,11 +175,13 @@ static PyObject *py_input_gpio(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &channel))
         return NULL;
 
-    if (get_gpio_number(channel, &gpio))
+    if (get_gpio_number(channel, &gpio)) {
+        PyErr_SetString(PyExc_RuntimeError, "Invalid channel");
         return NULL;
+    }
 
    // check channel is set up as an input or output
-    if (!module_setup || (gpio_direction[gpio] != INPUT && gpio_direction[gpio] != OUTPUT))
+    if (!module_setup || (dyn_int_array_get(&gpio_direction, gpio, -1) == -1))
     {
         PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel first");
         return NULL;
@@ -282,8 +281,10 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
       return NULL;
    }
 
-   if (get_gpio_number(channel, &gpio))
-       return NULL;
+    if (get_gpio_number(channel, &gpio)) {
+        PyErr_SetString(PyExc_RuntimeError, "Invalid channel");
+        return NULL;
+    }
 
    // check to ensure gpio is one of the allowed pins
    if (gpio != lookup_gpio_by_name("AP-EINT3")
@@ -294,7 +295,7 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
    }
 
    // check channel is set up as an input
-   if (!module_setup || gpio_direction[gpio] != INPUT)
+   if (!module_setup || dyn_int_array_get(&gpio_direction, gpio, -1) != INPUT)
    {
       PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel as an input first");
       return NULL;
@@ -305,7 +306,6 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
       PyErr_SetString(PyExc_RuntimeError, "Add event detection using add_event_detect first before adding a callback");
       return NULL;
    }
-
    if (add_py_callback(channel, gpio, bouncetime, cb_func) != 0)
       return NULL;
 
@@ -331,8 +331,10 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
       return NULL;
    }
 
-   if (get_gpio_number(channel, &gpio))
+   if (get_gpio_number(channel, &gpio)) {
+       PyErr_SetString(PyExc_RuntimeError, "Invalid channel");
        return NULL;
+   }
 
    // check to ensure gpio is one of the allowed pins
    if (gpio != lookup_gpio_by_name("AP-EINT3")
@@ -343,7 +345,7 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
    }
 
    // check channel is set up as an input
-   if (!module_setup || gpio_direction[gpio] != INPUT)
+   if (!module_setup || dyn_int_array_get(&gpio_direction, gpio, -1) != INPUT)
    {
       PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel as an input first");
       return NULL;
@@ -387,8 +389,10 @@ static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
    if (!PyArg_ParseTuple(args, "s", &channel))
       return NULL;
 
-   if (get_gpio_number(channel, &gpio))
-        return NULL;
+   if (get_gpio_number(channel, &gpio)) {
+       PyErr_SetString(PyExc_RuntimeError, "Invalid channel");
+       return NULL;
+   }
 
    // check to ensure gpio is one of the allowed pins
    if (gpio != lookup_gpio_by_name("AP-EINT3")
@@ -431,8 +435,10 @@ static PyObject *py_event_detected(PyObject *self, PyObject *args)
    if (!PyArg_ParseTuple(args, "s", &channel))
       return NULL;
 
-   if (get_gpio_number(channel, &gpio))
+   if (get_gpio_number(channel, &gpio)) {
+       PyErr_SetString(PyExc_RuntimeError, "Invalid channel");
        return NULL;
+   }
 
    if (event_detected(gpio))
       Py_RETURN_TRUE;
@@ -451,8 +457,10 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
    if (!PyArg_ParseTuple(args, "si", &channel, &edge))
       return NULL;
 
-   if (get_gpio_number(channel, &gpio))
-      return NULL;
+   if (get_gpio_number(channel, &gpio)) {
+       PyErr_SetString(PyExc_RuntimeError, "Invalid channel");
+       return NULL;
+   }
 
    // check to ensure gpio is one of the allowed pins
    if (gpio != lookup_gpio_by_name("AP-EINT3")
@@ -463,7 +471,7 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
    }
 
    // check channel is setup as an input
-   if (!module_setup || gpio_direction[gpio] != INPUT)
+   if (!module_setup || dyn_int_array_get(&gpio_direction, gpio, -1) != INPUT)
    {
       PyErr_SetString(PyExc_RuntimeError, "You must setup() the GPIO channel as an input first");
       return NULL;
@@ -507,8 +515,10 @@ static PyObject *py_gpio_function(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &channel))
        return NULL;
 
-    if (get_gpio_number(channel, &gpio))
+    if (get_gpio_number(channel, &gpio)) {
+        PyErr_SetString(PyExc_RuntimeError, "Invalid channel");
         return NULL;
+    }
 
     if (setup_error)
     {
@@ -538,17 +548,105 @@ static PyObject *py_setwarnings(PyObject *self, PyObject *args)
 
 // Internal unit tests
 extern int num_get_xio_base;
+extern pins_t pins_info[];
 static PyObject *py_selftest(PyObject *self, PyObject *args)
 {
   int input;
   if (!PyArg_ParseTuple(args, "i", &input))
     return NULL;
 
+  printf("Testing get_xio_base\n");
   ASSRT(num_get_xio_base == 0);
   int base = get_xio_base();  ASSRT(base > 0 && base < 1024);
   ASSRT(num_get_xio_base == 1);
   int second_base = get_xio_base();  ASSRT(second_base == base);
   ASSRT(num_get_xio_base == 1);  /* make sure it didn't do the full calc a second time. */
+  printf("base=%d\n", base);
+
+  printf("Testing lookup_gpio_by_key\n");
+  ASSRT(0 == lookup_gpio_by_key("U13_1"));
+  ASSRT(48 == lookup_gpio_by_key("U13_9"));
+  ASSRT(47 == lookup_gpio_by_key("U13_11"));
+  ASSRT(base == lookup_gpio_by_key("U14_13"));
+  ASSRT((base+1) == lookup_gpio_by_key("U14_14"));
+  ASSRT((base+6) == lookup_gpio_by_key("U14_19"));
+  ASSRT((base+7) == lookup_gpio_by_key("U14_20"));
+  ASSRT(193 == lookup_gpio_by_key("U14_23"));
+  ASSRT(139 == lookup_gpio_by_key("U14_38"));
+  ASSRT(0 == lookup_gpio_by_key("U14_40"));
+  ASSRT(0 == lookup_gpio_by_key("NOTFOUND"));
+  ASSRT(0 == lookup_gpio_by_key("U14_"));
+  ASSRT(0 == lookup_gpio_by_key("U14_4000"));
+
+  printf("Testing lookup_gpio_by_name\n");
+  ASSRT(0 == lookup_gpio_by_name("GND"));
+  ASSRT(48 == lookup_gpio_by_name("TWI1-SDA"));
+  ASSRT(47 == lookup_gpio_by_name("TWI1-SCK"));
+  ASSRT(base == lookup_gpio_by_name("XIO-P0"));
+  ASSRT((base+6) == lookup_gpio_by_name("XIO-P6"));
+  ASSRT((base+7) == lookup_gpio_by_name("XIO-P7"));
+  ASSRT(139 == lookup_gpio_by_name("CSID7"));
+  ASSRT(0 == lookup_gpio_by_name("NOTFOUND"));
+  ASSRT(0 == lookup_gpio_by_name("CSID"));
+  ASSRT(0 == lookup_gpio_by_name("CSID777"));
+
+  printf("Testing lookup_ain_by_key\n");
+  ASSRT(-1 == lookup_ain_by_key("U14_1"));
+  ASSRT(0 == lookup_ain_by_key("U14_11"));
+  ASSRT(-1 == lookup_ain_by_key("NOTFOUND"));
+  ASSRT(-1 == lookup_ain_by_key("U14_"));
+  ASSRT(-1 == lookup_ain_by_key("U14_1111"));
+
+  printf("Testing lookup_ain_by_name\n");
+  ASSRT(-1 == lookup_ain_by_name("GND"));
+  ASSRT(0 == lookup_ain_by_name("LRADC"));
+  ASSRT(-1 == lookup_ain_by_name("NOTFOUND"));
+  ASSRT(-1 == lookup_ain_by_name("LR"));
+  ASSRT(-1 == lookup_ain_by_name("LRADCCC"));
+
+  char k[9];
+
+  printf("Testing copy_key_by_key\n");
+  ASSRT(1 == copy_key_by_key("U13_1", k)); BUF2SMALL(k); ASSRT(0 == strcmp("U13_1", k));
+  ASSRT(1 == copy_key_by_key("U14_40", k)); BUF2SMALL(k); ASSRT(0 == strcmp("U14_40", k));
+  ASSRT(0 == copy_key_by_key("NOTFOUND", k));
+  ASSRT(0 == copy_key_by_key("U14_", k));
+  ASSRT(0 == copy_key_by_key("U14_4000", k));
+
+  printf("Testing copy_pwm_key_by_key\n");
+  ASSRT(1 == copy_pwm_key_by_key("U13_18", k)); BUF2SMALL(k); ASSRT(0 == strcmp("U13_18", k));
+  ASSRT(0 == copy_pwm_key_by_key("U13_1", k));
+  ASSRT(0 == copy_pwm_key_by_key("U14_40", k));
+  ASSRT(0 == copy_pwm_key_by_key("NOTFOUND", k));
+  ASSRT(0 == copy_pwm_key_by_key("U13_", k));
+  ASSRT(0 == copy_pwm_key_by_key("U13_1888", k));
+
+  printf("Testing get_key_by_name\n");
+  ASSRT(1 == get_key_by_name("GND", k)); BUF2SMALL(k); ASSRT(0 == strcmp("U13_1", k));
+  ASSRT(1 == get_key_by_name("CSID7", k)); BUF2SMALL(k); ASSRT(0 == strcmp("U14_38", k));
+  ASSRT(0 == get_key_by_name("NOTFOUND", k));
+  ASSRT(0 == get_key_by_name("CSID", k));
+  ASSRT(0 == get_key_by_name("CSID777", k));
+
+  printf("Testing get_pwm_key_by_name\n");
+  ASSRT(1 == get_pwm_key_by_name("PWM0", k)); BUF2SMALL(k); ASSRT(0 == strcmp("U13_18", k));
+  ASSRT(0 == get_pwm_key_by_name("NOTFOUND", k));
+  ASSRT(0 == get_pwm_key_by_name("PWM", k));
+  ASSRT(0 == get_pwm_key_by_name("PWM000", k));
+
+  char fp[80];
+
+  printf("Testing build_path\n");
+  ASSRT(1 == build_path("/home", "ch", fp, sizeof(fp)));  ASSRT(0 == strcmp("/home/chip", fp));
+  ASSRT(1 == build_path("/home", "chip", fp, sizeof(fp)));  ASSRT(0 == strcmp("/home/chip", fp));
+  ASSRT(0 == build_path("/home", "NOTFOUND", fp, sizeof(fp)));
+  ASSRT(0 == build_path("/home", "chipp", fp, sizeof(fp)));
+  ASSRT(0 == build_path("/home", "ip", fp, sizeof(fp)));
+  ASSRT(0 == build_path("/NOTFOUND", "ch", fp, sizeof(fp)));
+
+  printf("Testing get_spi_bus_path_number\n");
+  ASSRT(2 == get_spi_bus_path_number(0));  /* doesn't really work on CHIP */
+  ASSRT(2 == get_spi_bus_path_number(1));  /* doesn't really work on CHIP */
 
   int value = input;
 

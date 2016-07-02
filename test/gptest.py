@@ -1,27 +1,49 @@
 #!/usr/bin/python
 
 import CHIP_IO.GPIO as GPIO
-import time, os, threading
+import time
+import threading
+
+num_callbacks = 0
+
 
 def myfuncallback(channel):
+    global num_callbacks
+    num_callbacks += 1
     print "CALLBACK LIKE DRAKE IN HOTLINE BLING"
-    
+
+
+loopfunction_exit = False
+
+
 def loopfunction():
     print "LOOP FUNCTION"
-    for i in xrange(20):
+    for i in xrange(4):
+        if loopfunction_exit:
+            break
         if i % 2:
-            print "SETTING CSID0 LOW"
-            GPIO.output("CSID0",GPIO.LOW)
+            print "SETTING CSID0 LOW (i=", i, ")"
+            GPIO.output("CSID0", GPIO.LOW)
         else:
-            print "SETTING CSID0 HIGH"
-            GPIO.output("CSID0",GPIO.HIGH)
+            print "SETTING CSID0 HIGH (i=", i, ")"
+            GPIO.output("CSID0", GPIO.HIGH)
         print "SLEEPING"
         time.sleep(1)
-    
-print "SETUP XIO-P0"
-GPIO.setup("XIO-P0", GPIO.IN)
 
-print "SETUP CSID0"
+
+GPIO.selftest(0)
+
+GPIO.setup("XIO-P0", GPIO.IN)
+GPIO.setup("CSID0", GPIO.OUT, initial=GPIO.HIGH)
+assert(GPIO.input("XIO-P0") == GPIO.HIGH)
+GPIO.cleanup()
+
+GPIO.setup("XIO-P0", GPIO.IN)
+GPIO.setup("CSID0", GPIO.OUT, initial=GPIO.LOW)
+assert(GPIO.input("XIO-P0") == GPIO.LOW)
+GPIO.cleanup()
+
+GPIO.setup("XIO-P0", GPIO.IN)
 GPIO.setup("CSID0", GPIO.OUT)
 
 # VERIFY SIMPLE FUNCTIONALITY
@@ -29,51 +51,57 @@ print "VERIFY SIMPLE FUNCTIONALITY"
 
 print "READING XIO-PI"
 GPIO.output("CSID0", GPIO.HIGH)
-print "HIGH", GPIO.input("XIO-P0")
+assert(GPIO.input("XIO-P0") == GPIO.HIGH)
 
 GPIO.output("CSID0", GPIO.LOW)
 print "LOW", GPIO.input("XIO-P0")
+assert(GPIO.input("XIO-P0") == GPIO.LOW)
 
 # ==============================================
 # EDGE DETECTION - AP-EINT1
 print "SETTING UP EDGE DETECTION ON AP-EINT1"
 GPIO.setup("AP-EINT1", GPIO.IN)
-GPIO.add_event_detect("AP-EINT1",GPIO.FALLING)
+print "adding event detect"
+GPIO.add_event_detect("AP-EINT1", GPIO.RISING)
 
 print "VERIFYING EDGE DETECT"
-f = open("/sys/class/gpio/gpio193/edge","r")
+f = open("/sys/class/gpio/gpio193/edge", "r")
 edge = f.read()
 f.close()
-print "EDGE: %s" % edge
+print "edge='", edge, "'"
+assert(edge == "rising\n")
 GPIO.remove_event_detect("AP-EINT1")
 
 # ==============================================
 # EDGE DETECTION - AP-EINT3
 print "SETTING UP EDGE DETECTION ON AP-EINT3"
 GPIO.setup("AP-EINT3", GPIO.IN)
-GPIO.add_event_detect("AP-EINT3",GPIO.FALLING)
+GPIO.add_event_detect("AP-EINT3", GPIO.BOTH)
 
 print "VERIFYING EDGE DETECT"
-f = open("/sys/class/gpio/gpio35/edge","r")
+f = open("/sys/class/gpio/gpio35/edge", "r")
 edge = f.read()
 f.close()
 print "EDGE: %s" % edge
+assert(edge == "both\n")
 GPIO.remove_event_detect("AP-EINT3")
 
 # ==============================================
 # EDGE DETECTION - EXPANDED GPIO
 print "SETTING UP EDGE DETECTION ON XIO-P0"
-GPIO.add_event_detect("XIO-P0",GPIO.FALLING,myfuncallback)
+GPIO.add_event_detect("XIO-P0", GPIO.FALLING, myfuncallback)
 
 print "VERIFYING EDGE DETECT"
-f = open("/sys/class/gpio/gpio408/edge","r")
+f = open("/sys/class/gpio/gpio408/edge", "r")
 edge = f.read()
 f.close()
 print "EDGE: %s" % edge
+assert(edge == "falling\n")
 
 # LOOP WRITING ON CSID0 TO HOPEFULLY GET CALLBACK TO WORK
 print "WAITING FOR CALLBACKS"
 loopfunction()
+print "num_callbacks=", num_callbacks
 
 print "PRESS CONTROL-C TO EXIT IF SCRIPT GETS STUCK"
 GPIO.remove_event_detect("XIO-P0")
@@ -82,18 +110,30 @@ try:
     t = threading.Thread(target=loopfunction)
     t.start()
     print "WAITING FOR EDGE"
-    GPIO.wait_for_edge("XIO-P0",GPIO.FALLING)
+    GPIO.wait_for_edge("XIO-P0", GPIO.FALLING)
     print "WE'VE FALLEN LIKE COOLIO'S CAREER"
-    print "ATTEMPTING TO CANCEL THE TIMER"
-    t.cancel()
 except:
     pass
 
+print "Exit thread"
+loopfunction_exit = True
+t.join()  # Wait till the thread exits.
+GPIO.remove_event_detect("XIO-P0")
+
 print "TESTING ERRORS THROWN WHEN SPECIFYING EDGE DETECTION ON UNAUTHORIZED GPIO"
-GPIO.setup("CSID1",GPIO.IN)
-GPIO.add_event_detect("CSID1",GPIO.FALLING,myfuncallback)
+GPIO.setup("CSID1", GPIO.IN)
+try:
+    GPIO.add_event_detect("CSID1", GPIO.FALLING, myfuncallback)
+    print "Oops, it did not throw an exception!  BUG!!!"
+except:
+    pass
+
+print "TESTING ERRORS THROWN WHEN WRITING TO A GPIO WITH NO DIRECTION"
+try:
+    GPIO.output("CSID1", GPIO.LOW)
+    print "Oops, it did not throw an exception!  BUG!!!"
+except:
+    pass
 
 print "CLEANUP"
-GPIO.remove_event_detect("XIO-P0")
 GPIO.cleanup()
-

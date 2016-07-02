@@ -131,7 +131,7 @@ pins_t pins_info[] = {
   { "CSID7",     "U14_38", 139, BASE_METHOD_AS_IS, -1, -1},
   { "GND",       "U14_39", 0, BASE_METHOD_AS_IS, -1, -1},
   { "GND",       "U14_40", 0, BASE_METHOD_AS_IS, -1, -1},
-    { NULL, NULL, 0 }
+  { NULL,        NULL,     0, 0,                 -1, -1}
 };
 
 
@@ -178,10 +178,10 @@ int get_xio_base(void)
             /* Found the expander, get the contents of base */
             snprintf(base_file, sizeof(base_file), "%s/%s/base", GPIO_PATH, ent->d_name); BUF2SMALL(base_file);
             base_fp = fopen(base_file, "r");  ASSRT(base_fp != NULL);
-            s = fgets(input_line, sizeof(input_line), base_fp);
-              ASSRT(s == input_line && strlen(input_line) < sizeof(input_line)-1);
+            s = fgets(input_line, sizeof(input_line), base_fp); BUF2SMALL(input_line); ASSRT(s);
             fclose(base_fp);
-            xio_base_address = atoi(input_line);  /* remember the result */
+            /* Remember the value in the static local. */
+            xio_base_address = atoi(input_line);  ASSRT(xio_base_address > 0);
             num_get_xio_base++;  /* for self-test purposes */
           }
         }  /* if label file is open */
@@ -377,7 +377,7 @@ int build_path(const char *partial_path, const char *prefix, char *full_path, si
     dp = opendir (partial_path);
     if (dp != NULL) {
         while ((ep = readdir (dp))) {
-            // Enforce that the prefix must be the first part of the file
+            // Enforce that the prefix must be the first part of the file name
             char* found_string = strstr(ep->d_name, prefix);
 
             if (found_string != NULL && (ep->d_name - found_string) == 0) {
@@ -419,3 +419,75 @@ int get_spi_bus_path_number(unsigned int spi)
     return -1;
   }
 }
+
+
+struct dyn_int_array {
+  int num_elements;
+  int *array;
+};
+
+void *dyn_int_array_create(int initial_num_elements, int initial_val)
+{
+  struct dyn_int_array *new_array = (struct dyn_int_array *)malloc(sizeof(struct dyn_int_array));
+  ASSRT(new_array != NULL);
+  new_array->num_elements = initial_num_elements;
+  new_array->array = (int *)malloc(initial_num_elements * sizeof(int));
+  ASSRT(new_array->array != NULL);
+  int i;
+  for (i = 0; i < initial_num_elements; i++)
+    new_array->array[i] = initial_val;
+
+  return (void *)new_array;
+}  /* dyn_int_array_create */
+
+
+void dyn_int_array_set(void **in_array, int i, int val, int initial_val)
+{
+  struct dyn_int_array *array = (struct dyn_int_array *)(*in_array);
+  if (array == NULL)
+    array = dyn_int_array_create(i * 3 / 2, initial_val);
+
+  if (i >= array->num_elements) {
+    int new_num_elements = i * 3 / 2;  /* half-again larger than current request */
+    array->array = realloc(array->array, new_num_elements * sizeof(int));
+    ASSRT(array->array != NULL);
+    // Zero out the newly allocated elements.
+    while (array->num_elements < new_num_elements) {
+      array->array[array->num_elements] = initial_val;
+      array->num_elements ++;
+    }
+  }
+
+  array->array[i] = val;
+  *in_array = (void *)array;
+}  /* dyn_int_array_set */
+
+
+int dyn_int_array_get(void **in_array, int i, int initial_val)
+{
+  struct dyn_int_array *array = (struct dyn_int_array *)(*in_array);
+  if (array == NULL)
+    array = dyn_int_array_create(i * 3 / 2, initial_val);
+
+  if (i >= array->num_elements) {
+    int new_num_elements = i * 3 / 2;  /* half-again larger than current request */
+    array->array = realloc(array->array, new_num_elements * sizeof(int));
+    ASSRT(array->array != NULL);
+    // Zero out the newly allocated elements.
+    while (array->num_elements < new_num_elements) {
+      array->array[array->num_elements] = initial_val;
+      array->num_elements ++;
+    }
+  }
+
+  return array->array[i];
+  *in_array = (void *)array;
+}  /* dyn_int_array_get */
+
+
+void dyn_int_array_delete(void **in_array)
+{
+  struct dyn_int_array *array = (struct dyn_int_array *)(*in_array);
+  free(array->array);
+  free(array);
+}  /* dyn_int_array_delete */

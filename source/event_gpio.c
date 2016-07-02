@@ -77,7 +77,7 @@ struct gpio_exp
 struct gpio_exp *exported_gpios = NULL;
 
 pthread_t threads;
-int event_occurred[430] = { 0 };
+void *event_occurred = NULL;
 int thread_running = 0;
 int epfd = -1;
 
@@ -92,8 +92,12 @@ int gpio_export(unsigned int gpio)
         return -1;
     }
     len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
-    ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
+    ssize_t s = write(fd, str_gpio, len);
     close(fd);
+    if (s != len)
+    {
+        return -1;
+    }
 
     // add to list
     new_gpio = malloc(sizeof(struct gpio_exp));
@@ -183,8 +187,9 @@ int open_value_file(unsigned int gpio)
     // create file descriptor of value file
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio); BUF2SMALL(filename);
 
-    if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0)
-    return -1;
+    if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0) {
+        return -1;
+    }
     add_fd_list(gpio, fd);
     return fd;
 }
@@ -240,7 +245,6 @@ int gpio_set_direction(unsigned int gpio, unsigned int in_flag)
         } else {
             strncpy(direction, "in", ARRAY_SIZE(direction) - 1);
         }
-
         ssize_t s = write(fd, direction, strlen(direction));  ASSRT(s == strlen(direction));
         close(fd);
         return 0;
@@ -285,8 +289,11 @@ int gpio_set_value(unsigned int gpio, unsigned int value)
         strncpy(vstr, "0", ARRAY_SIZE(vstr) - 1);
     }
 
-    ssize_t s = write(fd, vstr, strlen(vstr));  ASSRT(s == strlen(vstr));
+    ssize_t s = write(fd, vstr, strlen(vstr));
     close(fd);
+
+    if (s != strlen(vstr))
+        return -2;
     return 0;
 }
 
@@ -454,11 +461,12 @@ void *poll_thread(void *threadarg)
                 thread_running = 0;
                 pthread_exit(NULL);
             }
+            // The return value represents the ending level after the edge.
             gpio = gpio_lookup(events.data.fd);
             if (gpio_initial(gpio)) {     // ignore first epoll trigger
                 set_initial_false(gpio);
             } else {
-                event_occurred[gpio] = 1;
+                dyn_int_array_set(&event_occurred, gpio, 1, 0);
                 run_callbacks(gpio);
             }
         }
@@ -512,6 +520,7 @@ int gpio_event_remove(unsigned int gpio)
     return 0;
 }
 
+// add_edge_detect assumes the caller has ensured the GPIO is already exported.
 int add_edge_detect(unsigned int gpio, unsigned int edge)
 // return values:
 // 0 - Success
@@ -528,31 +537,34 @@ int add_edge_detect(unsigned int gpio, unsigned int edge)
         return 1;
 
     // export /sys/class/gpio interface
-    gpio_export(gpio);
     gpio_set_direction(gpio, 0); // 0=input
     gpio_set_edge(gpio, edge);
 
     if (!fd)
     {
-        if ((fd = open_value_file(gpio)) == -1)
+        if ((fd = open_value_file(gpio)) == -1) {
             return 2;
+        }
     }
 
     // create epfd if not already open
-    if ((epfd == -1) && ((epfd = epoll_create(1)) == -1))
+    if ((epfd == -1) && ((epfd = epoll_create(1)) == -1)) {
         return 2;
+    }
 
     // add to epoll fd
     ev.events = EPOLLIN | EPOLLET | EPOLLPRI;
     ev.data.fd = fd;
-    if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1)
+    if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
         return 2;
+    }
 
     // start poll thread if it is not already running
     if (!thread_running)
     {
-        if (pthread_create(&threads, NULL, poll_thread, (void *)t) != 0)
+        if (pthread_create(&threads, NULL, poll_thread, (void *)t) != 0) {
             return 2;
+        }
     }
 
     return 0;
@@ -576,13 +588,13 @@ void remove_edge_detect(unsigned int gpio)
     gpio_event_remove(gpio);
 
     // clear detected flag
-    event_occurred[gpio] = 0;
+    dyn_int_array_set(&event_occurred, gpio, 0, 0);
 }
 
 int event_detected(unsigned int gpio)
 {
-    if (event_occurred[gpio]) {
-        event_occurred[gpio] = 0;
+    if (dyn_int_array_get(&event_occurred, gpio, 0)) {
+        dyn_int_array_set(&event_occurred, gpio, 0, 0);
         return 1;
     } else {
         return 0;
@@ -612,7 +624,7 @@ int blocking_wait_for_edge(unsigned int gpio, unsigned int edge)
         return 2;
 
     // export /sys/class/gpio interface
-    gpio_export(gpio);
+    gpio_export(gpio);  // ignore errors
     gpio_set_direction(gpio, 0); // 0=input
     gpio_set_edge(gpio, edge);
 

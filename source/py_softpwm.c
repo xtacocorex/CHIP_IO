@@ -47,7 +47,7 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args)
 static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     char key[8];
-    char *channel;
+    char *channel = NULL;
     float frequency = 2000.0;
     float duty_cycle = 0.0;
     int polarity = 0;
@@ -56,6 +56,7 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ffi", kwlist, &channel, &duty_cycle, &frequency, &polarity)) {
         return NULL;
     }
+    ASSRT(channel != NULL);
 
     if (!get_key(channel, key)) {
         PyErr_SetString(PyExc_ValueError, "Invalid SOFTPWM key or name.");
