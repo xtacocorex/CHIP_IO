@@ -30,17 +30,24 @@ def loopfunction():
         print "SLEEPING"
         time.sleep(1)
 
+num_errs = 0
 
 GPIO.selftest(0)
 
 GPIO.setup("XIO-P0", GPIO.IN)
 GPIO.setup("CSID0", GPIO.OUT, initial=GPIO.HIGH)
-assert(GPIO.input("XIO-P0") == GPIO.HIGH)
+if (GPIO.input("XIO-P0") != GPIO.HIGH):
+    print "A high output on CSI0 does not lead to a high input on XIO-P0."
+    print "Perhaps you forgot to connect them?"
+    num_errs += 1
 GPIO.cleanup()
 
 GPIO.setup("XIO-P0", GPIO.IN)
 GPIO.setup("CSID0", GPIO.OUT, initial=GPIO.LOW)
-assert(GPIO.input("XIO-P0") == GPIO.LOW)
+if (GPIO.input("XIO-P0") != GPIO.LOW):
+    print "A low output on CSI0 does not lead to a low input on XIO-P0."
+    print "Perhaps you forgot to connect them?"
+    num_errs += 1
 GPIO.cleanup()
 
 GPIO.setup("XIO-P0", GPIO.IN)
@@ -137,3 +144,5 @@ except:
 
 print "CLEANUP"
 GPIO.cleanup()
+
+print "done,", num_errs, " errors"
