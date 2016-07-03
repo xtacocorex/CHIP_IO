@@ -1,3 +1,9 @@
+0.0.8
+----
+* Updates to handle the 4.4 kernel CHIPs.  Numerous fixes to fix code issues.
+* Added ability to get the XIO base into Python.
+* Still need a proper overlay for Hardware PWM and SPI.
+
 0.0.7
 ----
 * GPIO edge detection expanded to include AP-EINT1 and AP-EINT3 as those are the only other pins that support edge detection
