@@ -546,6 +546,19 @@ static PyObject *py_setwarnings(PyObject *self, PyObject *args)
    Py_RETURN_NONE;
 }
 
+// python function base = get_xio_base()
+static PyObject *py_gpio_base(PyObject *self, PyObject *args)
+{
+   unsigned int value;
+   PyObject *py_value;
+
+   value = get_xio_base();
+
+   py_value = Py_BuildValue("i", value);
+
+   return py_value;
+}
+
 // Internal unit tests
 extern int num_get_xio_base;
 extern pins_t pins_info[];
@@ -668,6 +681,7 @@ PyMethodDef gpio_methods[] = {
    {"wait_for_edge", py_wait_for_edge, METH_VARARGS, "Wait for an edge.\ngpio - gpio channel\nedge - RISING, FALLING or BOTH"},
    {"gpio_function", py_gpio_function, METH_VARARGS, "Return the current GPIO function (IN, OUT, ALT0)\ngpio - gpio channel"},
    {"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
+   {"get_gpio_base", py_gpio_base, METH_VARARGS, "Get the XIO base number for sysfs"},
    {"selftest", py_selftest, METH_VARARGS, "Internal unit tests"},
    {NULL, NULL, 0, NULL}
 };

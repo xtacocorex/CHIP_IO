@@ -99,7 +99,9 @@ print "SETTING UP EDGE DETECTION ON XIO-P0"
 GPIO.add_event_detect("XIO-P0", GPIO.FALLING, myfuncallback)
 
 print "VERIFYING EDGE DETECT"
-f = open("/sys/class/gpio/gpio408/edge", "r")
+base = GPIO.get_gpio_base()
+gfile = "/sys/class/gpio/gpio%d/edge" % base
+f = open(gfile, "r")
 edge = f.read()
 f.close()
 print "EDGE: %s" % edge
