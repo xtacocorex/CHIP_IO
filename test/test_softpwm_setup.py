@@ -9,8 +9,10 @@ def teardown_module(module):
 class TestSoftpwmSetup:
     def test_start_pwm(self):
         PWM.start("XIO-P7", 50, 10)
-        assert os.path.exists('/sys/class/gpio/gpio415')
-        direction = open('/sys/class/gpio/gpio415/direction').read()
+        base = GPIO.get_gpio_base() + 7
+        gfile = '/sys/class/gpio/gpio%d' % base
+        assert os.path.exists(base)
+        direction = open(base + '/direction').read()
         assert direction == 'out\n'
         PWM.cleanup()
 

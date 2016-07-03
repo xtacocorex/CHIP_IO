@@ -25,6 +25,7 @@ class TestGPIOOutput:
         GPIO.setup("CSID6", GPIO.OUT)
         direction = GPIO.gpio_function("CSID6")
         assert direction == GPIO.OUT
+
     def test_output_greater_than_one(self):
         GPIO.setup("CSID6", GPIO.OUT)
         GPIO.output("CSID6", 2)

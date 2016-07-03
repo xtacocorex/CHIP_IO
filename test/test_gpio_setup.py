@@ -67,6 +67,9 @@ class TestSetup:
 
     def test_setup_expanded_gpio(self):
         GPIO.setup("XIO-P1", GPIO.OUT)
-        assert os.path.exists('/sys/class/gpio/gpio409')
+        base = GPIO.get_gpio_base() + 1
+        gfile = '/sys/class/gpio/gpio%d' % base
+        assert os.path.exists(gfile)
         GPIO.cleanup()
-        assert not os.path.exists('/sys/class/gpio/gpio409')
+        assert not os.path.exists(gfile)
+
