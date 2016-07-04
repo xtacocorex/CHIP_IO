@@ -54,21 +54,21 @@ SOFTWARE.
 #define PUD_DOWN 1
 #define PUD_UP   2
 
-int gpio_export(unsigned int gpio);
-int gpio_unexport(unsigned int gpio);
+int gpio_export(int gpio);
+int gpio_unexport(int gpio);
 void exports_cleanup(void);
-int gpio_set_direction(unsigned int gpio, unsigned int in_flag);
-int gpio_get_direction(unsigned int gpio, unsigned int *value);
-int gpio_set_value(unsigned int gpio, unsigned int value);
-int gpio_get_value(unsigned int gpio, unsigned int *value);
+int gpio_set_direction(int gpio, unsigned int in_flag);
+int gpio_get_direction(int gpio, unsigned int *value);
+int gpio_set_value(int gpio, unsigned int value);
+int gpio_get_value(int gpio, unsigned int *value);
 
-int add_edge_detect(unsigned int gpio, unsigned int edge);
-void remove_edge_detect(unsigned int gpio);
-int add_edge_callback(unsigned int gpio, void (*func)(unsigned int gpio));
-int event_detected(unsigned int gpio);
-int gpio_event_add(unsigned int gpio);
-int gpio_event_remove(unsigned int gpio);
-int gpio_is_evented(unsigned int gpio);
+int add_edge_detect(int gpio, unsigned int edge);
+void remove_edge_detect(int gpio);
+int add_edge_callback(int gpio, void (*func)(int gpio));
+int event_detected(int gpio);
+int gpio_event_add(int gpio);
+int gpio_event_remove(int gpio);
+int gpio_is_evented(int gpio);
 int event_initialise(void);
 void event_cleanup(void);
-int blocking_wait_for_edge(unsigned int gpio, unsigned int edge);
+int blocking_wait_for_edge(int gpio, unsigned int edge);

@@ -69,6 +69,14 @@ typedef struct pins_t {
     int ain;
 } pins_t;
 
+
+struct dyn_int_array_s {
+  int num_elements;
+  int *content;
+};
+typedef struct dyn_int_array_s dyn_int_array_t;
+
+
 #define FILENAME_BUFFER_SIZE 128
 
 int setup_error;
@@ -84,12 +92,15 @@ int copy_key_by_key(const char *input_key, char *key);
 int copy_pwm_key_by_key(const char *input_key, char *key);
 int get_key_by_name(const char *name, char *key);
 int get_pwm_key_by_name(const char *name, char *key);
-int get_gpio_number(const char *key, unsigned int *gpio);
+int get_gpio_number(const char *key, int *gpio);
 int get_key(const char *input, char *key);
 int get_pwm_key(const char *input, char *key);
 int get_adc_ain(const char *key, unsigned int *ain);
 int build_path(const char *partial_path, const char *prefix, char *full_path, size_t full_path_len);
 int get_spi_bus_path_number(unsigned int spi);
-void dyn_int_array_set(void **in_array, int i, int val, int initial_val);
-int dyn_int_array_get(void **in_array, int i, int initial_val);
-void dyn_int_array_delete(void **in_array);
+void dyn_int_array_set(dyn_int_array_t **in_array, int i, int val, int initial_val);
+int dyn_int_array_get(dyn_int_array_t **in_array, int i, int initial_val);
+void dyn_int_array_delete(dyn_int_array_t **in_array);
+void clear_error_msg(void);
+char *get_error_msg(void);
+void add_error_msg(char *msg);

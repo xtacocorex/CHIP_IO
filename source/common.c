@@ -42,6 +42,7 @@ SOFTWARE.
 #include "common.h"
 #include <stdio.h>
 #include <dirent.h>
+#include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -49,24 +50,25 @@ SOFTWARE.
 int setup_error = 0;
 int module_setup = 0;
 
+
 // I have no idea if this table is correct, we shall see - Robert Wolterman
 pins_t pins_info[] = {
-  { "GND",       "U13_1",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "CHG-IN",    "U13_2",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-5V",    "U13_3",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U13_4",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-3V3",   "U13_5",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "TS",        "U13_6",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-1V8",   "U13_7",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "BAT",       "U13_8",  0, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "U13_1",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "CHG-IN",    "U13_2",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-5V",    "U13_3",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "U13_4",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-3V3",   "U13_5",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "TS",        "U13_6",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-1V8",   "U13_7",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "BAT",       "U13_8",  -1, BASE_METHOD_AS_IS, -1, -1},
   { "TWI1-SDA",  "U13_9",  48, BASE_METHOD_AS_IS, -1, -1},
-  { "PWRON",     "U13_10", 0, BASE_METHOD_AS_IS, -1, -1},
+  { "PWRON",     "U13_10", -1, BASE_METHOD_AS_IS, -1, -1},
   { "TWI1-SCK",  "U13_11", 47, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U13_12", 0, BASE_METHOD_AS_IS, -1, -1},
-  { "X1",        "U13_13", 0, BASE_METHOD_AS_IS, -1, -1},
-  { "X2",        "U13_14", 0, BASE_METHOD_AS_IS, -1, -1},
-  { "Y1",        "U13_15", 0, BASE_METHOD_AS_IS, -1, -1},
-  { "Y2",        "U13_16", 0, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "U13_12", -1, BASE_METHOD_AS_IS, -1, -1},
+  { "X1",        "U13_13", -1, BASE_METHOD_AS_IS, -1, -1},
+  { "X2",        "U13_14", -1, BASE_METHOD_AS_IS, -1, -1},
+  { "Y1",        "U13_15", -1, BASE_METHOD_AS_IS, -1, -1},
+  { "Y2",        "U13_16", -1, BASE_METHOD_AS_IS, -1, -1},
   { "LCD-D2",    "U13_17", 98, BASE_METHOD_AS_IS, -1, -1},
   { "PWM0",      "U13_18", 34, BASE_METHOD_AS_IS, 0, -1},
   { "LCD-D4",    "U13_19", 100, BASE_METHOD_AS_IS, -1, -1},
@@ -89,20 +91,20 @@ pins_t pins_info[] = {
   { "LCD-D23",   "U13_36", 119, BASE_METHOD_AS_IS, -1, -1},
   { "LCD-VSYNC", "U13_37", 123, BASE_METHOD_AS_IS, -1, -1},
   { "LCD-HSYNC", "U13_38", 122, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U13_39", 0, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "U13_39", -1, BASE_METHOD_AS_IS, -1, -1},
   { "LCD-DE",    "U13_40", 121, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U14_1",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-5V",    "U14_2",  0, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "U14_1",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-5V",    "U14_2",  -1, BASE_METHOD_AS_IS, -1, -1},
   { "UART1-TX",  "U14_3",  195, BASE_METHOD_AS_IS, -1, -1},
-  { "HPL",       "U14_4",  0, BASE_METHOD_AS_IS, -1, -1},
+  { "HPL",       "U14_4",  -1, BASE_METHOD_AS_IS, -1, -1},
   { "UART1-RX",  "U14_5",  196, BASE_METHOD_AS_IS, -1, -1},
-  { "HPCOM",     "U14_6",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "FEL",       "U14_7",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "HPR",       "U14_8",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-3V3",   "U14_9",  0, BASE_METHOD_AS_IS, -1, -1},
-  { "MICM",      "U14_10", 0, BASE_METHOD_AS_IS, -1, -1},
-  { "LRADC",     "U14_11", 0, BASE_METHOD_AS_IS, -1, 0},
-  { "MICIN1",    "U14_12", 0, BASE_METHOD_AS_IS, -1, -1},
+  { "HPCOM",     "U14_6",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "FEL",       "U14_7",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "HPR",       "U14_8",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-3V3",   "U14_9",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "MICM",      "U14_10", -1, BASE_METHOD_AS_IS, -1, -1},
+  { "LRADC",     "U14_11", -1, BASE_METHOD_AS_IS, -1, 0},
+  { "MICIN1",    "U14_12", -1, BASE_METHOD_AS_IS, -1, -1},
   { "XIO-P0",    "U14_13", 0, BASE_METHOD_XIO, -1, -1},
   { "XIO-P1",    "U14_14", 1, BASE_METHOD_XIO, -1, -1},
   { "XIO-P2",    "U14_15", 2, BASE_METHOD_XIO, -1, -1},
@@ -111,8 +113,8 @@ pins_t pins_info[] = {
   { "XIO-P5",    "U14_18", 5, BASE_METHOD_XIO, -1, -1},
   { "XIO-P6",    "U14_19", 6, BASE_METHOD_XIO, -1, -1},
   { "XIO-P7",    "U14_20", 7, BASE_METHOD_XIO, -1, -1},
-  { "GND",       "U14_21", 0, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U14_22", 0, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "U14_21", -1, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "U14_22", -1, BASE_METHOD_AS_IS, -1, -1},
   { "AP-EINT1",  "U14_23", 193, BASE_METHOD_AS_IS, -1, -1},
   { "AP-EINT3",  "U14_24", 35, BASE_METHOD_AS_IS, -1, -1},
   { "TWI2-SDA",  "U14_25", 50, BASE_METHOD_AS_IS, -1, -1},
@@ -129,9 +131,9 @@ pins_t pins_info[] = {
   { "CSID5",     "U14_36", 137, BASE_METHOD_AS_IS, -1, -1},
   { "CSID6",     "U14_37", 138, BASE_METHOD_AS_IS, -1, -1},
   { "CSID7",     "U14_38", 139, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U14_39", 0, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U14_40", 0, BASE_METHOD_AS_IS, -1, -1},
-  { NULL,        NULL,     0, 0,                 -1, -1}
+  { "GND",       "U14_39", -1, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "U14_40", -1, BASE_METHOD_AS_IS, -1, -1},
+  { NULL,        NULL,     -1, 0,                 -1, -1}
 };
 
 
@@ -144,14 +146,14 @@ pins_t pins_info[] = {
 // http://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c
 #define GPIO_PATH "/sys/class/gpio"
 #define EXPANDER "pcf8574a\n"
-int num_get_xio_base = 0;  /* for self-test purposes */
+
+/* returns -1 for error */
 int get_xio_base(void)
 {
   char label_file[FILENAME_BUFFER_SIZE];
   FILE *label_fp;
   char base_file[FILENAME_BUFFER_SIZE];
   FILE *base_fp;
-  char input_line[80];
   // Makes use of static variable xio_base_address to maintain state between
   // calls.  First time this is called, xio_base_address is -1, so the actual
   // base address is calculated and stored in xio_base_address.  Subsequent
@@ -162,33 +164,55 @@ int get_xio_base(void)
   struct dirent *ent;
   struct stat sbuf;
 
-  if (xio_base_address == -1 && (dir = opendir (GPIO_PATH)) != NULL) {
-    while (xio_base_address == -1 && (ent = readdir (dir)) != NULL) {
-      lstat(ent->d_name,&sbuf);
-      if (S_ISDIR(sbuf.st_mode)) {
-        if (strcmp(".",ent->d_name) == 0 || strcmp("..",ent->d_name) == 0) {
-          continue;  /* skip "." and ".." entries */
-        }
-        snprintf(label_file, sizeof(label_file), "%s/%s/label", GPIO_PATH, ent->d_name); BUF2SMALL(label_file);
-        label_fp = fopen(label_file, "r");
-        if (label_fp != NULL) {
-          char *s = fgets(input_line, sizeof(input_line), label_fp); BUF2SMALL(input_line); ASSRT(s);
-          fclose(label_fp);
-          if (strcmp(input_line, EXPANDER) == 0) {
-            /* Found the expander, get the contents of base */
-            snprintf(base_file, sizeof(base_file), "%s/%s/base", GPIO_PATH, ent->d_name); BUF2SMALL(base_file);
-            base_fp = fopen(base_file, "r");  ASSRT(base_fp != NULL);
-            s = fgets(input_line, sizeof(input_line), base_fp); BUF2SMALL(input_line); ASSRT(s);
-            fclose(base_fp);
-            /* Remember the value in the static local. */
-            xio_base_address = atoi(input_line);  ASSRT(xio_base_address > 0);
-            num_get_xio_base++;  /* for self-test purposes */
-          }
-        }  /* if label file is open */
-      }  /* if isdir */
-    }  /* while */
-    closedir (dir);
+  if (xio_base_address != -1)
+    return xio_base_address;
+
+  dir = opendir (GPIO_PATH);
+  if (dir == NULL) {
+    char err[256];
+    snprintf(err, sizeof(err), "get_xio_base: could not open '%s' (%s)", GPIO_PATH, strerror(errno));
+    add_error_msg(err);
+    return -1;
   }
+
+  while (xio_base_address == -1 && (ent = readdir (dir)) != NULL) {
+    lstat(ent->d_name,&sbuf);
+    if (S_ISDIR(sbuf.st_mode)) {
+      if (strcmp(".",ent->d_name) == 0 || strcmp("..",ent->d_name) == 0) {
+        continue;  /* skip "." and ".." entries */
+      }
+
+      snprintf(label_file, sizeof(label_file), "%s/%s/label", GPIO_PATH, ent->d_name); BUF2SMALL(label_file);
+      label_fp = fopen(label_file, "r");
+      if (label_fp != NULL) {
+        char input_line[80];  input_line[0] = '\0';
+        char *s = fgets(input_line, sizeof(input_line), label_fp); BUF2SMALL(input_line);
+        fclose(label_fp);
+        if (s != NULL && strcmp(input_line, EXPANDER) == 0) {
+          /* Found the expander, get the contents of base */
+          snprintf(base_file, sizeof(base_file), "%s/%s/base", GPIO_PATH, ent->d_name); BUF2SMALL(base_file);
+          base_fp = fopen(base_file, "r");
+          if (base_fp == NULL) {
+            char err[80];
+            snprintf(err, sizeof(err), "get_xio_base: could not open '%s' (%s)", base_file, strerror(errno));
+            add_error_msg(err);
+            break;  /* error, exit loop */
+          }
+          s = fgets(input_line, sizeof(input_line), base_fp); BUF2SMALL(input_line);
+          fclose(base_fp);
+          if (s == NULL) {
+            char err[80];
+            snprintf(err, sizeof(err), "get_xio_base: could not read '%s' (%s)", base_file, strerror(errno));
+            add_error_msg(err);
+            break;  /* error, exit loop */
+          }
+          /* Remember the value in the static local. */
+          xio_base_address = atoi(input_line);
+        }
+      }  /* if label file is open */
+    }  /* if isdir */
+  }  /* while */
+  closedir (dir);
 
   return xio_base_address; 
 }  /* get_xio_base */
@@ -197,6 +221,7 @@ int get_xio_base(void)
 int gpio_number(pins_t *pin)
 {
   int gpio_num = -1;
+  int xio_base;
 
   switch (pin->base_method) {
     case BASE_METHOD_AS_IS:
@@ -204,11 +229,16 @@ int gpio_number(pins_t *pin)
       break;
 
     case BASE_METHOD_XIO:
-      gpio_num = pin->gpio + get_xio_base();
+      xio_base = get_xio_base();
+      if (xio_base <= 0) {
+        char err[80];  snprintf(err, sizeof(err), "gpio_number: %d found for %s", xio_base, pin->name);
+        add_error_msg(err);
+        break;  /* error, exit switch */
+      }
+      gpio_num = pin->gpio + xio_base;
       break;
   }
 
-  ASSRT(gpio_num != -1);
   return gpio_num;
 }  /* gpio_number */
 
@@ -221,7 +251,7 @@ int lookup_gpio_by_key(const char *key)
           return gpio_number(p);
       }
   }
-  return 0;
+  return -1;
 }
 
 int lookup_gpio_by_name(const char *name)
@@ -232,7 +262,7 @@ int lookup_gpio_by_name(const char *name)
           return gpio_number(p);
       }
   }
-  return 0;
+  return -1;
 }
 
 int lookup_ain_by_key(const char *key)
@@ -325,15 +355,18 @@ int get_pwm_key_by_name(const char *name, char *key)
     return 0;
 }
 
-int get_gpio_number(const char *key, unsigned int *gpio)
+int get_gpio_number(const char *key, int *gpio)
 {
+    int status = 0;  /* assume success */
     *gpio = lookup_gpio_by_key(key);
 
-    if (!*gpio) {
+    if (*gpio <= 0) {
         *gpio = lookup_gpio_by_name(key);
+        if (*gpio <= 0) {
+            status = -1;  /* error */
+        }
     }
-
-    return 0;
+    return status;
 }
 
 int get_key(const char *input, char *key)
@@ -421,73 +454,136 @@ int get_spi_bus_path_number(unsigned int spi)
 }
 
 
-struct dyn_int_array {
-  int num_elements;
-  int *array;
-};
+// We do not know at compile time how many GPIOs there are, so it is not safe
+// to declare per-GPIO arrays with a static size.  The "dyn_int_array_*"
+// functions implement a dynamic integer array which grows as needed at run
+// time.  Users of a dynamic array do not access the array directly, but by
+// access methods.
+//
+// To use, declare a dyn_int_array_t pointer initialized to NULL:
+//   dyn_int_array_t *my_per_gpio_array = NULL;
+// If declared as a local to a function, consider making it "static":
+//   static dyn_int_array_t *my_per_gpio_array = NULL;
+// The access methods must be passed a pointer to this pointer.
+// Then when reading and writing to array elements, it is usually important
+// to supply a "default value".  This is so that as the array grows, the
+// as-yet unused elements can be initialzied to a desired value.
+//   my_index = 100;
+//   dyn_int_array_set(&my_per_gpio_array, my_index, my_value, -1);
+// This initializes elements 0-99 to -1, and element 100 to my_value.  For
+// efficiency purposes, it grows the array to half again larger than it needs
+// to.  Thus, elements 101-149 will be initialized to -1.
+//
+// If an element past the end of the array is read, the array is once again
+// grown, with initialization:
+//   my_index = 500;
+//   int val = dyn_int_array_get(&my_per_gpio_array, my_index, -1);
+// This grows the array to 749 (half again larger than 500) and initializes all
+// the new elements to -1, including element 500, which is then returned.
 
-void *dyn_int_array_create(int initial_num_elements, int initial_val)
+/* internal function; only called by access methods. */
+dyn_int_array_t *dyn_int_array_create(int initial_num_elements, int initial_val)
 {
-  struct dyn_int_array *new_array = (struct dyn_int_array *)malloc(sizeof(struct dyn_int_array));
-  ASSRT(new_array != NULL);
+  dyn_int_array_t *new_array = (dyn_int_array_t *)malloc(sizeof(dyn_int_array_t));
+  ASSRT(new_array != NULL);  /* out of memory */
+
   new_array->num_elements = initial_num_elements;
-  new_array->array = (int *)malloc(initial_num_elements * sizeof(int));
-  ASSRT(new_array->array != NULL);
+  new_array->content = (int *)malloc(initial_num_elements * sizeof(int));
+  ASSRT(new_array->content != NULL);  /* out of memory */
+
   int i;
   for (i = 0; i < initial_num_elements; i++)
-    new_array->array[i] = initial_val;
+    new_array->content[i] = initial_val;
 
-  return (void *)new_array;
+  return new_array;
 }  /* dyn_int_array_create */
 
 
-void dyn_int_array_set(void **in_array, int i, int val, int initial_val)
+void dyn_int_array_set(dyn_int_array_t **in_array, int i, int val, int initial_val)
 {
-  struct dyn_int_array *array = (struct dyn_int_array *)(*in_array);
-  if (array == NULL)
-    array = dyn_int_array_create(i * 3 / 2, initial_val);
+  dyn_int_array_t *array = *in_array;
+  if (array == NULL) {  /* if array hasn't been created yet */
+    array = dyn_int_array_create((i+1) * 3 / 2, initial_val);
+    *in_array = array;
+  }
 
   if (i >= array->num_elements) {
-    int new_num_elements = i * 3 / 2;  /* half-again larger than current request */
-    array->array = realloc(array->array, new_num_elements * sizeof(int));
-    ASSRT(array->array != NULL);
+    int new_num_elements = (i+1) * 3 / 2;  /* half-again larger than current request */
+    array->content = realloc(array->content, new_num_elements * sizeof(int));
+    ASSRT(array->content != NULL);  /* out of memory */
     // Zero out the newly allocated elements.
     while (array->num_elements < new_num_elements) {
-      array->array[array->num_elements] = initial_val;
+      array->content[array->num_elements] = initial_val;
       array->num_elements ++;
     }
   }
 
-  array->array[i] = val;
-  *in_array = (void *)array;
+  array->content[i] = val;
 }  /* dyn_int_array_set */
 
 
-int dyn_int_array_get(void **in_array, int i, int initial_val)
+int dyn_int_array_get(dyn_int_array_t **in_array, int i, int initial_val)
 {
-  struct dyn_int_array *array = (struct dyn_int_array *)(*in_array);
-  if (array == NULL)
-    array = dyn_int_array_create(i * 3 / 2, initial_val);
+  dyn_int_array_t *array = *in_array;
+  if (array == NULL) {  /* if array hasn't been created yet */
+    array = dyn_int_array_create((i+1) * 3 / 2, initial_val);
+    *in_array = array;
+  }
 
   if (i >= array->num_elements) {
-    int new_num_elements = i * 3 / 2;  /* half-again larger than current request */
-    array->array = realloc(array->array, new_num_elements * sizeof(int));
-    ASSRT(array->array != NULL);
+    int new_num_elements = (i+1) * 3 / 2;  /* half-again larger than current request */
+    array->content = realloc(array->content, new_num_elements * sizeof(int));
+    ASSRT(array->content != NULL);  /* out of memory */
     // Zero out the newly allocated elements.
     while (array->num_elements < new_num_elements) {
-      array->array[array->num_elements] = initial_val;
+      array->content[array->num_elements] = initial_val;
       array->num_elements ++;
     }
   }
 
-  return array->array[i];
-  *in_array = (void *)array;
+  return array->content[i];
 }  /* dyn_int_array_get */
 
 
-void dyn_int_array_delete(void **in_array)
+void dyn_int_array_delete(dyn_int_array_t **in_array)
 {
-  struct dyn_int_array *array = (struct dyn_int_array *)(*in_array);
-  free(array->array);
+  dyn_int_array_t *array = *in_array;
+  free(array->content);
   free(array);
 }  /* dyn_int_array_delete */
+
+
+char error_msg_buff[1024];  /* written to when an error must be returned */
+
+void clear_error_msg(void)
+{
+  error_msg_buff[0] = '\0';
+}
+
+
+char *get_error_msg(void)
+{
+  return error_msg_buff;
+}
+
+
+void add_error_msg(char *msg)
+{
+  int buff_len = strnlen(error_msg_buff, sizeof(error_msg_buff));  ASSRT(buff_len < sizeof(error_msg_buff));
+  int remaining = sizeof(error_msg_buff) - buff_len - 1;  /* leave room for final null */
+
+  if (buff_len > 0 && remaining > 0) {  /* include newline between messages */
+    error_msg_buff[buff_len] = '\n';
+    buff_len ++;
+    remaining --;
+  }
+
+  char *start = &error_msg_buff[buff_len];  /* points at null in the buffer */
+  int msg_len = strlen(msg);
+  if (msg_len >= remaining)
+    msg_len = remaining;  /* don't overflow buffer; truncate message */
+  if (msg_len > 0)
+    memcpy(start, msg, msg_len);
+
+  start[msg_len] = '\0';
+}

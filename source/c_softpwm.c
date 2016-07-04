@@ -145,7 +145,7 @@ int softpwm_set_duty_cycle(const char *key, float duty) {;
 void *softpwm_thread_toggle(void *key)
 {
   struct softpwm *pwm;
-  unsigned int gpio;
+  int gpio;
   struct timespec tim_on;
   struct timespec tim_off;
   unsigned int sec;
@@ -237,7 +237,7 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
     struct softpwm *new_pwm, *pwm;
     pthread_t new_thread;
     pthread_mutex_t *new_params_lock;
-    unsigned int gpio;
+    int gpio;
     int ret;
 
     get_gpio_number(key, &gpio);
@@ -296,7 +296,7 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
 int softpwm_disable(const char *key)
 {
     struct softpwm *pwm, *temp, *prev_pwm = NULL;
-    unsigned int gpio = 0;
+    int gpio = 0;
 
     // remove from list
     pwm = exported_pwms;
