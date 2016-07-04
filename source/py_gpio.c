@@ -170,7 +170,9 @@ static PyObject *py_output_gpio(PyObject *self, PyObject *args)
 
     if (!module_setup || dyn_int_array_get(&gpio_direction, gpio, -1) != OUTPUT)
     {
-        PyErr_SetString(PyExc_RuntimeError, "The GPIO channel has not been setup() as an OUTPUT");
+        char err[2000];
+        snprintf(err, sizeof(err), "Channel %s not set up or is not an output", channel);
+        PyErr_SetString(PyExc_RuntimeError, err);
         return NULL;
     }
 
