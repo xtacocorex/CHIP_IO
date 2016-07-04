@@ -94,7 +94,7 @@ int gpio_export(int gpio)
 
     if ((fd = open(filename, O_WRONLY)) < 0)
     {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_export: could not open '%s' (%s)", filename, strerror(errno));
         add_error_msg(err);
         return -1;
@@ -105,7 +105,7 @@ int gpio_export(int gpio)
     close(fd);
     if (s != len)
     {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_export: could not write '%s' to %s (%s)", str_gpio, filename, strerror(e_no));
         add_error_msg(err);
         return -1;
@@ -202,7 +202,7 @@ int open_value_file(int gpio)
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio); BUF2SMALL(filename);
 
     if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "open_value_file: could not open '%s' (%s)", filename, strerror(errno));
         add_error_msg(err);
         return -1;
@@ -225,7 +225,7 @@ int gpio_unexport(int gpio)
     snprintf(filename, sizeof(filename), "/sys/class/gpio/unexport"); BUF2SMALL(filename);
 
     if ((fd = open(filename, O_WRONLY)) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_unexport: could not open '%s' (%s)", filename, strerror(errno));
         add_error_msg(err);
         return -1;
@@ -235,7 +235,7 @@ int gpio_unexport(int gpio)
     ssize_t s = write(fd, str_gpio, len);  e_no = errno;
     close(fd);
     if (s != len) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_unexport: could not write '%s' (%s)", filename, strerror(e_no));
         add_error_msg(err);
         return -1;
@@ -270,7 +270,7 @@ int gpio_set_direction(int gpio, unsigned int in_flag)
 
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio); BUF2SMALL(filename);
     if ((fd = open(filename, O_WRONLY)) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_set_direction: could not open '%s' (%s)", filename, strerror(errno));
         add_error_msg(err);
         return -1;
@@ -285,7 +285,7 @@ int gpio_set_direction(int gpio, unsigned int in_flag)
     ssize_t s = write(fd, direction, strlen(direction));  e_no = errno;
     close(fd);
     if (s != strlen(direction)) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_set_direction: could not write '%s' (%s)", filename, strerror(e_no));
         add_error_msg(err);
         return -1;
@@ -301,14 +301,14 @@ int gpio_get_direction(int gpio, unsigned int *value)
 
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio); BUF2SMALL(filename);
     if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_get_direction: could not open '%s' (%s)", filename, strerror(errno));
         add_error_msg(err);
         return -1;
     }
 
     if (lseek(fd, 0, SEEK_SET) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_get_direction: could not seek GPIO %d (%s)", gpio, strerror(errno));
         add_error_msg(err);
         return -1;
@@ -318,7 +318,7 @@ int gpio_get_direction(int gpio, unsigned int *value)
     ssize_t s = read(fd, &direction, sizeof(direction) - 1);  e_no = errno;
     close(fd);
     if (s < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_set_direction: could not read '%s' (%s)", filename, strerror(e_no));
         add_error_msg(err);
         return -1;
@@ -329,7 +329,7 @@ int gpio_get_direction(int gpio, unsigned int *value)
     else if (strcmp(direction, "in") == 0)
         *value = INPUT;
     else {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_set_direction: unexpected '%s' found in %s", direction, filename);
         add_error_msg(err);
         return -1;
@@ -348,7 +348,7 @@ int gpio_set_value(int gpio, unsigned int value)
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio); BUF2SMALL(filename);
 
     if ((fd = open(filename, O_WRONLY)) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_set_value: could not open '%s' (%s)", filename, strerror(errno));
         add_error_msg(err);
         return -1;
@@ -364,7 +364,7 @@ int gpio_set_value(int gpio, unsigned int value)
     close(fd);
 
     if (s != strlen(vstr)) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_set_value: could not write '%s' to %s (%s)", vstr, filename, strerror(e_no));
         add_error_msg(err);
         return -2;
@@ -381,7 +381,7 @@ int gpio_get_value(int gpio, unsigned int *value)
     if (!fd)
     {
         if ((fd = open_value_file(gpio)) == -1) {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "gpio_get_value: could not open GPIO %d value file", gpio);
             add_error_msg(err);
             return -1;
@@ -389,14 +389,14 @@ int gpio_get_value(int gpio, unsigned int *value)
     }
 
     if (lseek(fd, 0, SEEK_SET) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_get_value: could not seek GPIO %d (%s)", gpio, strerror(errno));
         add_error_msg(err);
         return -1;
     }
     ssize_t s = read(fd, &ch, sizeof(ch));
     if (s < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_get_value: could not read GPIO %d (%s)", gpio, strerror(errno));
         add_error_msg(err);
         return -1;
@@ -407,7 +407,7 @@ int gpio_get_value(int gpio, unsigned int *value)
     } else if (ch == '0') {
         *value = 0;
     } else {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "gpio_get_value: unrecognized read GPIO %d (%c)", gpio, ch);
         add_error_msg(err);
         return -1;
@@ -424,7 +424,7 @@ int gpio_set_edge(int gpio, unsigned int edge)
         snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio); BUF2SMALL(filename);
 
         if ((fd = open(filename, O_WRONLY)) < 0) {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "gpio_set_edge: could not open '%s' (%s)", filename, strerror(errno));
             add_error_msg(err);
             return -1;
@@ -432,7 +432,7 @@ int gpio_set_edge(int gpio, unsigned int edge)
 
         ssize_t s = write(fd, stredge[edge], strlen(stredge[edge]) + 1);
         if (s < 0) {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "gpio_set_edge: could not write '%s' to %s (%s)", stredge[edge], filename, strerror(errno));
             add_error_msg(err);
             return -1;
@@ -644,13 +644,13 @@ int add_edge_detect(int gpio, unsigned int edge)
 
     // export /sys/class/gpio interface
     if (gpio_set_direction(gpio, 0) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "add_edge_detect: could not set direction for GPIO %d", gpio);
         add_error_msg(err);
         return 2;
     }
     if (gpio_set_edge(gpio, edge) < 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "add_edge_detect: could not set edge for GPIO %d", gpio);
         add_error_msg(err);
         return 2;
@@ -659,7 +659,7 @@ int add_edge_detect(int gpio, unsigned int edge)
     if (!fd)
     {
         if ((fd = open_value_file(gpio)) == -1) {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "add_edge_detect: could not open GPIO %d value file", gpio);
             add_error_msg(err);
             return 2;
@@ -668,7 +668,7 @@ int add_edge_detect(int gpio, unsigned int edge)
 
     // create epfd if not already open
     if ((epfd == -1) && ((epfd = epoll_create(1)) == -1)) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "add_edge_detect: could not epoll_create GPIO %d (%s)", gpio, strerror(errno));
         add_error_msg(err);
         return 2;
@@ -678,7 +678,7 @@ int add_edge_detect(int gpio, unsigned int edge)
     ev.events = EPOLLIN | EPOLLET | EPOLLPRI;
     ev.data.fd = fd;
     if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "add_edge_detect: could not epoll_ctl GPIO %d (%s)", gpio, strerror(errno));
         add_error_msg(err);
         return 2;
@@ -688,7 +688,7 @@ int add_edge_detect(int gpio, unsigned int edge)
     if (!thread_running)
     {
         if (pthread_create(&threads, NULL, poll_thread, (void *)t) != 0) {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "add_edge_detect: could not pthread_create GPIO %d (%s)", gpio, strerror(errno));
             add_error_msg(err);
             return 2;
@@ -748,7 +748,7 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
     char buf;
 
     if ((epfd = epoll_create(1)) == -1) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "blocking_wait_for_edge: could not epoll_create GPIO %d (%s)", gpio, strerror(errno));
         add_error_msg(err);
         return 1;
@@ -756,7 +756,7 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
 
     // check to see if this gpio has been added already, if not, mark as added
     if (gpio_event_add(gpio) != 0) {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "blocking_wait_for_edge: could not add event for GPIO %d", gpio);
         add_error_msg(err);
         return 2;
@@ -769,7 +769,7 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
     if (!fd)
     {
         if ((fd = open_value_file(gpio)) == -1) {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "blocking_wait_for_edge: could not open GPIO %d value file", gpio);
             add_error_msg(err);
             return 3;
@@ -781,7 +781,7 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
     ev.data.fd = fd;
     if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1)
     {
-        char err[80];
+        char err[256];
         snprintf(err, sizeof(err), "blocking_wait_for_edge: could not epoll_ctl GPIO %d (%s)", gpio, strerror(errno));
         add_error_msg(err);
         gpio_event_remove(gpio);
@@ -802,14 +802,14 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
     {
         if (lseek(events.data.fd, 0, SEEK_SET) < 0)
         {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "blocking_wait_for_edge: could not seek GPIO %d (%s)", gpio, strerror(errno));
             add_error_msg(err);
             return 6;
         }
         if (read(events.data.fd, &buf, sizeof(buf)) != 1)
         {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "blocking_wait_for_edge: could not read GPIO %d (%s)", gpio, strerror(errno));
             add_error_msg(err);
             gpio_event_remove(gpio);
@@ -817,7 +817,7 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
         }
         if (events.data.fd != fd)
         {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "blocking_wait_for_edge: events.data.fd (%d) not equal to fd (%d) for GPIO %d", events.data.fd, fd, gpio);
             add_error_msg(err);
             gpio_event_remove(gpio);

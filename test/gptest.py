@@ -131,7 +131,7 @@ GPIO.setup("CSID1", GPIO.IN)
 try:
     GPIO.add_event_detect("CSID1", GPIO.FALLING, myfuncallback)
     print "Oops, it did not throw an exception!  BUG!!!"
-    num_errors += 1
+    num_errs += 1
 except ValueError, ex:
     print "error msg=", ex.args[0]
     pass
@@ -141,9 +141,9 @@ except RuntimeError, ex:
 
 print "TESTING ERRORS THROWN WHEN SETTING UP AN ALREADY EXPORTED GPIO"
 try:
-    GPIO.output("XIO-P0", GPIO.LOW)
+    GPIO.setup("CSID0", GPIO.LOW)
     print "Oops, it did not throw an exception!  BUG!!!"
-    num_errors += 1
+    num_errs += 1
 except ValueError, ex:
     print "error msg=", ex.args[0]
     pass
@@ -151,11 +151,23 @@ except RuntimeError, ex:
     print "error msg=", ex.args[0]
     pass
 
-print "TESTING ERRORS THROWN WHEN WRITING TO A GPIO WITH NO DIRECTION"
+print "TESTING ERRORS THROWN WHEN WRITING TO A GPIO NOT SET UP"
+try:
+    GPIO.output("CSID2", GPIO.LOW)
+    print "Oops, it did not throw an exception!  BUG!!!"
+    num_errs += 1
+except ValueError, ex:
+    print "error msg=", ex.args[0]
+    pass
+except RuntimeError, ex:
+    print "error msg=", ex.args[0]
+    pass
+
+print "TESTING ERRORS THROWN WHEN WRITING TO A SET UP GPIO WITH NO DIRECTION"
 try:
     GPIO.output("CSID1", GPIO.LOW)
     print "Oops, it did not throw an exception!  BUG!!!"
-    num_errors += 1
+    num_errs += 1
 except ValueError, ex:
     print "error msg=", ex.args[0]
     pass
@@ -167,7 +179,7 @@ print "TESTING ERRORS THROWN FOR ILLEGAL GPIO"
 try:
     GPIO.setup("NOTUSED", GPIO.IN)
     print "Oops, it did not throw an exception!  BUG!!!"
-    num_errors += 1
+    num_errs += 1
 except ValueError, ex:
     print "error msg=", ex.args[0]
     pass
@@ -179,7 +191,7 @@ print "TESTING ERRORS THROWN FOR NON-GPIO"
 try:
     GPIO.setup("FEL", GPIO.IN)
     print "Oops, it did not throw an exception!  BUG!!!"
-    num_errors += 1
+    num_errs += 1
 except ValueError, ex:
     print "error msg=", ex.args[0]
     pass

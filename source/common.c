@@ -193,7 +193,7 @@ int get_xio_base(void)
           snprintf(base_file, sizeof(base_file), "%s/%s/base", GPIO_PATH, ent->d_name); BUF2SMALL(base_file);
           base_fp = fopen(base_file, "r");
           if (base_fp == NULL) {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "get_xio_base: could not open '%s' (%s)", base_file, strerror(errno));
             add_error_msg(err);
             break;  /* error, exit loop */
@@ -201,7 +201,7 @@ int get_xio_base(void)
           s = fgets(input_line, sizeof(input_line), base_fp); BUF2SMALL(input_line);
           fclose(base_fp);
           if (s == NULL) {
-            char err[80];
+            char err[256];
             snprintf(err, sizeof(err), "get_xio_base: could not read '%s' (%s)", base_file, strerror(errno));
             add_error_msg(err);
             break;  /* error, exit loop */
@@ -231,7 +231,7 @@ int gpio_number(pins_t *pin)
     case BASE_METHOD_XIO:
       xio_base = get_xio_base();
       if (xio_base <= 0) {
-        char err[80];  snprintf(err, sizeof(err), "gpio_number: %d found for %s", xio_base, pin->name);
+        char err[256];  snprintf(err, sizeof(err), "gpio_number: %d found for %s", xio_base, pin->name);
         add_error_msg(err);
         break;  /* error, exit switch */
       }
