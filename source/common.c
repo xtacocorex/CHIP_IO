@@ -50,90 +50,88 @@ SOFTWARE.
 int setup_error = 0;
 int module_setup = 0;
 
-
-// I have no idea if this table is correct, we shall see - Robert Wolterman
 pins_t pins_info[] = {
-  { "GND",       "U13_1",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "CHG-IN",    "U13_2",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-5V",    "U13_3",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U13_4",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-3V3",   "U13_5",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "TS",        "U13_6",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-1V8",   "U13_7",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "BAT",       "U13_8",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "TWI1-SDA",  "U13_9",  48, BASE_METHOD_AS_IS, -1, -1},
-  { "PWRON",     "U13_10", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "TWI1-SCK",  "U13_11", 47, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U13_12", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "X1",        "U13_13", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "X2",        "U13_14", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "Y1",        "U13_15", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "Y2",        "U13_16", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D2",    "U13_17", 98, BASE_METHOD_AS_IS, -1, -1},
-  { "PWM0",      "U13_18", 34, BASE_METHOD_AS_IS, 0, -1},
-  { "LCD-D4",    "U13_19", 100, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D3",    "U13_20", 99, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D6",    "U13_21", 102, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D5",    "U13_22", 101, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D10",   "U13_23", 106, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D7",    "U13_24", 103, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D12",   "U13_25", 108, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D11",   "U13_26", 107, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D14",   "U13_27", 110, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D13",   "U13_28", 109, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D18",   "U13_29", 114, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D15",   "U13_30", 111, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D20",   "U13_31", 116, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D19",   "U13_32", 115, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D22",   "U13_33", 118, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D21",   "U13_34", 117, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-CLK",   "U13_35", 120, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-D23",   "U13_36", 119, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-VSYNC", "U13_37", 123, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-HSYNC", "U13_38", 122, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U13_39", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "LCD-DE",    "U13_40", 121, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U14_1",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-5V",    "U14_2",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "UART1-TX",  "U14_3",  195, BASE_METHOD_AS_IS, -1, -1},
-  { "HPL",       "U14_4",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "UART1-RX",  "U14_5",  196, BASE_METHOD_AS_IS, -1, -1},
-  { "HPCOM",     "U14_6",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "FEL",       "U14_7",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "HPR",       "U14_8",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "VCC-3V3",   "U14_9",  -1, BASE_METHOD_AS_IS, -1, -1},
-  { "MICM",      "U14_10", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "LRADC",     "U14_11", -1, BASE_METHOD_AS_IS, -1, 0},
-  { "MICIN1",    "U14_12", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "XIO-P0",    "U14_13", 0, BASE_METHOD_XIO, -1, -1},
-  { "XIO-P1",    "U14_14", 1, BASE_METHOD_XIO, -1, -1},
-  { "XIO-P2",    "U14_15", 2, BASE_METHOD_XIO, -1, -1},
-  { "XIO-P3",    "U14_16", 3, BASE_METHOD_XIO, -1, -1},
-  { "XIO-P4",    "U14_17", 4, BASE_METHOD_XIO, -1, -1},
-  { "XIO-P5",    "U14_18", 5, BASE_METHOD_XIO, -1, -1},
-  { "XIO-P6",    "U14_19", 6, BASE_METHOD_XIO, -1, -1},
-  { "XIO-P7",    "U14_20", 7, BASE_METHOD_XIO, -1, -1},
-  { "GND",       "U14_21", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U14_22", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "AP-EINT1",  "U14_23", 193, BASE_METHOD_AS_IS, -1, -1},
-  { "AP-EINT3",  "U14_24", 35, BASE_METHOD_AS_IS, -1, -1},
-  { "TWI2-SDA",  "U14_25", 50, BASE_METHOD_AS_IS, -1, -1},
-  { "TWI2-SCK",  "U14_26", 49, BASE_METHOD_AS_IS, -1, -1},
-  { "CSIPCK",    "U14_27", 128, BASE_METHOD_AS_IS, -1, -1},
-  { "CSICK",     "U14_28", 129, BASE_METHOD_AS_IS, -1, -1},
-  { "CSIHSYNC",  "U14_29", 130, BASE_METHOD_AS_IS, 1, -1},
-  { "CSIVSYNC",  "U14_30", 131, BASE_METHOD_AS_IS, -1, -1},
-  { "CSID0",     "U14_31", 132, BASE_METHOD_AS_IS, 1, -1},
-  { "CSID1",     "U14_32", 133, BASE_METHOD_AS_IS, -1, -1},
-  { "CSID2",     "U14_33", 134, BASE_METHOD_AS_IS, -1, -1},
-  { "CSID3",     "U14_34", 135, BASE_METHOD_AS_IS, -1, -1},
-  { "CSID4",     "U14_35", 136, BASE_METHOD_AS_IS, -1, -1},
-  { "CSID5",     "U14_36", 137, BASE_METHOD_AS_IS, -1, -1},
-  { "CSID6",     "U14_37", 138, BASE_METHOD_AS_IS, -1, -1},
-  { "CSID7",     "U14_38", 139, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U14_39", -1, BASE_METHOD_AS_IS, -1, -1},
-  { "GND",       "U14_40", -1, BASE_METHOD_AS_IS, -1, -1},
-  { NULL,        NULL,     -1, 0,                 -1, -1}
+  { "GND",       "GND",         "U13_1",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "CHG-IN",    "CHG-IN",      "U13_2",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-5V",    "VCC-5V",      "U13_3",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "GND",         "U13_4",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-3V3",   "VCC-3V3",     "U13_5",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "TS",        "TS",          "U13_6",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-1V8",   "VCC-1V8",     "U13_7",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "BAT",       "BAT",         "U13_8",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "TWI1-SDA",  "KPD-I2C-SDA", "U13_9",   48, BASE_METHOD_AS_IS, -1, -1},
+  { "PWRON",     "PWRON",       "U13_10",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "TWI1-SCK",  "KPD-I2C-SCL", "U13_11",  47, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "GND",         "U13_12",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "X1",        "X1",          "U13_13",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "X2",        "X2",          "U13_14",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "Y1",        "Y1",          "U13_15",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "Y2",        "Y2",          "U13_16",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D2",    "LCD-D2",      "U13_17",  98, BASE_METHOD_AS_IS, -1, -1},
+  { "PWM0",      "PWM0",        "U13_18",  34, BASE_METHOD_AS_IS,  0, -1},
+  { "LCD-D4",    "LCD-D4",      "U13_19", 100, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D3",    "LCD-D3",      "U13_20",  99, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D6",    "LCD-D6",      "U13_21", 102, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D5",    "LCD-D5",      "U13_22", 101, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D10",   "LCD-D10",     "U13_23", 106, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D7",    "LCD-D7",      "U13_24", 103, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D12",   "LCD-D12",     "U13_25", 108, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D11",   "LCD-D11",     "U13_26", 107, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D14",   "LCD-D14",     "U13_27", 110, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D13",   "LCD-D13",     "U13_28", 109, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D18",   "LCD-D18",     "U13_29", 114, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D15",   "LCD-D15",     "U13_30", 111, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D20",   "LCD-D20",     "U13_31", 116, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D19",   "LCD-D19",     "U13_32", 115, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D22",   "LCD-D22",     "U13_33", 118, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D21",   "LCD-D21",     "U13_34", 117, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-CLK",   "LCD-CLK",     "U13_35", 120, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-D23",   "LCD-D23",     "U13_36", 119, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-VSYNC", "LCD-VSYNC",   "U13_37", 123, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-HSYNC", "LCD-HSYNC",   "U13_38", 122, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "GND",         "U13_39",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "LCD-DE",    "LCD-DE",      "U13_40", 121, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "GND",         "U14_1",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-5V",    "VCC-5V",      "U14_2",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "UART1-TX",  "UART-TX",     "U14_3",  195, BASE_METHOD_AS_IS, -1, -1},
+  { "HPL",       "HPL",         "U14_4",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "UART1-RX",  "UART-RX",     "U14_5",  196, BASE_METHOD_AS_IS, -1, -1},
+  { "HPCOM",     "HPCOM",       "U14_6",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "FEL",       "FEL",         "U14_7",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "HPR",       "HPR",         "U14_8",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "VCC-3V3",   "VCC-3V3",     "U14_9",   -1, BASE_METHOD_AS_IS, -1, -1},
+  { "MICM",      "MICM",        "U14_10",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "LRADC",     "ADC",         "U14_11",  -1, BASE_METHOD_AS_IS, -1,  0},
+  { "MICIN1",    "MICIN1",      "U14_12",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "XIO-P0",    "XIO-P0",      "U14_13",   0, BASE_METHOD_XIO,   -1, -1},
+  { "XIO-P1",    "XIO-P1",      "U14_14",   1, BASE_METHOD_XIO,   -1, -1},
+  { "XIO-P2",    "GPIO1",       "U14_15",   2, BASE_METHOD_XIO,   -1, -1},
+  { "XIO-P3",    "GPIO2",       "U14_16",   3, BASE_METHOD_XIO,   -1, -1},
+  { "XIO-P4",    "GPIO3",       "U14_17",   4, BASE_METHOD_XIO,   -1, -1},
+  { "XIO-P5",    "GPIO4",       "U14_18",   5, BASE_METHOD_XIO,   -1, -1},
+  { "XIO-P6",    "GPIO5",       "U14_19",   6, BASE_METHOD_XIO,   -1, -1},
+  { "XIO-P7",    "GPIO6",       "U14_20",   7, BASE_METHOD_XIO,   -1, -1},
+  { "GND",       "GND",         "U14_21",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "GND",         "U14_22",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "AP-EINT1",  "KPD-INT",     "U14_23", 193, BASE_METHOD_AS_IS, -1, -1},
+  { "AP-EINT3",  "AP-INT3",     "U14_24",  35, BASE_METHOD_AS_IS, -1, -1},
+  { "TWI2-SDA",  "I2C-SDA",     "U14_25",  50, BASE_METHOD_AS_IS, -1, -1},
+  { "TWI2-SCK",  "I2C-SCL",     "U14_26",  49, BASE_METHOD_AS_IS, -1, -1},
+  { "CSIPCK",    "SPI-SEL",     "U14_27", 128, BASE_METHOD_AS_IS, -1, -1},
+  { "CSICK",     "SPI-CLK",     "U14_28", 129, BASE_METHOD_AS_IS, -1, -1},
+  { "CSIHSYNC",  "SPI-MOSI",    "U14_29", 130, BASE_METHOD_AS_IS,  1, -1},
+  { "CSIVSYNC",  "SPI-MISO",    "U14_30", 131, BASE_METHOD_AS_IS, -1, -1},
+  { "CSID0",     "CSID0",       "U14_31", 132, BASE_METHOD_AS_IS,  1, -1},
+  { "CSID1",     "CSID1",       "U14_32", 133, BASE_METHOD_AS_IS, -1, -1},
+  { "CSID2",     "CSID2",       "U14_33", 134, BASE_METHOD_AS_IS, -1, -1},
+  { "CSID3",     "CSID3",       "U14_34", 135, BASE_METHOD_AS_IS, -1, -1},
+  { "CSID4",     "CSID4",       "U14_35", 136, BASE_METHOD_AS_IS, -1, -1},
+  { "CSID5",     "CSID5",       "U14_36", 137, BASE_METHOD_AS_IS, -1, -1},
+  { "CSID6",     "CSID6",       "U14_37", 138, BASE_METHOD_AS_IS, -1, -1},
+  { "CSID7",     "CSID7",       "U14_38", 139, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "GND",         "U14_39",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { "GND",       "GND",         "U14_40",  -1, BASE_METHOD_AS_IS, -1, -1},
+  { NULL,        NULL,          NULL,      -1, 0,                 -1, -1}
 };
 
 
@@ -265,6 +263,17 @@ int lookup_gpio_by_name(const char *name)
   return -1;
 }
 
+int lookup_gpio_by_altname(const char *altname)
+{
+  pins_t *p;
+  for (p = pins_info; p->altname != NULL; ++p) {
+      if (strcmp(p->altname, altname) == 0) {
+          return gpio_number(p);
+      }
+  }
+  return -1;
+}
+
 int lookup_ain_by_key(const char *key)
 {
   pins_t *p;
@@ -363,7 +372,10 @@ int get_gpio_number(const char *key, int *gpio)
     if (*gpio <= 0) {
         *gpio = lookup_gpio_by_name(key);
         if (*gpio <= 0) {
-            status = -1;  /* error */
+             *gpio = lookup_gpio_by_altname(key);
+             if (*gpio <=0) {
+                 status = -1;  /* error */
+             }
         }
     }
     return status;

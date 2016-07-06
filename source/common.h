@@ -62,6 +62,7 @@ SOFTWARE.
 
 typedef struct pins_t {
     const char *name;
+    const char *altname; /* alternate name as referenced on pocketchip pin header */
     const char *key;
     int gpio;           /* port number to use under /sys/class/gpio */
     int base_method;    /* modifier for port number; see BASE_METHOD_... */
@@ -86,6 +87,7 @@ int get_xio_base(void);
 int gpio_number(pins_t *pin);
 int lookup_gpio_by_key(const char *key);
 int lookup_gpio_by_name(const char *name);
+int lookup_gpio_by_altname(const char *altname);
 int lookup_ain_by_key(const char *key);
 int lookup_ain_by_name(const char *name);
 int copy_key_by_key(const char *input_key, char *key);
