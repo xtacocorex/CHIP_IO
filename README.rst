@@ -17,6 +17,8 @@ Manual::
 
 Using the library is very similar to the excellent RPi.GPIO library used on the Raspberry Pi. Below are some examples.
 
+All scripts that require GPIO access need to be run with super user permissions!
+
 **GPIO Setup**
 
 Import the library, and setup as GPIO.OUT or GPIO.IN::
@@ -116,7 +118,7 @@ Install py.test to run the tests. You'll also need the python compiler package f
 
 Execute the following in the root of the project::
 
-    py.test
+    sudo py.test
 
 **Credits**
 
