@@ -17,7 +17,66 @@ Manual::
 
 Using the library is very similar to the excellent RPi.GPIO library used on the Raspberry Pi. Below are some examples.
 
-All scripts that require GPIO access need to be run with super user permissions!
+All scripts that require GPIO and PWM (HW and/or SW) access need to be run with super user permissions!
+
+**Allowable Pin Names for the Library**
+
+The following "table" is the allowable pin names that are able to be used by the library.
+
+      Name    |  Alt Name   |  Key
+    ----------|-------------|--------
+    TWI1-SDA  | KPD-I2C-SDA | U13_9
+    TWI1-SCK  | KPD-I2C-SCL | U13_11
+    LCD-D2    | LCD-D2      | U13_17
+    PWM0      | PWM0        | U13_18  (Can be muxed if not using a PocketCHIP, but prefer to dedicate to PWM only)
+    LCD-D4    | LCD-D4      | U13_19
+    LCD-D3    | LCD-D3      | U13_20
+    LCD-D6    | LCD-D6      | U13_21
+    LCD-D5    | LCD-D5      | U13_22
+    LCD-D10   | LCD-D10     | U13_23
+    LCD-D7    | LCD-D7      | U13_24
+    LCD-D12   | LCD-D12     | U13_25
+    LCD-D11   | LCD-D11     | U13_26
+    LCD-D14   | LCD-D14     | U13_27
+    LCD-D13   | LCD-D13     | U13_28
+    LCD-D18   | LCD-D18     | U13_29
+    LCD-D15   | LCD-D15     | U13_30
+    LCD-D20   | LCD-D20     | U13_31
+    LCD-D19   | LCD-D19     | U13_32
+    LCD-D22   | LCD-D22     | U13_33
+    LCD-D21   | LCD-D21     | U13_34
+    LCD-CLK   | LCD-CLK     | U13_35
+    LCD-D23   | LCD-D23     | U13_36
+    LCD-VSYNC | LCD-VSYNC   | U13_37
+    LCD-HSYNC | LCD-HSYNC   | U13_38
+    LCD-DE    | LCD-DE      | U13_40
+    UART1-TX  | UART-TX     | U14_3
+    UART1-RX  | UART-RX     | U14_5
+    LRADC     | ADC         | U14_11 (Cannot be muxed or used as a normal GPIO)
+    XIO-P0    | XIO-P0      | U14_13
+    XIO-P1    | XIO-P1      | U14_14
+    XIO-P2    | GPIO1       | U14_15
+    XIO-P3    | GPIO2       | U14_16
+    XIO-P4    | GPIO3       | U14_17
+    XIO-P5    | GPIO4       | U14_18
+    XIO-P6    | GPIO5       | U14_19
+    XIO-P7    | GPIO6       | U14_20
+    AP-EINT1  | KPD-INT     | U14_23
+    AP-EINT3  | AP-INT3     | U14_24
+    TWI2-SDA  | I2C-SDA     | U14_25
+    TWI2-SCK  | I2C-SCL     | U14_26
+    CSIPCK    | SPI-SEL     | U14_27
+    CSICK     | SPI-CLK     | U14_28
+    CSIHSYNC  | SPI-MOSI    | U14_29
+    CSIVSYNC  | SPI-MISO    | U14_30
+    CSID0     | CSID0       | U14_31
+    CSID1     | CSID1       | U14_32
+    CSID2     | CSID2       | U14_33
+    CSID3     | CSID3       | U14_34
+    CSID4     | CSID4       | U14_35
+    CSID5     | CSID5       | U14_36
+    CSID6     | CSID6       | U14_37
+    CSID7     | CSID7       | U14_38
 
 **GPIO Setup**
 
@@ -29,6 +88,10 @@ Import the library, and setup as GPIO.OUT or GPIO.IN::
 You can also refer to the pin number::
 
     GPIO.setup("U14_31", GPIO.OUT)
+
+You can also refer to the bin based upon its alternate name::
+
+    GPIO.setup("GPIO1", GPIO.IN)
 
 **GPIO Output**
 
@@ -75,6 +138,8 @@ To clean up the GPIO when done, do the following::
 
 **PWM**::
 
+Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to know there is a PWM device available to use.
+
     import CHIP_IO.PWM as PWM
     #PWM.start(channel, duty, freq=2000, polarity=0)
     #duty values are valid 0 (off) to 100 (on)
@@ -109,6 +174,10 @@ Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for 
 **ADC**::
 
     Not Implemented yet
+
+**SPI**::
+
+SPI requires a DTB Overlay to access.  CHIP_IO does not contain any SPI specific code as the Python spidev module works when it can see the SPI bus.
 
 **Running tests**
 
