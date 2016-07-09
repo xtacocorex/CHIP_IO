@@ -314,9 +314,13 @@ int gpio_get_direction(int gpio, unsigned int *value)
         return -1;
     }
 
-    char direction[4] = { 0 };  /* make sure read is null-terminated */
+    char direction[16] = { 0 };  /* make sure read is null-terminated */
     ssize_t s = read(fd, &direction, sizeof(direction) - 1);  e_no = errno;
     close(fd);
+    while (s > 0 && direction[s-1] == '\n') {  /* strip trailing newlines */
+        direction[s-1] = '\0';
+        s --;
+    }
     if (s < 0) {
         char err[256];
         snprintf(err, sizeof(err), "gpio_set_direction: could not read '%s' (%s)", filename, strerror(e_no));

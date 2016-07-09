@@ -213,7 +213,12 @@ static PyObject *py_input_gpio(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    gpio_get_value(gpio, &value);
+    if (gpio_get_value(gpio, &value) < 0) {
+      char err[1024];
+      snprintf(err, sizeof(err), "Could not get value ('%s')", get_error_msg());
+      PyErr_SetString(PyExc_RuntimeError, err);
+      return NULL;
+    }
 
     py_value = Py_BuildValue("i", value);
 
@@ -567,7 +572,12 @@ static PyObject *py_gpio_function(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    gpio_get_direction(gpio, &value);
+    if (gpio_get_direction(gpio, &value) < 0) {
+      char err[1024];
+      snprintf(err, sizeof(err), "Could not get direction ('%s')", get_error_msg());
+      PyErr_SetString(PyExc_RuntimeError, err);
+      return NULL;
+    }
     func = Py_BuildValue("i", value);
     return func;
 }

@@ -15,7 +15,7 @@ class TestGPIOInput:
         #value read from the file will have a \n new line
         value = open('/sys/class/gpio/gpio138/value').read()
         assert int(value) == input_value
-        time.sleep(30)
+        # time.sleep(30) - what is this for?
         GPIO.cleanup()
 
     def test_direction_readback(self):

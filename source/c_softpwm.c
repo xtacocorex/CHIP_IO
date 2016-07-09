@@ -62,6 +62,7 @@ struct pwm_params
 struct softpwm
 {
     char key[KEYLEN+1]; /* leave room for terminating NUL byte */
+    int gpio;
     struct pwm_params params;
     pthread_mutex_t* params_lock;
     pthread_t thread;
@@ -142,10 +143,10 @@ int softpwm_set_duty_cycle(const char *key, float duty) {;
     return 0;
 }
 
-void *softpwm_thread_toggle(void *key)
+void *softpwm_thread_toggle(void *arg)
 {
-  struct softpwm *pwm;
-  int gpio;
+  struct softpwm *pwm = (struct softpwm *)arg;
+  int gpio = pwm->gpio;
   struct timespec tim_on;
   struct timespec tim_off;
   unsigned int sec;
@@ -163,11 +164,8 @@ void *softpwm_thread_toggle(void *key)
   bool enabled_local = false;
   bool recalculate_timing = false;
 
-
-  get_gpio_number(key, &gpio);
-  pwm = lookup_exported_pwm((char*)key);
-
   while (!stop_flag_local) {
+    /* Take a snapshot of the parameter block */
     pthread_mutex_lock(pwm->params_lock);
     if ((freq_local != pwm->params.freq) || (duty_local != pwm->params.duty)) {
       recalculate_timing = true;
@@ -178,6 +176,7 @@ void *softpwm_thread_toggle(void *key)
     stop_flag_local = pwm->params.stop_flag;
     polarity_local = pwm->params.polarity;
     pthread_mutex_unlock(pwm->params_lock);
+
     /* If freq or duty has been changed, update the
      * sleep times
      */
@@ -220,8 +219,8 @@ void *softpwm_thread_toggle(void *key)
       }
 
       nanosleep(&tim_off, NULL);
-    }
-  }
+    }  /* if enabled_local */
+  }  /* while !stop_flag_local */
 
   if (!polarity_local)
     gpio_set_value(gpio, LOW);
@@ -240,24 +239,26 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
     int gpio;
     int ret;
 
-    get_gpio_number(key, &gpio);
-    gpio_export(gpio);
-    gpio_set_direction(gpio, OUTPUT);
+    if (get_gpio_number(key, &gpio) < 0)
+        return -1;
+    if (gpio_export(gpio) < 0)
+        return -1;
+    if (gpio_set_direction(gpio, OUTPUT) < 0)
+        return -1;
 
     // add to list
-    new_pwm = malloc(sizeof(struct softpwm));
-    if (new_pwm == 0) {
-        return -1; // out of memory
-    }
+    new_pwm = malloc(sizeof(struct softpwm));  ASSRT(new_pwm != NULL);
     new_params_lock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
     if (new_pwm == 0) {
         return -1; // out of memory
     }
     pthread_mutex_init(new_params_lock, NULL);
+    pthread_mutex_lock(new_params_lock);
 
     strncpy(new_pwm->key, key, KEYLEN);  /* can leave string unterminated */
     new_pwm->key[KEYLEN] = '\0'; /* terminate string */
-    new_pwm->params.enabled = false;
+    new_pwm->gpio = gpio;
+    new_pwm->params.enabled = true;
     new_pwm->params.stop_flag = false;
     new_pwm->params_lock = new_params_lock;
     new_pwm->next = NULL;
@@ -274,20 +275,16 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
         pwm->next = new_pwm;
     }
 
-    softpwm_set_duty_cycle(new_pwm->key, duty);
-    softpwm_set_frequency(new_pwm->key, freq);
-    softpwm_set_polarity(new_pwm->key, polarity);
+    ASSRT(softpwm_set_duty_cycle(new_pwm->key, duty) == 0);
+    ASSRT(softpwm_set_frequency(new_pwm->key, freq) == 0);
+    ASSRT(softpwm_set_polarity(new_pwm->key, polarity) == 0);
 
     // create thread for pwm
-    ret = pthread_create(&new_thread, NULL, softpwm_thread_toggle, (void *)new_pwm->key);
-    if (ret) {
-       PySys_WriteStderr("DEBUG; soft_pwm ERROR IN pthread_create\n");
-       exit(-1);
-    }
+    ret = pthread_create(&new_thread, NULL, softpwm_thread_toggle, (void *)new_pwm);
+    ASSRT(ret == 0);
 
     new_pwm->thread = new_thread;
-    pthread_mutex_lock(new_params_lock);
-    new_pwm->params.enabled = true;
+
     pthread_mutex_unlock(new_params_lock);
 
     return 1;
@@ -296,7 +293,6 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
 int softpwm_disable(const char *key)
 {
     struct softpwm *pwm, *temp, *prev_pwm = NULL;
-    int gpio = 0;
 
     // remove from list
     pwm = exported_pwms;
@@ -307,9 +303,9 @@ int softpwm_disable(const char *key)
             pthread_mutex_lock(pwm->params_lock);
             pwm->params.stop_flag = true;
             pthread_mutex_unlock(pwm->params_lock);
-            get_gpio_number(key, &gpio);
-            gpio_set_value(gpio, LOW);
-            gpio_unexport(gpio);
+            pthread_join(pwm->thread, NULL);  /* wait for thread to exit */
+
+            gpio_unexport(pwm->gpio);
 
             if (prev_pwm == NULL)
             {

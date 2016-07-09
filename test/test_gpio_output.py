@@ -1,10 +1,11 @@
 import pytest
-import os
 
 import CHIP_IO.GPIO as GPIO
 
+
 def teardown_module(module):
     GPIO.cleanup()
+
 
 class TestGPIOOutput:
     def test_output_high(self):
@@ -25,6 +26,7 @@ class TestGPIOOutput:
         GPIO.setup("CSID6", GPIO.OUT)
         direction = GPIO.gpio_function("CSID6")
         assert direction == GPIO.OUT
+        GPIO.cleanup()
 
     def test_output_greater_than_one(self):
         GPIO.setup("CSID6", GPIO.OUT)

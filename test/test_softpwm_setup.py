@@ -2,18 +2,21 @@ import pytest
 import os
 
 import CHIP_IO.SOFTPWM as PWM
+import CHIP_IO.GPIO as GPIO
+
 
 def teardown_module(module):
     PWM.cleanup()
+
 
 class TestSoftpwmSetup:
     def test_start_pwm(self):
         PWM.start("XIO-P7", 50, 10)
         base = GPIO.get_gpio_base() + 7
         gfile = '/sys/class/gpio/gpio%d' % base
-        assert os.path.exists(base)
-        direction = open(base + '/direction').read()
-        assert direction == 'out\n'
+        assert os.path.exists(gfile)
+        direction = open(gfile + '/direction').read()
+        assert(direction == 'out\n')
         PWM.cleanup()
 
     def test_pwm_start_invalid_pwm_key(self):
@@ -25,12 +28,12 @@ class TestSoftpwmSetup:
             PWM.start("XIO-P7", -1)
 
     def test_pwm_start_valid_duty_cycle_min(self):
-        #testing an exception isn't thrown
+        # testing an exception isn't thrown
         PWM.start("XIO-P7", 0)
         PWM.cleanup()
 
     def test_pwm_start_valid_duty_cycle_max(self):
-        #testing an exception isn't thrown
+        # testing an exception isn't thrown
         PWM.start("XIO-P7", 100)
         PWM.cleanup()
 

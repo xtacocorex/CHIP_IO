@@ -239,4 +239,3 @@ GPIO.cleanup()
 
 mystr = "DONE: %d ERRORS" % num_errs
 print(mystr)
-
