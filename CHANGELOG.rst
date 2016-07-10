@@ -1,3 +1,8 @@
+0.0.9
+----
+* Fixed SoftPWM segfault
+* Added Alternate Names for the GPIOs
+
 0.0.8
 ----
 * Updates to handle the 4.4 kernel CHIPs.  Numerous fixes to fix code issues.
