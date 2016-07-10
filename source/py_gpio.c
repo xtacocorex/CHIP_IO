@@ -264,7 +264,7 @@ static void run_py_callbacks(int gpio)
    }
 }
 
-static int add_py_callback(char *channel, int gpio, unsigned int bouncetime, PyObject *cb_func)
+static int add_py_callback(char *channel, int gpio, int edge, unsigned int bouncetime, PyObject *cb_func)
 {
    struct py_callback *new_py_cb;
    struct py_callback *cb = py_callbacks;
@@ -294,7 +294,7 @@ static int add_py_callback(char *channel, int gpio, unsigned int bouncetime, PyO
          cb = cb->next;
       cb->next = new_py_cb;
    }
-   add_edge_callback(gpio, run_py_callbacks);
+   add_edge_callback(gpio, edge, run_py_callbacks);
    return 0;
 }
 
@@ -343,7 +343,8 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
       PyErr_SetString(PyExc_RuntimeError, "Add event detection using add_event_detect first before adding a callback");
       return NULL;
    }
-   if (add_py_callback(channel, gpio, bouncetime, cb_func) != 0)
+   // Defaulting to Falling edge
+   if (add_py_callback(channel, gpio, 2, bouncetime, cb_func) != 0)
       return NULL;
 
    Py_RETURN_NONE;
@@ -410,7 +411,7 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
    }
 
    if (cb_func != NULL)
-      if (add_py_callback(channel, gpio, bouncetime, cb_func) != 0)
+      if (add_py_callback(channel, gpio, edge, bouncetime, cb_func) != 0)
          return NULL;
 
    Py_RETURN_NONE;

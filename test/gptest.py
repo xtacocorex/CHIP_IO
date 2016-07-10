@@ -22,7 +22,7 @@ loopfunction_exit = False
 
 def loopfunction():
     print("LOOP FUNCTION")
-    for i in xrange(4):
+    for i in xrange(6):
         if loopfunction_exit:
             break
         if i % 2:
@@ -124,6 +124,7 @@ loopfunction()
 mystr = " num_callbacks = %d" % num_callbacks
 print(mystr)
 
+print("\nWAIT FOR EDGE TESTING")
 print("PRESS CONTROL-C TO EXIT IF SCRIPT GETS STUCK")
 GPIO.remove_event_detect("XIO-P2")
 try:
