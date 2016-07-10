@@ -423,7 +423,7 @@ int gpio_get_value(int gpio, unsigned int *value)
 
 int gpio_set_edge(int gpio, unsigned int edge)
 {
-        int fd, e_no;
+        int fd;
         char filename[MAX_FILENAME];
 
         // DEBUG
@@ -471,18 +471,18 @@ int open_edge_file(int gpio)
 int gpio_get_edge(int gpio)
 {
     int e_no;
-    int fd = fd_lookup(gpio);
+    int fd; // = fd_lookup(gpio);
     int rtnedge = -1;
 
-    if (!fd)
-    {   
+    //if (!fd)
+    //{   
         if ((fd = open_edge_file(gpio)) == -1) {
             char err[256];
             snprintf(err, sizeof(err), "gpio_get_value: could not open GPIO %d edge file", gpio);
             add_error_msg(err);
             return -1;
         }
-    }
+    //}
     
     if (lseek(fd, 0, SEEK_SET) < 0) {
         char err[256];
@@ -518,6 +518,9 @@ int gpio_get_edge(int gpio)
     {
         rtnedge = 3;
     }
+
+    // DEBUG
+    printf("DEBUG gpio_get_edge(%d -> %d)\n", gpio, rtnedge);
 
     return rtnedge;
 }
@@ -577,6 +580,8 @@ void run_callbacks(int gpio)
             int edge = gpio_get_edge(gpio);
             unsigned int value = 0;
             gpio_get_value(gpio, &value);
+            // DEBUG
+            printf("DEBUG run_callbacks(GPIO: %d, EDGE: %d, VALUE: %d)\n", gpio, cb->edge, value);
             // Both Edge
             if (cb->edge == 3)
             {

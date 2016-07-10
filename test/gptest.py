@@ -10,7 +10,6 @@ DO_XIOP2_TEST = True
 
 num_callbacks = 0
 
-
 def myfuncallback(channel):
     global num_callbacks
     num_callbacks += 1
@@ -18,7 +17,6 @@ def myfuncallback(channel):
 
 
 loopfunction_exit = False
-
 
 def loopfunction():
     print("LOOP FUNCTION")
