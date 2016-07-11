@@ -4,10 +4,6 @@ import CHIP_IO.GPIO as GPIO
 import time
 import threading
 
-DO_APEINT1_TEST = False
-DO_APEINT3_TEST = False
-DO_XIOP2_TEST = True
-
 num_callbacks = 0
 
 def myfuncallback(channel):
@@ -19,7 +15,7 @@ def myfuncallback(channel):
 loopfunction_exit = False
 
 def loopfunction():
-    print("LOOP FUNCTION")
+    print("LOOP FUNCTION START")
     for i in xrange(6):
         if loopfunction_exit:
             break
@@ -31,12 +27,16 @@ def loopfunction():
             mystr = "SETTING CSID0 HIGH (i=%d)" % i
             print(mystr)
             GPIO.output("CSID0", GPIO.HIGH)
-        print("SLEEPING")
+        print(" LOOP FUNCTION SLEEPING")
         time.sleep(1)
 
 num_errs = 0
 
-print("RUNNING GPIO SELF TEST")
+print("GETTING CHIP_IO VERSION")
+mystr = "CHIP_IO VERSION: %s" % GPIO.VERSION
+print(mystr)
+
+print("\nRUNNING GPIO SELF TEST")
 GPIO.selftest(0)
 
 print("\nVERIFYING SIMPLE FUNCTIONALITY")
@@ -71,71 +71,58 @@ GPIO.output("CSID0", GPIO.LOW)
 print "LOW", GPIO.input("GPIO1")
 assert(GPIO.input("GPIO1") == GPIO.LOW)
 
-print("SWAP GPIO WIRES FOR EDGE DETECTION TESTS AS NEEDED")
-raw_input("PRESS ENTER WHEN READY TO START EDGE DETECTION TESTS")
-
 # ==============================================
 # EDGE DETECTION - AP-EINT1
-if DO_APEINT1_TEST:
-    print("\nSETTING UP RISING EDGE DETECTION ON AP-EINT1")
-    GPIO.setup("AP-EINT1", GPIO.IN)
-    GPIO.add_event_detect("AP-EINT1", GPIO.RISING)
-
-    print("VERIFYING EDGE DETECT")
-    f = open("/sys/class/gpio/gpio193/edge", "r")
-    edge = f.read()
-    f.close()
-    assert(edge == "rising\n")
-    GPIO.remove_event_detect("AP-EINT1")
+print("\nSETTING UP RISING EDGE DETECTION ON AP-EINT1")
+GPIO.setup("AP-EINT1", GPIO.IN)
+GPIO.add_event_detect("AP-EINT1", GPIO.RISING, myfuncallback)
+print("VERIFYING EDGE DETECT WAS SET PROPERLY")
+f = open("/sys/class/gpio/gpio193/edge", "r")
+edge = f.read()
+f.close()
+assert(edge == "rising\n")
+GPIO.remove_event_detect("AP-EINT1")
 
 # ==============================================
 # EDGE DETECTION - AP-EINT3
-if DO_APEINT3_TEST:
-    print("\nSETTING UP BOTH EDGE DETECTION ON AP-EINT3")
-    GPIO.setup("AP-EINT3", GPIO.IN)
-    GPIO.add_event_detect("AP-EINT3", GPIO.BOTH)
-
-    print("VERIFYING EDGE DETECT")
-    f = open("/sys/class/gpio/gpio35/edge", "r")
-    edge = f.read()
-    f.close()
-    assert(edge == "both\n")
-    GPIO.remove_event_detect("AP-EINT3")
+print("\nSETTING UP BOTH EDGE DETECTION ON AP-EINT3")
+GPIO.setup("AP-EINT3", GPIO.IN)
+GPIO.add_event_detect("AP-EINT3", GPIO.BOTH, myfuncallback)
+print("VERIFYING EDGE DETECT WAS SET PROPERLY")
+f = open("/sys/class/gpio/gpio35/edge", "r")
+edge = f.read()
+f.close()
+assert(edge == "both\n")
+GPIO.remove_event_detect("AP-EINT3")
 
 # ==============================================
 # EDGE DETECTION - EXPANDED GPIO
-if DO_XIOP2_TEST:
-    print("\nSETTING UP FALLING EDGE DETECTION ON XIO-P2")
-    GPIO.add_event_detect("XIO-P2", GPIO.FALLING, myfuncallback)
+print("\nSETTING UP FALLING EDGE DETECTION ON XIO-P2")
+GPIO.add_event_detect("XIO-P2", GPIO.FALLING, myfuncallback)
 
-    print("VERIFYING EDGE DETECT")
-    base = GPIO.get_gpio_base()
-    gfile = "/sys/class/gpio/gpio%d/edge" % (base + 2)
-    f = open(gfile, "r")
-    edge = f.read()
-    f.close()
-    assert(edge == "falling\n")
+print("VERIFYING EDGE DETECT")
+base = GPIO.get_gpio_base()
+gfile = "/sys/class/gpio/gpio%d/edge" % (base + 2)
+f = open(gfile, "r")
+edge = f.read()
+f.close()
+assert(edge == "falling\n")
 
 # LOOP WRITING ON CSID0 TO HOPEFULLY GET CALLBACK TO WORK
-print("WAITING FOR CALLBACKS")
+print("WAITING FOR CALLBACKS ON XIO-P2")
 loopfunction()
 mystr = " num_callbacks = %d" % num_callbacks
 print(mystr)
+GPIO.remove_event_detect("XIO-P2")
 
 print("\nWAIT FOR EDGE TESTING")
 print("PRESS CONTROL-C TO EXIT IF SCRIPT GETS STUCK")
-GPIO.remove_event_detect("XIO-P2")
 try:
     # WAIT FOR EDGE
     t = threading.Thread(target=loopfunction)
     t.start()
-    print("WAITING FOR EDGE")
-    if DO_APEINT1_TEST:
-        GPIO.wait_for_edge("AP-EINT1", GPIO.FALLING)
-    if DO_APEINT3_TEST:
-        GPIO.wait_for_edge("AP-EINT3", GPIO.FALLING)
-    if DO_XIOP2_TEST:
-        GPIO.wait_for_edge("XIO-P2", GPIO.FALLING)
+    print("WAITING FOR EDGE ON XIO-P2")
+    GPIO.wait_for_edge("XIO-P2", GPIO.FALLING)
     # THIS SHOULD ONLY PRINT IF WE'VE HIT THE EDGE DETECT
     print("WE'VE FALLEN LIKE COOLIO'S CAREER")
 except:

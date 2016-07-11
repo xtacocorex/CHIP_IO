@@ -1,3 +1,7 @@
+0.1.0
+----
+* Fixed edge detection code, will trigger proper for callbacks now
+
 0.0.9
 ----
 * Fixed SoftPWM segfault

@@ -426,9 +426,6 @@ int gpio_set_edge(int gpio, unsigned int edge)
         int fd;
         char filename[MAX_FILENAME];
 
-        // DEBUG
-        printf("DEBUG: gpio_set_edge(%d, %d (%s))\n", gpio, edge, stredge[edge]);
-
         snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio); BUF2SMALL(filename);
 
         if ((fd = open(filename, O_WRONLY)) < 0) {
@@ -470,19 +467,15 @@ int open_edge_file(int gpio)
 
 int gpio_get_edge(int gpio)
 {
-    int e_no;
-    int fd; // = fd_lookup(gpio);
+    int fd;
     int rtnedge = -1;
 
-    //if (!fd)
-    //{   
-        if ((fd = open_edge_file(gpio)) == -1) {
-            char err[256];
-            snprintf(err, sizeof(err), "gpio_get_value: could not open GPIO %d edge file", gpio);
-            add_error_msg(err);
-            return -1;
-        }
-    //}
+    if ((fd = open_edge_file(gpio)) == -1) {
+        char err[256];
+        snprintf(err, sizeof(err), "gpio_get_value: could not open GPIO %d edge file", gpio);
+        add_error_msg(err);
+        return -1;
+    }
     
     if (lseek(fd, 0, SEEK_SET) < 0) {
         char err[256];
@@ -492,7 +485,7 @@ int gpio_get_edge(int gpio)
     }
 
     char edge[16] = { 0 };  /* make sure read is null-terminated */
-    ssize_t s = read(fd, &edge, sizeof(edge) - 1);  e_no = errno;
+    ssize_t s = read(fd, &edge, sizeof(edge) - 1);
     close(fd);
     while (s > 0 && edge[s-1] == '\n') {  /* strip trailing newlines */
         edge[s-1] = '\0';
@@ -518,9 +511,6 @@ int gpio_get_edge(int gpio)
     {
         rtnedge = 3;
     }
-
-    // DEBUG
-    printf("DEBUG gpio_get_edge(%d -> %d)\n", gpio, rtnedge);
 
     return rtnedge;
 }
@@ -577,11 +567,8 @@ void run_callbacks(int gpio)
         if (cb->gpio == gpio)
         {
             int canrun = 0;
-            int edge = gpio_get_edge(gpio);
             unsigned int value = 0;
             gpio_get_value(gpio, &value);
-            // DEBUG
-            printf("DEBUG run_callbacks(GPIO: %d, EDGE: %d, VALUE: %d)\n", gpio, cb->edge, value);
             // Both Edge
             if (cb->edge == 3)
             {
@@ -681,17 +668,10 @@ void *poll_thread(void *threadarg)
             }
             // The return value represents the ending level after the edge.
             gpio = gpio_lookup(events.data.fd);
-            // DEBUG
-            printf("DEBUG *poll_thread -> GPIO: %d\n", gpio);
             if (gpio_initial(gpio)) {     // ignore first epoll trigger
-                printf("DEBUG *poll_thread -> GPIO INITIAL HIT\n");
                 set_initial_false(gpio);
             } else {
-                printf("DEBUG *poll_thread -> GPIO RUNNING CALLBACK\n");
                 dyn_int_array_set(&event_occurred, gpio, 1, 0);
-                int value = 0;
-                gpio_get_value(gpio, &value);
-                printf("DEBUG *poll_thread -> GPIO VALUE: %d\n", value);
                 run_callbacks(gpio);
             }
         }
