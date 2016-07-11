@@ -63,6 +63,7 @@ struct fdx *fd_list = NULL;
 // event callbacks
 struct callback
 {
+    int fde;
     int gpio;
     int edge;
     void (*func)(int gpio);
@@ -159,7 +160,6 @@ void close_value_fd(int gpio)
     }
 }  /* close_value_fd */
 
-
 int fd_lookup(int gpio)
 {
     struct fdx *f = fd_list;
@@ -173,6 +173,18 @@ int fd_lookup(int gpio)
     return 0;
 }
 
+int fde_lookup(int gpio)
+{
+    struct callbacks *cb = callbacks;
+    while (cb != NULL)
+    {
+        if (cb->gpio == gpio)
+            return cb->fde;
+        cb = cb->next;
+    }
+
+    return 0;
+}
 
 int add_fd_list(int gpio, int fd)
 {
@@ -213,6 +225,23 @@ int open_value_file(int gpio)
     return fd;
 }  /* open_value_file */
 
+int open_edge_file(int gpio)
+{
+    int fd;
+    char filename[MAX_FILENAME];
+
+    // create file descriptor of value file
+    snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio); BUF2SMALL(filename);
+
+    if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0) {
+        char err[256];
+        snprintf(err, sizeof(err), "open_edge_file: could not open '%s' (%s)", filename, strerror(errno));
+        add_error_msg(err);
+        return -1;
+    }
+
+    return fd;
+}  /* open_edge_file */
 
 int gpio_unexport(int gpio)
 {
@@ -423,58 +452,43 @@ int gpio_get_value(int gpio, unsigned int *value)
 
 int gpio_set_edge(int gpio, unsigned int edge)
 {
-        int fd;
-        char filename[MAX_FILENAME];
-
-        snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio); BUF2SMALL(filename);
-
-        if ((fd = open(filename, O_WRONLY)) < 0) {
-            char err[256];
-            snprintf(err, sizeof(err), "gpio_set_edge: could not open '%s' (%s)", filename, strerror(errno));
-            add_error_msg(err);
-            return -1;
-        }
-
-        ssize_t s = write(fd, stredge[edge], strlen(stredge[edge]) + 1);
-        if (s < 0) {
-            char err[256];
-            snprintf(err, sizeof(err), "gpio_set_edge: could not write '%s' to %s (%s)", stredge[edge], filename, strerror(errno));
-            add_error_msg(err);
-            return -1;
-        }
-        close(fd);
-
-        return 0;
-}
-
-int open_edge_file(int gpio)
-{
     int fd;
     char filename[MAX_FILENAME];
 
-    // create file descriptor of value file
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio); BUF2SMALL(filename);
 
-    if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0) {
+    if ((fd = open(filename, O_WRONLY)) < 0) {
         char err[256];
-        snprintf(err, sizeof(err), "open_edge_file: could not open '%s' (%s)", filename, strerror(errno));
+        snprintf(err, sizeof(err), "gpio_set_edge: could not open '%s' (%s)", filename, strerror(errno));
         add_error_msg(err);
         return -1;
     }
 
-    return fd;
-}  /* open_edge_file */
+    ssize_t s = write(fd, stredge[edge], strlen(stredge[edge]) + 1);
+    if (s < 0) {
+        char err[256];
+        snprintf(err, sizeof(err), "gpio_set_edge: could not write '%s' to %s (%s)", stredge[edge], filename, strerror(errno));
+        add_error_msg(err);
+        return -1;
+    }
+    close(fd);
+
+    return 0;
+}
 
 int gpio_get_edge(int gpio)
 {
-    int fd;
+    int fd = fde_lookup(gpio);
     int rtnedge = -1;
 
-    if ((fd = open_edge_file(gpio)) == -1) {
-        char err[256];
-        snprintf(err, sizeof(err), "gpio_get_value: could not open GPIO %d edge file", gpio);
-        add_error_msg(err);
-        return -1;
+    if (!fd)
+    {
+        if ((fd = open_edge_file(gpio)) == -1) {
+            char err[256];
+            snprintf(err, sizeof(err), "gpio_get_value: could not open GPIO %d edge file", gpio);
+            add_error_msg(err);
+            return -1;
+        }
     }
     
     if (lseek(fd, 0, SEEK_SET) < 0) {
@@ -542,6 +556,7 @@ int add_edge_callback(int gpio, int edge, void (*func)(int gpio))
 
     new_cb = malloc(sizeof(struct callback));  ASSRT(new_cb != NULL);
 
+    new_cb->fde  = open_edge_file(gpio);
     new_cb->gpio = gpio;
     new_cb->edge = edge;
     new_cb->func = func;
@@ -605,6 +620,7 @@ void remove_callbacks(int gpio)
     {
         if (cb->gpio == gpio)
         {
+            close(cb->fde);
             if (prev == NULL)
                 callbacks = cb->next;
             else

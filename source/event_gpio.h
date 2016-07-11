@@ -61,14 +61,15 @@ int gpio_set_direction(int gpio, unsigned int in_flag);
 int gpio_get_direction(int gpio, unsigned int *value);
 int gpio_set_value(int gpio, unsigned int value);
 int gpio_get_value(int gpio, unsigned int *value);
+int fd_lookup(int gpio);
+int open_value_file(int gpio);
 
-int gpio_set_edge(int gpio, unsigned int edge);
+int fde_lookup(int gpio);
 int open_edge_file(int gpio);
+int gpio_set_edge(int gpio, unsigned int edge);
 int gpio_get_edge(int gpio);
-
 int add_edge_detect(int gpio, unsigned int edge);
 void remove_edge_detect(int gpio);
-//int add_edge_callback(int gpio, void (*func)(int gpio));
 int add_edge_callback(int gpio, int edge, void (*func)(int gpio));
 int event_detected(int gpio);
 int gpio_event_add(int gpio);
