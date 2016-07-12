@@ -175,7 +175,7 @@ int fd_lookup(int gpio)
 
 int fde_lookup(int gpio)
 {
-    struct callbacks *cb = callbacks;
+    struct callback *cb = callbacks;
     while (cb != NULL)
     {
         if (cb->gpio == gpio)

@@ -1,3 +1,9 @@
+0.1.1
+----
+* Some refactoring of the edge detection code, made it function better
+* Added Rising and Both edge detection tests to gptest.py
+  - Small issue with both edge triggering double pumping on first callback hit
+
 0.1.0
 ----
 * Fixed edge detection code, will trigger proper for callbacks now

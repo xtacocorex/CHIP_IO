@@ -16,7 +16,7 @@ loopfunction_exit = False
 
 def loopfunction():
     print("LOOP FUNCTION START")
-    for i in xrange(6):
+    for i in xrange(4):
         if loopfunction_exit:
             break
         if i % 2:
@@ -50,7 +50,7 @@ else:
     print(" Able to use alternate names for GPIO")
 GPIO.cleanup()
 
-GPIO.setup("U14_15", GPIO.IN)  # XIO-P0
+GPIO.setup("U14_15", GPIO.IN)  # XIO-P2
 GPIO.setup("CSID0", GPIO.OUT, initial=GPIO.LOW)
 if (GPIO.input("XIO-P2") != GPIO.LOW):
     print(" A low output on CSI0 does not lead to a low input on XIO-P2.")
@@ -98,6 +98,8 @@ GPIO.remove_event_detect("AP-EINT3")
 # ==============================================
 # EDGE DETECTION - EXPANDED GPIO
 print("\nSETTING UP FALLING EDGE DETECTION ON XIO-P2")
+# WRITING CSID0 LOW FIRST AS THERE IS A DOUBLE HIT ON HIGH
+GPIO.output("CSID0", GPIO.LOW)
 GPIO.add_event_detect("XIO-P2", GPIO.FALLING, myfuncallback)
 
 print("VERIFYING EDGE DETECT")
@@ -115,7 +117,29 @@ mystr = " num_callbacks = %d" % num_callbacks
 print(mystr)
 GPIO.remove_event_detect("XIO-P2")
 
-print("\nWAIT FOR EDGE TESTING")
+print("\nSETTING UP RISING EDGE DETECTION ON XIO-P2")
+# WRITING CSID0 LOW FIRST AS THERE IS A DOUBLE HIT ON HIGH
+GPIO.output("CSID0", GPIO.LOW)
+num_callbacks = 0
+GPIO.add_event_detect("XIO-P2", GPIO.RISING, myfuncallback)
+print("WAITING FOR CALLBACKS ON XIO-P2")
+loopfunction()
+mystr = " num_callbacks = %d" % num_callbacks
+print(mystr)
+GPIO.remove_event_detect("XIO-P2")
+
+print("\nSETTING UP BOTH EDGE DETECTION ON XIO-P2")
+# WRITING CSID0 LOW FIRST AS THERE IS A DOUBLE HIT ON HIGH
+GPIO.output("CSID0", GPIO.LOW)
+num_callbacks = 0
+GPIO.add_event_detect("XIO-P2", GPIO.BOTH, myfuncallback)
+print("WAITING FOR CALLBACKS ON XIO-P2")
+loopfunction()
+mystr = " num_callbacks = %d" % num_callbacks
+print(mystr)
+GPIO.remove_event_detect("XIO-P2")
+
+print("\nWAIT FOR EDGE TESTING, SETUP FOR FALLING EDGE")
 print("PRESS CONTROL-C TO EXIT IF SCRIPT GETS STUCK")
 try:
     # WAIT FOR EDGE
