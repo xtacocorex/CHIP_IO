@@ -9,9 +9,11 @@ def compile():
     call(["dtc", "-O", "dtb", "-o", "overlays/chip-pwm0.dtbo", "-b", "o", "-@", "overlays/chip-pwm0.dts"])
 
 def copy():
+    if not os.path.exists("/lib/firmware/chip_io/"):
+        os.makedirs("/lib/firmware/chip_io/")
     for fl in glob.glob("/lib/firmware/chip_io/chip-*-.dtbo"):
         os.remove(fl)
-    shutil.move("overlays/chip-spi2.dtbo", "/lib/firmware/chip_io/chip-spi2.dtbo")
-    shutil.move("overlays/chip-i2c1.dtbo", "/lib/firmware/chip_io/chip-i2c1.dtbo")
-    shutil.move("overlays/chip-pwm0.dtbo", "/lib/firmware/chip_io/chip-pwm0.dtbo")
+    shutil.copy("overlays/chip-spi2.dtbo", "/lib/firmware/chip_io/chip-spi2.dtbo")
+    shutil.copy("overlays/chip-i2c1.dtbo", "/lib/firmware/chip_io/chip-i2c1.dtbo")
+    shutil.copy("overlays/chip-pwm0.dtbo", "/lib/firmware/chip_io/chip-pwm0.dtbo")
 

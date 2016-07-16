@@ -1,6 +1,6 @@
 try:
     from overlays import builder
-    builder.compile()
+    #builder.compile()
     builder.copy()
 except:
     pass
