@@ -10,6 +10,8 @@ CUSTOMOVERLAYFILEPATH = ""
 
 PWMSYSFSPATH = "/sys/class/pwm/pwmchip0"
 I2C1SYSFSPATH = "/sys/class/i2c-dev/i2c-1"
+# USING THE BASE DIRECTORY FOR SPI AS THE DEVICE NUMBER CHANGES ON LOAD/UNLOAD
+SPI2SYSFSPATH = "/sys/class/spi_master/"
 
 # LOADED VARIABLES
 # DO NOT MODIFY BY HAND WHEN USING
@@ -108,6 +110,15 @@ def _set_overlay_verify(name, overlay_path, config_path):
             if DEBUG:
                 print("ERROR LOADING I2C-1")
             return 1
+    elif name == "SPI2":
+        if os.listdir(SPI2SYSFSPATH) != "":
+            if DEBUG:
+                print("SPI2 IS LOADED!")
+            return 0
+        else:
+            if DEBUG:
+                print("ERROR LOADING SPI2")
+            return 0
 
 def load(overlay, path=""):
     """
@@ -125,9 +136,7 @@ def load(overlay, path=""):
     global DEBUG
     global _LOADED
     if DEBUG:
-        print("LOAD OVERLAY")
-        print("OVERLAY: {0}".format(overlay))
-        print("PATH:    {0}".format(path))
+        print("LOAD OVERLAY: {0} @ {1}".format(overlay,path))
     # SEE IF OUR OVERLAY NAME IS IN THE KEYS
     if overlay.upper() in _OVERLAYS.keys():
         cpath = OVERLAYCONFIGPATH + "/" + _FOLDERS[overlay.upper()]
@@ -168,7 +177,7 @@ def load(overlay, path=""):
         # LOAD THE OVERLAY
         errc = _set_overlay_verify(overlay.upper(), opath, cpath)
         if DEBUG:
-            print("ERRC: {0}".format(errc))
+            print("_SET_OVERLAY_VERIFY ERRC: {0}".format(errc))
         if errc == 0:
             _LOADED[overlay.upper()] = True
 
@@ -179,8 +188,7 @@ def unload(overlay):
     global DEBUG
     global _LOADED
     if DEBUG:
-        print("UNLOAD OVERLAY")
-        print(overlay)
+        print("UNLOAD OVERLAY: {0}".format(overlay))
     # SEE IF OUR OVERLAY NAME IS IN THE KEYS
     if overlay.upper() in _OVERLAYS.keys():
         # BRUTE FORCE REMOVE AS THE DIRECTORY CONTAINS FILES
