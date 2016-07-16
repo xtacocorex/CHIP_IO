@@ -1,3 +1,10 @@
+0.2.0
+----
+* Added the ability to load DTB Overlays from within CHIP_IO
+ - Support for PWM0, SPI2, and I2C-1 (which comes back as i2c-3 on the 4.4 CHIP
+ - Support for a custom DTB Overlay
+* Fixes to the pwm unit test, all but 2 now pass :)
+
 0.1.1
 ----
 * Some refactoring of the edge detection code, made it function better

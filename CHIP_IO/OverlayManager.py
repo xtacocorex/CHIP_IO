@@ -92,7 +92,10 @@ def _set_overlay_verify(name, overlay_path, config_path):
     time.sleep(0.2)
 
     # VERIFY
-    if name == "PWM0":
+    if name == "CUST":
+        # BLINDLY ACCEPT THAT IT LOADED
+        return 0
+    elif name == "PWM0":
         if os.path.exists(PWMSYSFSPATH):
             if DEBUG:
                 print("PWM IS LOADED!")
@@ -149,9 +152,8 @@ def load(overlay, path=""):
         elif overlay.upper() == "CUST" and _LOADED[overlay.upper()]:
             print("Custom Overlay already loaded")
             return 2
-        elif overlay.upper() == "CUST":
-            opath = OVERLAYINSTALLPATH + "/" + _OVERLAYS[overlay.upper()]
-            print("Custom Overlay not implemented yet")
+        elif overlay.upper() == "CUST" and not os.path.exists(path):
+            print("Custom Overlay path does not exist")
             return 1
 
         # SET UP THE OVERLAY PATH FOR OUR USE

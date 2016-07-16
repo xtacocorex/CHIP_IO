@@ -4,7 +4,6 @@ A CHIP GPIO library
 
 Manual::
 
-    sudo ntpdate pool.ntp.org
     sudo apt-get update
     sudo apt-get install git build-essential python-dev python-pip -y
     git clone git://github.com/xtacocorex/CHIP_IO.git
@@ -17,7 +16,7 @@ Manual::
 
 Using the library is very similar to the excellent RPi.GPIO library used on the Raspberry Pi. Below are some examples.
 
-All scripts that require GPIO and PWM (HW and/or SW) access need to be run with super user permissions!
+All scripts that require GPIO, PWM (HW and/or SW), and Overlay Manager need to be run with super user permissions!
 
 **Allowable Pin Names for the Library**
 
@@ -208,21 +207,23 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
 
 **SOFTPWM**::
 
-    import CHIP_IO.SOFTPWM as PWM
-    #PWM.start(channel, duty, freq=2000, polarity=0)
+    import CHIP_IO.SOFTPWM as SPWM
+    #SPWM.start(channel, duty, freq=2000, polarity=0)
     #duty values are valid 0 (off) to 100 (on)
     #you can choose any pin
-    PWM.start("XIO-P7", 50)
-    PWM.set_duty_cycle("XIO-P7", 25.5)
-    PWM.set_frequency("XIO-P7", 10)
+    SPWM.start("XIO-P7", 50)
+    SPWM.set_duty_cycle("XIO-P7", 25.5)
+    SPWM.set_frequency("XIO-P7", 10)
 
-    PWM.stop("XIO-P7")
-    PWM.cleanup()
+    SPWM.stop("XIO-P7")
+    SPWM.cleanup()
 
     #set polarity to 1 on start:
-    PWM.start("XIO-P7", 50, 2000, 1)
+    SPWM.start("XIO-P7", 50, 2000, 1)
 
 Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for anything that needs high precision or reliability.
+
+If using SOFTPWM and PWM at the same time, import CHIP_IO.SOFTPWM as SPWM or something different than PWM as to not confuse the library.
 
 **ADC**::
 
@@ -231,6 +232,38 @@ Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for 
 **SPI**::
 
 SPI requires a DTB Overlay to access.  CHIP_IO does not contain any SPI specific code as the Python spidev module works when it can see the SPI bus.
+
+**Overlay Manager**::
+
+The Overlay Manager enables you to quickly load simple Device Tree Overlays.  The options for loading are:
+PWM0, SPI2, I2C1, CUST
+
+Only one of each type of overlay can be loaded at a time, but all three options can be loaded simultaneously.  So you can have SPI2 and I2C1 without PWM0, but you cannot have SPI2 loaded twice.
+
+    import CHIP_IO.OverlayManager as OM
+    # The enable_debug() function turns on debug printing
+    #OM.enable_debug()
+    # To load an overlay, feed in the name to load()
+    OM.load("PWM0")
+    # To verify the overlay was properly loaded, the get_ functions return booleans
+    OM.get_pwm_loaded()
+    OM.get_i2c_loaded()
+    OM.get_spi_loaded()
+    # To unload an overlay, feed in the name to unload()
+    OM.unload("PWM0")
+
+To use a custom overlay, you must build and compile it properly per the DIP Docs: http://docs.getchip.com/dip.html#development-by-example
+There is no verification that the Custom Overlay is setup properly, it's fire and forget
+
+    import CHIP_IO.OverlayManager as OM
+    # The full path to the dtbo file needs to be specified
+    OM.load("CUST","/home/chip/projects/myfunproject/overlays/mycustomoverlay.dtbo")
+    # You can check for loading like above, but it's really just there for sameness
+    OM.get_custom_loaded()
+    # To unload, just call unload()
+    OM.unload("CUST")
+
+Note that this requires the 4.4 kernel with the CONFIG_OF_CONFIGFS option enabled in the kernel config.
 
 **Running tests**
 
