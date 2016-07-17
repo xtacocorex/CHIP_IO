@@ -4,6 +4,8 @@ import shutil
 import glob
 
 def compile():
+    # The compile needs the include for the spi2 stuff, not enabling that at the moment
+    # as I don't want to pull in the include section from CHIP-dt-overlays
     call(["dtc", "-O", "dtb", "-o", "overlays/chip-spi2.dtbo", "-b", "o", "-@", "overlays/chip-spi2.dts"])
     call(["dtc", "-O", "dtb", "-o", "overlays/chip-i2c1.dtbo", "-b", "o", "-@", "overlays/chip-i2c1.dts"])
     call(["dtc", "-O", "dtb", "-o", "overlays/chip-pwm0.dtbo", "-b", "o", "-@", "overlays/chip-pwm0.dts"])
