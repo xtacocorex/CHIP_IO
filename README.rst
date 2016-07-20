@@ -2,10 +2,17 @@ CHIP_IO
 ============================
 A CHIP GPIO library
 
+NOTE: Now requires the custom DTC to install the library
+
 Manual::
 
     sudo apt-get update
-    sudo apt-get install git build-essential python-dev python-pip -y
+    sudo apt-get install git build-essential python-dev python-pip flex bison -y
+    git clone https://github.com/atenart/dtc
+    cd dtc
+    make
+    sudo  make install PREFIX=/usr
+    cd ..
     git clone git://github.com/xtacocorex/CHIP_IO.git
     cd CHIP_IO
     sudo python setup.py install

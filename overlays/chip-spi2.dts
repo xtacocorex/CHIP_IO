@@ -42,56 +42,52 @@
  */
 
 /dts-v1/;
-
-#include <dt-bindings/interrupt-controller/irq.h>
-#include <dt-bindings/pinctrl/sun4i-a10.h>
-
 /plugin/;
 
 / {
-        compatible = "nextthing,chip", "allwinner,sun5i-r8";
+    compatible = "nextthing,chip", "allwinner,sun5i-r8";
 
-        /* activate the gpio for interrupt */
-        fragment@0 {
-                target-path = <&pio>;
+    /* activate the gpio for interrupt */
+    fragment@0 {
+        target-path = <&pio>;
 
-                __overlay__ {
-                        chip_spi2_pins: spi2@0 {
-                                allwinner,pins = "PE1", "PE2", "PE3";
-                                allwinner,function = "spi2";
-                                allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-                                allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-                        };
+        __overlay__ {
+            chip_spi2_pins: spi2@0 {
+                allwinner,pins = "PE1", "PE2", "PE3";
+                allwinner,function = "spi2";
+                allwinner,drive = "0"; //<SUN4I_PINCTRL_10_MA>;
+                allwinner,pull = "0"; //<SUN4I_PINCTRL_NO_PULL>;
+            };
 
-                        chip_spi2_cs0_pins: spi2_cs0@0 {
-                                allwinner,pins = "PE0";
-                                allwinner,function = "spi2";
-                                allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-                                allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-                        };
-                };
+            chip_spi2_cs0_pins: spi2_cs0@0 {
+                allwinner,pins = "PE0";
+                allwinner,function = "spi2";
+                allwinner,drive = "0"; //<SUN4I_PINCTRL_10_MA>;
+                allwinner,pull = "0"; //<SUN4I_PINCTRL_NO_PULL>;
+            };
         };
+    };
 
-        /*
-         * Enable our SPI device, with an spidev device connected
-         * to it
-         */
-        fragment@1 {
-                target = <&spi2>;
+    /*
+     * Enable our SPI device, with an spidev device connected
+     * to it
+    */
+    fragment@1 {
+        target = <&spi2>;
 
-                __overlay__ {
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                        pinctrl-names = "default";
-                        pinctrl-0 = <&chip_spi2_pins>, <&chip_spi2_cs0_pins>;
-                        status = "okay";
+        __overlay__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            pinctrl-names = "default";
+            pinctrl-0 = <&chip_spi2_pins>, <&chip_spi2_cs0_pins>;
+            status = "okay";
 
-                        spi2@0 {
-                                //compatible = "spidev";
-                                compatible = "rohm,dh2228fv";
-                                reg = <0>;
-                                spi-max-frequency = <24000000>;
-                        };
-                };
+            spi2@0 {
+                compatible = "rohm,dh2228fv";
+                reg = <0>;
+                spi-max-frequency = <24000000>;
+            };
         };
+    };
 };
+

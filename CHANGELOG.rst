@@ -1,3 +1,10 @@
+0.2.1
+----
+* Pull request #12 fixes:
+ - Fixed indent in the i2c-1 dts
+ - Removed import dependencies in the SPI and PWM overlays
+ - Re-enabled building of the dtbo on setup.py install
+
 0.2.0
 ----
 * Added the ability to load DTB Overlays from within CHIP_IO

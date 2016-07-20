@@ -45,8 +45,6 @@
 /dts-v1/;
 /plugin/;
 
-#include <dt-bindings/pwm/pwm.h>
-
 / {
 	compatible = "nextthing,chip", "allwinner,sun5i-r8";
 

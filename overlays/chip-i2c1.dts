@@ -47,7 +47,7 @@
 /plugin/;
 
 / {
-	compatible = "nextthing,chip", "allwinner,sun5i-r8";
+    compatible = "nextthing,chip", "allwinner,sun5i-r8";
 
     fragment@0 {
         target-path = "/aliases";
