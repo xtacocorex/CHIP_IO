@@ -101,7 +101,7 @@ int softpwm_set_frequency(const char *key, float freq) {
     pwm->params.freq = freq;
     pthread_mutex_unlock(pwm->params_lock);
 
-    return 1;
+    return 0;
 }
 
 int softpwm_set_polarity(const char *key, int polarity) {
@@ -274,11 +274,13 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
             pwm = pwm->next;
         pwm->next = new_pwm;
     }
+    pthread_mutex_unlock(new_params_lock);
 
     ASSRT(softpwm_set_duty_cycle(new_pwm->key, duty) == 0);
     ASSRT(softpwm_set_frequency(new_pwm->key, freq) == 0);
     ASSRT(softpwm_set_polarity(new_pwm->key, polarity) == 0);
 
+    pthread_mutex_lock(new_params_lock);
     // create thread for pwm
     ret = pthread_create(&new_thread, NULL, softpwm_thread_toggle, (void *)new_pwm);
     ASSRT(ret == 0);
