@@ -1,3 +1,17 @@
+0.2.1
+----
+* Pull request #12 fixes:
+ - Fixed indent in the i2c-1 dts
+ - Removed import dependencies in the SPI and PWM overlays
+ - Re-enabled building of the dtbo on setup.py install
+
+0.2.0
+----
+* Added the ability to load DTB Overlays from within CHIP_IO
+ - Support for PWM0, SPI2, and I2C-1 (which comes back as i2c-3 on the 4.4 CHIP
+ - Support for a custom DTB Overlay
+* Fixes to the pwm unit test, all but 2 now pass :)
+
 0.1.2
 ----
 * SoftPWM Fix by aninternetof
