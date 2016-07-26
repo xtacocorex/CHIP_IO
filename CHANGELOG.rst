@@ -1,3 +1,8 @@
+0.1.2
+----
+* SoftPWM Fix by aninternetof
+* Added a verification test for SoftPWM
+
 0.1.1
 ----
 * Some refactoring of the edge detection code, made it function better

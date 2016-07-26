@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import CHIP_IO.SOFTPWM as SPWM
 import CHIP_IO.GPIO as GPIO
 import time
@@ -40,7 +42,7 @@ if __name__ == "__main__":
 
     # SETUP SOFTPWM
     SPWM.start(SPWMGPIO, 50, 1)
-    #SPWM.set_frequency(SPWMGPIO, 2)
+    SPWM.set_frequency(SPWMGPIO, 2)
 
     # SETUP SOFTPWM RECEIVER
     rcvr = SPWMReceiver(GPIO, RECEIVERGPIO, COUNT, SLEEPTIME)
