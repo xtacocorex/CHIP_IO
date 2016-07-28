@@ -80,8 +80,14 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
         return NULL;
     }
 
-    if (!softpwm_start(key, duty_cycle, frequency, polarity))
-        return NULL;
+    if (softpwm_start(key, duty_cycle, frequency, polarity) < 0)
+    {
+       printf("softpwm_start failed");
+       char err[2000];
+       snprintf(err, sizeof(err), "Error starting softpwm on pin %s (%s)", key, get_error_msg());
+       PyErr_SetString(PyExc_RuntimeError, err);
+       return NULL;
+    }
 
     Py_RETURN_NONE;
 }

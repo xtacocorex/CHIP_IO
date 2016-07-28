@@ -241,8 +241,12 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
 
     if (get_gpio_number(key, &gpio) < 0)
         return -1;
-    if (gpio_export(gpio) < 0)
-        return -1;
+    if (gpio_export(gpio) < 0) {
+       char err[2000];
+       snprintf(err, sizeof(err), "Error setting up softpwm on pin %d, maybe already exported? (%s)", gpio, get_error_msg());
+       add_error_msg(err);
+       return -1;
+    }
     if (gpio_set_direction(gpio, OUTPUT) < 0)
         return -1;
 
