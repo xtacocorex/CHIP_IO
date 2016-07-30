@@ -1,3 +1,9 @@
+0.2.2
+----
+* Fixes for Issue #16
+  - Pass SoftPWM setup errors to Python layer (aninternetof)
+  - Updated spwmtest.py to test for this issue
+
 0.2.1
 ----
 * Pull request #12 fixes:

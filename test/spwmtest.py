@@ -40,7 +40,18 @@ if __name__ == "__main__":
     GPIO.cleanup()
     SPWM.cleanup()
 
+    # ISSUE #16 VERIFICATION
+    try:
+        print("VERIFYING FIX FOR ISSUE #16, GPIO CONFIGURED THAT SPWM WANTS TO USE")
+        GPIO.setup(SPWMGPIO, GPIO.OUT)
+        SPWM.start(SPWMGPIO, 50, 1)
+    except Exception as e:
+        print("EXCEPTION: {}".format(e))
+        print("GPIO CLEANUP")
+        GPIO.cleanup()
+
     # SETUP SOFTPWM
+    print("STARTING SOFTPWM TEST")
     SPWM.start(SPWMGPIO, 50, 1)
     SPWM.set_frequency(SPWMGPIO, 2)
 
