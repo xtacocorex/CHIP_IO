@@ -66,7 +66,8 @@ struct callback
     int fde;
     int gpio;
     int edge;
-    void (*func)(int gpio);
+    void* data;
+    void (*func)(int gpio, void* data);
     struct callback *next;
 };
 struct callback *callbacks = NULL;
@@ -549,7 +550,7 @@ void exports_cleanup(void)
         gpio_unexport(exported_gpios->gpio);
 }
 
-int add_edge_callback(int gpio, int edge, void (*func)(int gpio))
+int add_edge_callback(int gpio, int edge, void (*func)(int gpio, void* data), void* data)
 {
     struct callback *cb = callbacks;
     struct callback *new_cb;
@@ -559,6 +560,7 @@ int add_edge_callback(int gpio, int edge, void (*func)(int gpio))
     new_cb->fde  = open_edge_file(gpio);
     new_cb->gpio = gpio;
     new_cb->edge = edge;
+    new_cb->data = data;
     new_cb->func = func;
     new_cb->next = NULL;
 
@@ -602,7 +604,7 @@ void run_callbacks(int gpio)
             // Only run if we are allowed
             if (canrun)
             {
-                cb->func(cb->gpio);
+                cb->func(cb->gpio, cb->data);
             }
 
         }
