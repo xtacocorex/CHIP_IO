@@ -70,7 +70,7 @@ int gpio_set_edge(int gpio, unsigned int edge);
 int gpio_get_edge(int gpio);
 int add_edge_detect(int gpio, unsigned int edge);
 void remove_edge_detect(int gpio);
-int add_edge_callback(int gpio, int edge, void (*func)(int gpio));
+int add_edge_callback(int gpio, int edge, void (*func)(int gpio, void* data), void* data);
 int event_detected(int gpio);
 int gpio_event_add(int gpio);
 int gpio_event_remove(int gpio);
