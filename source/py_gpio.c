@@ -225,7 +225,7 @@ static PyObject *py_input_gpio(PyObject *self, PyObject *args)
     return py_value;
 }
 
-static void run_py_callbacks(int gpio)
+static void run_py_callbacks(int gpio, void* data)
 {
    PyObject *result;
    PyGILState_STATE gstate;
@@ -294,7 +294,7 @@ static int add_py_callback(char *channel, int gpio, int edge, unsigned int bounc
          cb = cb->next;
       cb->next = new_py_cb;
    }
-   add_edge_callback(gpio, edge, run_py_callbacks);
+   add_edge_callback(gpio, edge, run_py_callbacks, NULL);
    return 0;
 }
 
