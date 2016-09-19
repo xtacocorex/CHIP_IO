@@ -6,6 +6,8 @@ NOTE: Now requires the custom DTC to install the library
 
 Manual::
 
+For Python2.7:
+
     sudo apt-get update
     sudo apt-get install git build-essential python-dev python-pip flex bison -y
     git clone https://github.com/atenart/dtc
@@ -16,6 +18,21 @@ Manual::
     git clone git://github.com/xtacocorex/CHIP_IO.git
     cd CHIP_IO
     sudo python setup.py install
+    cd ..
+    sudo rm -rf CHIP_IO
+
+For Python3:
+
+    sudo apt-get update
+    sudo apt-get install git build-essential python3-dev python3-pip flex bison -y
+    git clone https://github.com/atenart/dtc
+    cd dtc
+    make
+    sudo  make install PREFIX=/usr
+    cd ..
+    git clone git://github.com/xtacocorex/CHIP_IO.git
+    cd CHIP_IO
+    sudo python3 setup.py install
     cd ..
     sudo rm -rf CHIP_IO
 
@@ -170,9 +187,9 @@ Inputs work similarly to outputs.::
 Polling inputs::
 
     if GPIO.input("CSID0"):
-      print("HIGH")
+        print("HIGH")
     else:
-      print("LOW")
+        print("LOW")
 
 Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::
 
@@ -187,7 +204,7 @@ Detecting events::
     #your amazing code here
     #detect wherever:
     if GPIO.event_detected("XIO-P0"):
-      print "event detected!"
+        print "event detected!"
 
 **GPIO Cleanup**
 
@@ -205,11 +222,10 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
     PWM.start("PWM0", 50)
     PWM.set_duty_cycle("PWM0", 25.5)
     PWM.set_frequency("PWM0", 10)
-
+    # To stop PWM
     PWM.stop("PWM0")
     PWM.cleanup()
-
-    #set polarity to 1 on start:
+    #For specific polarity: this example sets polarity to 1 on start:
     PWM.start("PWM0", 50, 2000, 1)
 
 **SOFTPWM**::
@@ -221,11 +237,10 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
     SPWM.start("XIO-P7", 50)
     SPWM.set_duty_cycle("XIO-P7", 25.5)
     SPWM.set_frequency("XIO-P7", 10)
-
+    # To Stop SPWM
     SPWM.stop("XIO-P7")
     SPWM.cleanup()
-
-    #set polarity to 1 on start:
+    #For specific polarity: this example sets polarity to 1 on start:
     SPWM.start("XIO-P7", 50, 2000, 1)
 
 Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for anything that needs high precision or reliability.
@@ -270,7 +285,7 @@ There is no verification that the Custom Overlay is setup properly, it's fire an
     # To unload, just call unload()
     OM.unload("CUST")
 
-Note that this requires the 4.4 kernel with the CONFIG_OF_CONFIGFS option enabled in the kernel config.
+**OverlayManager requires a 4.4 kernel with the CONFIG_OF_CONFIGFS option enabled in the kernel config.**
 
 **Running tests**
 
