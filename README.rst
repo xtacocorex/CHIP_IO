@@ -6,7 +6,7 @@ NOTE: Now requires the custom DTC to install the library
 
 Manual::
 
-For Python2.7:
+For Python2.7::
 
     sudo apt-get update
     sudo apt-get install git build-essential python-dev python-pip flex bison -y
@@ -21,7 +21,7 @@ For Python2.7:
     cd ..
     sudo rm -rf CHIP_IO
 
-For Python3:
+For Python3::
 
     sudo apt-get update
     sudo apt-get install git build-essential python3-dev python3-pip flex bison -y
@@ -215,7 +215,7 @@ To clean up the GPIO when done, do the following::
 **PWM**::
 
 Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to know there is a PWM device available to use.
-
+::
     import CHIP_IO.PWM as PWM
     #PWM.start(channel, duty, freq=2000, polarity=0)
     #duty values are valid 0 (off) to 100 (on)
@@ -261,7 +261,7 @@ The Overlay Manager enables you to quickly load simple Device Tree Overlays.  Th
 PWM0, SPI2, I2C1, CUST
 
 Only one of each type of overlay can be loaded at a time, but all three options can be loaded simultaneously.  So you can have SPI2 and I2C1 without PWM0, but you cannot have SPI2 loaded twice.
-
+::
     import CHIP_IO.OverlayManager as OM
     # The enable_debug() function turns on debug printing
     #OM.enable_debug()
@@ -276,7 +276,7 @@ Only one of each type of overlay can be loaded at a time, but all three options 
 
 To use a custom overlay, you must build and compile it properly per the DIP Docs: http://docs.getchip.com/dip.html#development-by-example
 There is no verification that the Custom Overlay is setup properly, it's fire and forget
-
+::
     import CHIP_IO.OverlayManager as OM
     # The full path to the dtbo file needs to be specified
     OM.load("CUST","/home/chip/projects/myfunproject/overlays/mycustomoverlay.dtbo")
