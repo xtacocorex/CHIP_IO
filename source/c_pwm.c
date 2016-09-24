@@ -84,12 +84,14 @@ int initialize_pwm(void)
         // we need to export 0 here to enable pwm0
         int gpio = 0;
 
+        printf(" ** EXPORTING PWM0 **\n");
         if ((fd = open("/sys/class/pwm/pwmchip0/export", O_WRONLY)) < 0)
         {
             return -1;
         }
-        len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
-        ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
+        len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); //BUF2SMALL(str_gpio);
+        ssize_t s = write(fd, str_gpio, len);  //ASSRT(s == len);
+        printf(" ** IN initialize_pwm: s = %d, len = %d\n", s, len);
         close(fd);
 
         pwm_initialized = 1;
@@ -116,11 +118,14 @@ int pwm_set_frequency(const char *key, float freq) {
 
     period_ns = (unsigned long)(1e9 / freq);
 
+    printf(" ** IN pwm_set_frequency: pwm_initialized = %d\n", pwm_initialized);
     if (period_ns != pwm->period_ns) {
         pwm->period_ns = period_ns;
 
-        len = snprintf(buffer, sizeof(buffer), "%lu", period_ns); BUF2SMALL(buffer);
-        ssize_t s = write(pwm->period_fd, buffer, len);  ASSRT(s == len);
+        len = snprintf(buffer, sizeof(buffer), "%lu", period_ns); //BUF2SMALL(buffer);
+        printf(" ** pwm_set_frequency: buffer: %s\n", buffer);
+        ssize_t s = write(pwm->period_fd, buffer, len);  //ASSRT(s == len);
+        printf(" ** IN pwm_set_frequency: s = %d, len = %d\n", s, len);
     }
 
     return 1;
@@ -141,14 +146,17 @@ int pwm_set_polarity(const char *key, int polarity) {
         return -1;
     }
 
+    printf(" ** IN pwm_set_polarity: pwm_initialized = %d\n", pwm_initialized);
     if (polarity == 0) {
-        len = snprintf(buffer, sizeof(buffer), "%s", "normal"); BUF2SMALL(buffer);
+        len = snprintf(buffer, sizeof(buffer), "%s", "normal"); //BUF2SMALL(buffer);
     }
     else
     {
-        len = snprintf(buffer, sizeof(buffer), "%s", "inverted"); BUF2SMALL(buffer);
+        len = snprintf(buffer, sizeof(buffer), "%s", "inverted"); //BUF2SMALL(buffer);
     } 
-    ssize_t s = write(pwm->polarity_fd, buffer, len);  ASSRT(s == len);
+    printf(" ** pwm_set_poliarity: buffer: %s\n", buffer);
+    ssize_t s = write(pwm->polarity_fd, buffer, len);  //ASSRT(s == len);
+    printf(" ** IN pwm_set_polarity: s = %d, len = %d\n", s, len);
 
     return 0;
 }
@@ -169,8 +177,11 @@ int pwm_set_duty_cycle(const char *key, float duty) {
 
     pwm->duty = (unsigned long)(pwm->period_ns * (duty / 100.0));
 
-    len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty); BUF2SMALL(buffer);
-    ssize_t s = write(pwm->duty_fd, buffer, len);  ASSRT(s == len);
+    printf(" ** IN pwm_set_duty_cycle: pwm_initialized = %d\n", pwm_initialized);
+    len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty); //BUF2SMALL(buffer);
+    printf(" ** pwm_set_duty_cycle: buffer: %s\n", buffer);
+    ssize_t s = write(pwm->duty_fd, buffer, len);  //ASSRT(s == len);
+    printf(" ** IN pwm_set_duty_cycle: s = %d, len = %d\n", s, len);
 
     return 0;
 }
@@ -178,24 +189,37 @@ int pwm_set_duty_cycle(const char *key, float duty) {
 int pwm_set_enable(const char *key, int enable)
 {
     int len;
+    int rtnval = -1;
     char buffer[80];
     struct pwm_exp *pwm;
 
     if (enable != 0 || enable != 1)
-        return -1;
+        return rtnval;
 
     pwm = lookup_exported_pwm(key);
 
     if (pwm == NULL) {
-        return -1;
+        return rtnval;
     }
 
-    pwm->enable = enable;
+    //pwm->enable = enable;
 
-    len = snprintf(buffer, sizeof(buffer), "%d", pwm->enable); BUF2SMALL(buffer);
-    ssize_t s = write(pwm->enable_fd, buffer, len);  ASSRT(s == len);
+    printf(" ** IN pwm_set_enable: pwm_initialized = %d\n", pwm_initialized);
+    len = snprintf(buffer, sizeof(buffer), "%d", enable); //BUF2SMALL(buffer);
+    printf(" ** pwm_set_enable: buffer: %s\n", buffer);
+    ssize_t s = write(pwm->enable_fd, buffer, len);  //ASSRT(s == len);
+    printf(" ** IN pwm_set_enable: s = %d, len = %d\n", s, len);
 
-    return 0;
+    //if (s == len)
+    //{
+        printf(" ** SETTING pwm->enable to %d\n", enable);
+        pwm->enable = enable;
+        rtnval = 0;
+    //} else {
+    //    rtnval = -1;
+    //}
+
+    return rtnval;
 }
 
 int pwm_start(const char *key, float duty, float freq, int polarity)
@@ -208,18 +232,26 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     int period_fd, duty_fd, polarity_fd, enable_fd;
     struct pwm_exp *new_pwm, *pwm;
 
+    printf(" ** IN pwm_start: pwm_initialized = %d\n", pwm_initialized);
     if(!pwm_initialized) {
         initialize_pwm();
     }
+    printf(" ** IN pwm_start: pwm_initialized = %d\n", pwm_initialized);
 
     //setup the pwm base path, the chip only has one pwm
     snprintf(pwm_base_path, sizeof(pwm_base_path), "/sys/class/pwm/pwmchip0/pwm%d", 0); BUF2SMALL(pwm_base_path);
 
     //create the path for the period and duty
-    snprintf(enable_path, sizeof(enable_path), "%s/enable", pwm_base_path); BUF2SMALL(enable_path);
-    snprintf(period_path, sizeof(period_path), "%s/period", pwm_base_path); BUF2SMALL(period_path);
-    snprintf(duty_path, sizeof(duty_path), "%s/duty_cycle", pwm_base_path); BUF2SMALL(duty_path);
-    snprintf(polarity_path, sizeof(polarity_path), "%s/polarity", pwm_base_path); BUF2SMALL(polarity_path);
+    snprintf(enable_path, sizeof(enable_path), "%s/enable", pwm_base_path); //BUF2SMALL(enable_path);
+    snprintf(period_path, sizeof(period_path), "%s/period", pwm_base_path); //BUF2SMALL(period_path);
+    snprintf(duty_path, sizeof(duty_path), "%s/duty_cycle", pwm_base_path); //BUF2SMALL(duty_path);
+    snprintf(polarity_path, sizeof(polarity_path), "%s/polarity", pwm_base_path); //BUF2SMALL(polarity_path);
+
+    printf(" ** IN pwm_start: pwm_base_path: %s\n", pwm_base_path);
+    printf(" ** IN pwm_start: enable_path:   %s\n", enable_path);
+    printf(" ** IN pwm_start: period_path:   %s\n", period_path);
+    printf(" ** IN pwm_start: duty_path:     %s\n", duty_path);
+    printf(" ** IN pwm_start: polarity_path: %s\n", polarity_path);
 
     //add period and duty fd to pwm list
     if ((enable_fd = open(enable_path, O_RDWR)) < 0)
@@ -229,7 +261,6 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
         close(enable_fd);
         return -1;
     }
-
 
     if ((duty_fd = open(duty_path, O_RDWR)) < 0) {
         //error, close already opened period_fd.
@@ -252,6 +283,7 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
         return -1; // out of memory
     }
 
+    printf(" ** IN pwm_start: IF WE MAKE IT HERE, THE FILES WERE SUCCESSFULLY OPEN **\n");
     strncpy(new_pwm->key, key, KEYLEN);  /* can leave string unterminated */
     new_pwm->key[KEYLEN] = '\0'; /* terminate string */
     new_pwm->period_fd = period_fd;
@@ -272,11 +304,25 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
         pwm->next = new_pwm;
     }
 
-    pwm_set_frequency(key, freq);
-    pwm_set_polarity(key, polarity);
-    pwm_set_enable(key, 1);
-    pwm_set_duty_cycle(key, duty);
+    printf(" ** IN pwm_start: CALLING THE SET FUNCTIONS **\n");
+    int rtnval = 0;
+    rtnval = pwm_set_enable(key, 1);
+    printf(" ** pwm_set_enable rtnval = %d\n", rtnval);
+    rtnval = 0;
+    rtnval = pwm_set_frequency(key, freq);
+    printf(" ** pwm_set_frequency rtnval = %d\n", rtnval);
+    rtnval = 0;
+    rtnval = pwm_set_polarity(key, polarity);
+    printf(" ** pwm_set_polarity rtnval = %d\n", rtnval);
+    //rtnval = 0;
+    //rtnval = pwm_set_enable(key, 1);
+    //printf(" ** pwm_set_enable rtnval = %d\n", rtnval);
+    rtnval = 0;
+    rtnval = pwm_set_duty_cycle(key, duty);
+    printf(" ** pwm_set_duty_cycle rtnval = %d\n", rtnval);
+    rtnval = 0;
 
+    // TODO: SET RETURN BASED UPON 4 FUNCTIONS ABOVE
     return 1;
 }
 
@@ -300,8 +346,8 @@ int pwm_disable(const char *key)
     {
         return -1;
     }
-    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
-    ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
+    len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); //BUF2SMALL(str_gpio);
+    ssize_t s = write(fd, str_gpio, len);  //ASSRT(s == len);
     close(fd);
 
     // remove from list

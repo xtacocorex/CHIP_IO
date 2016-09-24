@@ -352,10 +352,12 @@ int get_pwm_key_by_name(const char *name, char *key)
     pins_t *p;
     for (p = pins_info; p->name != NULL; ++p) {
         if (strcmp(p->name, name) == 0) {
+            printf("## FOUND PWM KEY, VALIDATING MUX MODE ##\n");
             //validate it's a valid pwm pin
             if (p->pwm_mux_mode == -1)
                 return 0;
 
+            printf("## PWM KEY IS VALID ##\n");
             strncpy(key, p->key, 7);
             key[7] = '\0';
             return 1;
