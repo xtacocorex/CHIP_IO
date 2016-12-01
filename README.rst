@@ -193,9 +193,9 @@ Polling inputs::
 
 Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::
 
-This only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP
-
     GPIO.wait_for_edge(channel, GPIO.RISING)
+
+This only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP
 
 Detecting events::
 
@@ -247,9 +247,34 @@ Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for 
 
 If using SOFTPWM and PWM at the same time, import CHIP_IO.SOFTPWM as SPWM or something different than PWM as to not confuse the library.
 
-**ADC**::
+**LRADC**::
 
-    Not Implemented yet
+The LRADC was enabled in the 4.4.13-ntc-mlc.  This is a 6 bit ADC that is 2 Volt tolerant.
+Sample code below details how to talk to the LRADC.
+
+    import CHIP_IO.LRADC as ADC
+    # Enable Debug
+    ADC.enable_debug()
+    # Check to see if the LRADC Device exists
+    # Returns True/False
+    ADC.get_device_exists()
+    # Setup the LRADC
+    # Specify a sampling rate if needed
+    ADC.setup(rate)
+    # Get the Scale Factor
+    factor = ADC.get_scale_factor()
+    # Get the allowable Sampling Rates
+    sampleratestuple = ADC.get_allowable_sample_rates()
+    # Set the sampling rate
+    ADC.set_sample_rate(rate)
+    # Get the current sampling rate
+    currentrate = ADC.get_sample_rate()
+    # Get the Raw Channel 0 or 1 data
+    raw = ADC.get_chan0_raw()
+    raw = ADC.get_chan1_raw()
+    # Get the factored ADC Channel data
+    fulldata = ADC.get_chan0()
+    fulldata = ADC.get_chan1()
 
 **SPI**::
 
@@ -286,6 +311,24 @@ There is no verification that the Custom Overlay is setup properly, it's fire an
     OM.unload("CUST")
 
 **OverlayManager requires a 4.4 kernel with the CONFIG_OF_CONFIGFS option enabled in the kernel config.**
+
+**Utilties**::
+
+CHIP_IO now supports the ability to enable and disable the 1.8V port on U13.  This voltage rail isn't enabled during boot.
+
+To use the utilities, here is sample code::
+
+    import CHIP_IO.Utilities as UT
+    # Enable 1.8V Output
+    UT.enable_1v8_pin()
+    # Set 2.0V Output
+    UT.change_1v8_pin_to_2v0()
+    # Set 2.6V Output
+    UT.change_1v8_pin_to_2v6()
+    # Set 3.3V Output
+    UT.change_1v8_pin_to_3v3()
+    # Disable 1.8V Output
+    UT.disable_1v8_pin()
 
 **Running tests**
 
