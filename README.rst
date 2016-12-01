@@ -322,13 +322,15 @@ To use the utilities, here is sample code::
     # Enable 1.8V Output
     UT.enable_1v8_pin()
     # Set 2.0V Output
-    UT.change_1v8_pin_to_2v0()
+    UT.set_1v8_pin_voltage(2.0)
     # Set 2.6V Output
-    UT.change_1v8_pin_to_2v6()
+    UT.set_1v8_pin_voltage(2.6)
     # Set 3.3V Output
-    UT.change_1v8_pin_to_3v3()
+    UT.set_1v8_pin_voltage(3.3)
     # Disable 1.8V Output
     UT.disable_1v8_pin()
+    # Get currently-configured voltage (returns False if the pin is not enabled as output)
+    UT.get_1v8_pin_voltage()
 
 **Running tests**
 
