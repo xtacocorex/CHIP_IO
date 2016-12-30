@@ -1,6 +1,3 @@
-time:
-	/usr/bin/ntpdate -b -s -u pool.ntp.org
-
 package: clean
 	python setup.py sdist
 
