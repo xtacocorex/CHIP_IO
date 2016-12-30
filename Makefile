@@ -1,8 +1,8 @@
-time:
-	/usr/bin/ntpdate -b -s -u pool.ntp.org
+package: clean
+	python setup.py sdist
 
-publish: clean
-	python setup.py sdist upload
+publish: package
+	twine upload dist/*
 
 clean:
 	rm -rf CHIP_IO.* build dist

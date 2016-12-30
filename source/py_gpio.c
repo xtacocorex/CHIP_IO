@@ -225,7 +225,7 @@ static PyObject *py_input_gpio(PyObject *self, PyObject *args)
     return py_value;
 }
 
-static void run_py_callbacks(int gpio)
+static void run_py_callbacks(int gpio, void* data)
 {
    PyObject *result;
    PyGILState_STATE gstate;
@@ -294,7 +294,7 @@ static int add_py_callback(char *channel, int gpio, int edge, unsigned int bounc
          cb = cb->next;
       cb->next = new_py_cb;
    }
-   add_edge_callback(gpio, edge, run_py_callbacks);
+   add_edge_callback(gpio, edge, run_py_callbacks, NULL);
    return 0;
 }
 
@@ -749,6 +749,54 @@ static PyObject *py_selftest(PyObject *self, PyObject *args)
 
 static const char moduledocstring[] = "GPIO functionality of a CHIP using Python";
 
+
+
+
+/*
+mine for changing pin directipn
+*/
+
+static PyObject *py_set_direction(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	int gpio;
+	char *channel;
+	int direction;
+	static char *kwlist[] = { "channel", "direction", NULL };
+
+	clear_error_msg();
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si|ii", kwlist, &channel, &direction))
+		return NULL;
+
+	if (!module_setup) {
+		init_module();
+	}
+
+	if (direction != INPUT && direction != OUTPUT)
+	{
+		PyErr_SetString(PyExc_ValueError, "An invalid direction was passed to setup()");
+		return NULL;
+	}
+
+	if (get_gpio_number(channel, &gpio) < 0) {
+		char err[2000];
+		snprintf(err, sizeof(err), "Invalid channel %s. (%s)", channel, get_error_msg());
+		PyErr_SetString(PyExc_ValueError, err);
+		return NULL;
+	}
+
+	if (gpio_set_direction(gpio, direction) < 0) {
+		char err[2000];
+		snprintf(err, sizeof(err), "Error setting direction %d on channel %s. (%s)", direction, channel, get_error_msg());
+		PyErr_SetString(PyExc_RuntimeError, err);
+		return NULL;
+	}
+
+   remember_gpio_direction(gpio, direction);
+
+   Py_RETURN_NONE;
+}
+
 PyMethodDef gpio_methods[] = {
    {"setup", (PyCFunction)py_setup_channel, METH_VARARGS | METH_KEYWORDS, "Set up the GPIO channel, direction and (optional) pull/up down control\nchannel        - Either: CHIP board pin number (not R8 GPIO 00..nn number).  Pins start from 1\n                 or    : CHIP GPIO name\ndirection      - INPUT or OUTPUT\n[pull_up_down] - PUD_OFF (default), PUD_UP or PUD_DOWN\n[initial]      - Initial value for an output channel"},
    {"cleanup", py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
@@ -763,8 +811,10 @@ PyMethodDef gpio_methods[] = {
    {"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
    {"get_gpio_base", py_gpio_base, METH_VARARGS, "Get the XIO base number for sysfs"},
    {"selftest", py_selftest, METH_VARARGS, "Internal unit tests"},
+   { "direction", (PyCFunction)py_set_direction, METH_VARARGS, "Change direction of gpio channel. Either INPUT or OUTPUT\n" },
    {NULL, NULL, 0, NULL}
 };
+
 
 #if PY_MAJOR_VERSION > 2
 static struct PyModuleDef rpigpiomodule = {

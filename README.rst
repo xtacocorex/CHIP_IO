@@ -6,6 +6,8 @@ NOTE: Now requires the custom DTC to install the library
 
 Manual::
 
+For Python2.7::
+
     sudo apt-get update
     sudo apt-get install git build-essential python-dev python-pip flex bison -y
     git clone https://github.com/atenart/dtc
@@ -16,6 +18,21 @@ Manual::
     git clone git://github.com/xtacocorex/CHIP_IO.git
     cd CHIP_IO
     sudo python setup.py install
+    cd ..
+    sudo rm -rf CHIP_IO
+
+For Python3::
+
+    sudo apt-get update
+    sudo apt-get install git build-essential python3-dev python3-pip flex bison -y
+    git clone https://github.com/atenart/dtc
+    cd dtc
+    make
+    sudo  make install PREFIX=/usr
+    cd ..
+    git clone git://github.com/xtacocorex/CHIP_IO.git
+    cd CHIP_IO
+    sudo python3 setup.py install
     cd ..
     sudo rm -rf CHIP_IO
 
@@ -170,15 +187,15 @@ Inputs work similarly to outputs.::
 Polling inputs::
 
     if GPIO.input("CSID0"):
-      print("HIGH")
+        print("HIGH")
     else:
-      print("LOW")
+        print("LOW")
 
 Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::
 
-This only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP
-
     GPIO.wait_for_edge(channel, GPIO.RISING)
+
+This only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP
 
 Detecting events::
 
@@ -187,7 +204,7 @@ Detecting events::
     #your amazing code here
     #detect wherever:
     if GPIO.event_detected("XIO-P0"):
-      print "event detected!"
+        print "event detected!"
 
 **GPIO Cleanup**
 
@@ -198,18 +215,17 @@ To clean up the GPIO when done, do the following::
 **PWM**::
 
 Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to know there is a PWM device available to use.
-
+::
     import CHIP_IO.PWM as PWM
     #PWM.start(channel, duty, freq=2000, polarity=0)
     #duty values are valid 0 (off) to 100 (on)
     PWM.start("PWM0", 50)
     PWM.set_duty_cycle("PWM0", 25.5)
     PWM.set_frequency("PWM0", 10)
-
+    # To stop PWM
     PWM.stop("PWM0")
     PWM.cleanup()
-
-    #set polarity to 1 on start:
+    #For specific polarity: this example sets polarity to 1 on start:
     PWM.start("PWM0", 50, 2000, 1)
 
 **SOFTPWM**::
@@ -221,20 +237,44 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
     SPWM.start("XIO-P7", 50)
     SPWM.set_duty_cycle("XIO-P7", 25.5)
     SPWM.set_frequency("XIO-P7", 10)
-
+    # To Stop SPWM
     SPWM.stop("XIO-P7")
     SPWM.cleanup()
-
-    #set polarity to 1 on start:
+    #For specific polarity: this example sets polarity to 1 on start:
     SPWM.start("XIO-P7", 50, 2000, 1)
 
 Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for anything that needs high precision or reliability.
 
 If using SOFTPWM and PWM at the same time, import CHIP_IO.SOFTPWM as SPWM or something different than PWM as to not confuse the library.
 
-**ADC**::
+**LRADC**::
 
-    Not Implemented yet
+The LRADC was enabled in the 4.4.13-ntc-mlc.  This is a 6 bit ADC that is 2 Volt tolerant.
+Sample code below details how to talk to the LRADC.
+
+    import CHIP_IO.LRADC as ADC
+    # Enable Debug
+    ADC.enable_debug()
+    # Check to see if the LRADC Device exists
+    # Returns True/False
+    ADC.get_device_exists()
+    # Setup the LRADC
+    # Specify a sampling rate if needed
+    ADC.setup(rate)
+    # Get the Scale Factor
+    factor = ADC.get_scale_factor()
+    # Get the allowable Sampling Rates
+    sampleratestuple = ADC.get_allowable_sample_rates()
+    # Set the sampling rate
+    ADC.set_sample_rate(rate)
+    # Get the current sampling rate
+    currentrate = ADC.get_sample_rate()
+    # Get the Raw Channel 0 or 1 data
+    raw = ADC.get_chan0_raw()
+    raw = ADC.get_chan1_raw()
+    # Get the factored ADC Channel data
+    fulldata = ADC.get_chan0()
+    fulldata = ADC.get_chan1()
 
 **SPI**::
 
@@ -246,7 +286,7 @@ The Overlay Manager enables you to quickly load simple Device Tree Overlays.  Th
 PWM0, SPI2, I2C1, CUST
 
 Only one of each type of overlay can be loaded at a time, but all three options can be loaded simultaneously.  So you can have SPI2 and I2C1 without PWM0, but you cannot have SPI2 loaded twice.
-
+::
     import CHIP_IO.OverlayManager as OM
     # The enable_debug() function turns on debug printing
     #OM.enable_debug()
@@ -261,7 +301,7 @@ Only one of each type of overlay can be loaded at a time, but all three options 
 
 To use a custom overlay, you must build and compile it properly per the DIP Docs: http://docs.getchip.com/dip.html#development-by-example
 There is no verification that the Custom Overlay is setup properly, it's fire and forget
-
+::
     import CHIP_IO.OverlayManager as OM
     # The full path to the dtbo file needs to be specified
     OM.load("CUST","/home/chip/projects/myfunproject/overlays/mycustomoverlay.dtbo")
@@ -270,7 +310,27 @@ There is no verification that the Custom Overlay is setup properly, it's fire an
     # To unload, just call unload()
     OM.unload("CUST")
 
-Note that this requires the 4.4 kernel with the CONFIG_OF_CONFIGFS option enabled in the kernel config.
+**OverlayManager requires a 4.4 kernel with the CONFIG_OF_CONFIGFS option enabled in the kernel config.**
+
+**Utilties**::
+
+CHIP_IO now supports the ability to enable and disable the 1.8V port on U13.  This voltage rail isn't enabled during boot.
+
+To use the utilities, here is sample code::
+
+    import CHIP_IO.Utilities as UT
+    # Enable 1.8V Output
+    UT.enable_1v8_pin()
+    # Set 2.0V Output
+    UT.set_1v8_pin_voltage(2.0)
+    # Set 2.6V Output
+    UT.set_1v8_pin_voltage(2.6)
+    # Set 3.3V Output
+    UT.set_1v8_pin_voltage(3.3)
+    # Disable 1.8V Output
+    UT.disable_1v8_pin()
+    # Get currently-configured voltage (returns False if the pin is not enabled as output)
+    UT.get_1v8_pin_voltage()
 
 **Running tests**
 

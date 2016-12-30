@@ -41,7 +41,6 @@ SOFTWARE.
 #include "c_pwm.h"
 #include "common.h"
 #include "event_gpio.h"
-#include "Python.h"
 
 #define KEYLEN 7
 

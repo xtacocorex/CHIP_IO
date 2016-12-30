@@ -1,3 +1,11 @@
+0.2.3
+----
+* LRADC Support
+* Added Utilities
+  - Enable/Disable the 1.8V Pin
+  - Change 1.8V Pin to output either 2.0V, 2.6V, or 3.3V
+    (Current limited to 50mA)
+
 0.2.2
 ----
 * Fixes for Issue #16
