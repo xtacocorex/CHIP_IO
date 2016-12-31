@@ -10,6 +10,10 @@ def teardown_module(module):
 
 
 class TestSoftpwmSetup:
+
+    def setup_method(self, test_method):
+        PWM.cleanup()
+
     def test_start_pwm(self):
         PWM.start("XIO-P7", 50, 10)
         base = GPIO.get_gpio_base() + 7
