@@ -52,13 +52,15 @@ SOFTWARE.
 } while (0)
 
 #define MODE_UNKNOWN -1
-#define BOARD        10
-#define BCM          11
+#define CHIP         0
+#define CHIPPRO      1
 
 // In the pins_t structure, the "base_method" field tells how
 // the "gpio" field should be interpreted.
 #define BASE_METHOD_AS_IS 1  /* use the gpio value directly */
 #define BASE_METHOD_XIO   2  /* add the gpio value to the XIO base */
+#define SPWM_ENABLED      1  /* pin able to be used by software pwm */
+#define SPWM_DISABLED     0  /* pin unable to be used by software pwm */
 
 typedef struct pins_t {
     const char *name;
@@ -66,8 +68,9 @@ typedef struct pins_t {
     const char *key;
     int gpio;           /* port number to use under /sys/class/gpio */
     int base_method;    /* modifier for port number; see BASE_METHOD_... */
-    int pwm_mux_mode;
-    int ain;
+    int pwm_mux_mode;   /* pwm pin */
+    int ain;            /* analog pin */
+    int spwm_allow;     /* pin allowed for software pwm */
 } pins_t;
 
 
