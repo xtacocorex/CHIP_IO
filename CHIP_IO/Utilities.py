@@ -25,6 +25,8 @@
 # and for figuring out the ADC setup on the AXP-209
 
 import subprocess
+import glob
+import re
 
 # Set the 1.8V-pin on the CHIP U13-header to given voltage
 # Return False on error
@@ -64,3 +66,14 @@ def disable_1v8_pin():
     subprocess.call('/usr/sbin/i2cset -f -y 0 0x34 0x91 0x05', shell=True)
     # Then we have to write 0x07 to AXP-209 Register 0x90
     subprocess.call('/usr/sbin/i2cset -f -y 0 0x34 0x90 0x07', shell=True)
+
+# Unexport All
+def unexport_all():
+    gpios = glob.glob("/sys/class/gpio/gpio[0-9]*")
+    for g in gpios:
+        tmp = g.split("/")
+        gpio = tmp[4]
+        num = re.sub("[a-z]","",gpio)
+        cmd = "echo " + num + " > /sys/class/gpio/unexport"
+        subprocess.Popen(cmd,shell=True, stdout=subprocess.PIPE)
+
