@@ -1,3 +1,7 @@
+0.2.6
+----
+* Fix to keep the GPIO value file open until the pin is unexported (issue #34)
+
 0.2.5
 ----
 * Updates to the pytest code for HWPWM and SoftPWM
