@@ -77,7 +77,6 @@ struct dyn_int_array_s {
 };
 typedef struct dyn_int_array_s dyn_int_array_t;
 
-
 #define FILENAME_BUFFER_SIZE 128
 
 int setup_error;

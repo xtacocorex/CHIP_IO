@@ -43,6 +43,15 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+// python function toggle_debug()
+static PyObject *py_toggle_debug(PyObject *self, PyObject *args)
+{
+    // toggle debug printing
+    pwm_toggle_debug();
+
+    Py_RETURN_NONE;
+}
+
 // python function start(channel, duty_cycle, freq)
 static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -170,9 +179,10 @@ static const char moduledocstring[] = "Hardware PWM functionality of a CHIP usin
 PyMethodDef pwm_methods[] = {
     {"start", (PyCFunction)py_start_channel, METH_VARARGS | METH_KEYWORDS, "Set up and start the PWM channel.  channel can be in the form of 'PWM0', or 'U13_18'"},
     {"stop", (PyCFunction)py_stop_channel, METH_VARARGS | METH_KEYWORDS, "Stop the PWM channel.  channel can be in the form of 'PWM0', or 'U13_18'"},
-    { "set_duty_cycle", (PyCFunction)py_set_duty_cycle, METH_VARARGS, "Change the duty cycle\ndutycycle - between 0.0 and 100.0" },
-    { "set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
+    {"set_duty_cycle", (PyCFunction)py_set_duty_cycle, METH_VARARGS, "Change the duty cycle\ndutycycle - between 0.0 and 100.0" },
+    {"set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
     {"cleanup", py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
+    {"toggle_debug", py_toggle_debug, METH_VARARGS, "Toggles the enabling/disabling of Debug print output"},
     //{"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
     {NULL, NULL, 0, NULL}
 };

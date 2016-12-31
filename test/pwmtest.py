@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # SETUP VARIABLES
     PWMGPIO = "PWM0"
     RECEIVERGPIO = "CSID0"
-    COUNT = 50
+    COUNT = 150
     SLEEPTIME = 0.01
 
     # LOAD THE PWM OVERLAY
@@ -59,13 +59,14 @@ if __name__ == "__main__":
     time.sleep(1)
 
     # CLEANUP THE GPIO
-    GPIO.cleanup()
-    PWM.cleanup()
+    #GPIO.cleanup()
+    #PWM.cleanup()
 
     # SETUP PWM
     try:
         print("PWM START")
-        PWM.start(PWMGPIO, 35, 20, 0)
+        PWM.toggle_debug()
+        PWM.start(PWMGPIO, 15, 50, 1)
         PrintPwmData()
 
         # UNCOMMENT FOR CRASH
@@ -79,10 +80,11 @@ if __name__ == "__main__":
         #PrintPwmData()
 
         # SETUP PWM RECEIVER
-        rcvr = PWMReceiver(GPIO, RECEIVERGPIO, COUNT, SLEEPTIME)
-        rcvr.start()
+        #rcvr = PWMReceiver(GPIO, RECEIVERGPIO, COUNT, SLEEPTIME)
+        #rcvr.start()
 
-        time.sleep(COUNT*SLEEPTIME + 1)
+        #time.sleep(COUNT*SLEEPTIME + 1)
+        raw_input("PRESS ENTER WHEN DONE")
 
     except:
         raise
@@ -92,6 +94,6 @@ if __name__ == "__main__":
         PWM.stop(PWMGPIO)
         PWM.cleanup()
         #OM.unload("PWM0")
-        GPIO.cleanup()
+        #GPIO.cleanup()
 
 
