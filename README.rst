@@ -250,7 +250,7 @@ If using SOFTPWM and PWM at the same time, import CHIP_IO.SOFTPWM as SPWM or som
 **LRADC**::
 
 The LRADC was enabled in the 4.4.13-ntc-mlc.  This is a 6 bit ADC that is 2 Volt tolerant.
-Sample code below details how to talk to the LRADC.
+Sample code below details how to talk to the LRADC.::
 
     import CHIP_IO.LRADC as ADC
     # Enable Debug
@@ -294,7 +294,6 @@ Only one of each type of overlay can be loaded at a time, but all three options 
     OM.load("PWM0")
     # To verify the overlay was properly loaded, the get_ functions return booleans
     OM.get_pwm_loaded()
-    OM.get_i2c_loaded()
     OM.get_spi_loaded()
     # To unload an overlay, feed in the name to unload()
     OM.unload("PWM0")
@@ -331,6 +330,8 @@ To use the utilities, here is sample code::
     UT.disable_1v8_pin()
     # Get currently-configured voltage (returns False if the pin is not enabled as output)
     UT.get_1v8_pin_voltage()
+    # Unexport Everything
+    UT.unexport_all()
 
 **Running tests**
 

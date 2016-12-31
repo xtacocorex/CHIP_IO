@@ -28,7 +28,6 @@ OVERLAYCONFIGPATH  = "/sys/kernel/config/device-tree/overlays"
 CUSTOMOVERLAYFILEPATH = ""
 
 PWMSYSFSPATH = "/sys/class/pwm/pwmchip0"
-I2C1SYSFSPATH = "/sys/class/i2c-dev/i2c-1"
 # USING THE BASE DIRECTORY FOR SPI AS THE DEVICE NUMBER CHANGES ON LOAD/UNLOAD
 SPI2SYSFSPATH = "/sys/class/spi_master/"
 
@@ -36,21 +35,18 @@ SPI2SYSFSPATH = "/sys/class/spi_master/"
 # DO NOT MODIFY BY HAND WHEN USING
 # AS IT COULD BREAK FUNCTIONALITY
 _LOADED = {
-  "I2C1" : False,
   "SPI2" : False,
   "PWM0" : False,
   "CUST" : False
 }
 
 _OVERLAYS = {
-  "I2C1" : "chip-i2c1.dtbo",
   "SPI2" : "chip-spi2.dtbo",
   "PWM0" : "chip-pwm0.dtbo",
   "CUST" : ""
 }
 
 _FOLDERS = {
-  "I2C1" : "chip-i2c",
   "SPI2" : "chip-spi",
   "PWM0" : "chip-pwm",
   "CUST" : "chip-cust"
@@ -59,13 +55,6 @@ _FOLDERS = {
 def enable_debug():
     global DEBUG
     DEBUG = True
-
-def get_i2c_loaded():
-    """
-     get_i2c_loaded - Returns True/False based upon if the i2c-1 Overlay is loaded
-    """
-    global _LOADED
-    return _LOADED["I2C1"]
 
 def get_spi_loaded():
     """
@@ -123,15 +112,6 @@ def _set_overlay_verify(name, overlay_path, config_path):
             if DEBUG:
                 print("ERROR LOAIDNG PWM0")
             return 1
-    elif name == "I2C1":
-        if os.path.exists(I2C1SYSFSPATH):
-            if DEBUG:
-                print("I2C-1 IS LOADED!")
-            return 0
-        else:
-            if DEBUG:
-                print("ERROR LOADING I2C-1")
-            return 1
     elif name == "SPI2":
         if os.listdir(SPI2SYSFSPATH) != "":
             if DEBUG:
@@ -147,7 +127,7 @@ def load(overlay, path=""):
      load - Load a DTB Overlay
 
      Inputs:
-      overlay - Overlay Key: I2C1, SPI2, PWM0, CUST
+      overlay - Overlay Key: SPI2, PWM0, CUST
       path    - Full Path to where the custom overlay is stored
 
      Returns:
@@ -187,10 +167,6 @@ def load(overlay, path=""):
             print("PWM0 Overlay already loaded")
             return 2
 
-        if overlay.upper() == "I2C1" and _LOADED[overlay.upper()]:
-            print("I2C1 Overlay already loaded")
-            return 2
-
         if overlay.upper() == "SPI2" and _LOADED[overlay.upper()]:
             print("SPI2 Overlay already loaded")
             return 2
@@ -203,7 +179,7 @@ def load(overlay, path=""):
             _LOADED[overlay.upper()] = True
 
     else:
-        raise ValueError("Invalid Overlay name specified! Choose between: I2C1, SPI2, PWM0, CUST")
+        raise ValueError("Invalid Overlay name specified! Choose between: SPI2, PWM0, CUST")
 
 def unload(overlay):
     global DEBUG
@@ -216,6 +192,6 @@ def unload(overlay):
         os.system('rmdir \"{}\"'.format(OVERLAYCONFIGPATH + "/" + _FOLDERS[overlay.upper()]))
         _LOADED[overlay.upper()] = False
     else:
-        raise ValueError("Invalid Overlay name specified! Choose between: I2C1, SPI2, PWM0, CUST")
+        raise ValueError("Invalid Overlay name specified! Choose between: SPI2, PWM0, CUST")
 
 

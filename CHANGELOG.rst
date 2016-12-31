@@ -1,3 +1,8 @@
+0.2.5
+----
+* Updates to the pytest code for HWPWM and SoftPWM
+* Removed the i2c-1 load/unload support in OverlayManager as CHIP Kernel 4.4.13 has that bus brought back by default
+
 0.2.4
 ----
 * HW PWM Fixed
