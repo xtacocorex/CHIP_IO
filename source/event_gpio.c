@@ -215,7 +215,9 @@ int open_value_file(int gpio)
     // create file descriptor of value file
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio); BUF2SMALL(filename);
 
-    if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0) {
+    // Changed this to open Read/Write to prevent a ton of file open/closes from happening when using
+    // the GPIO for SOFTPWM
+    if ((fd = open(filename, O_RDWR | O_NONBLOCK)) < 0) {
         char err[256];
         snprintf(err, sizeof(err), "open_value_file: could not open '%s' (%s)", filename, strerror(errno));
         add_error_msg(err);
@@ -376,17 +378,23 @@ int gpio_get_direction(int gpio, unsigned int *value)
 
 int gpio_set_value(int gpio, unsigned int value)
 {
-    int fd, e_no;
+    // This now uses the value file descriptor that is set in the other struct
+    // in an effort to minimize opening/closing this
+    int fd = fd_lookup(gpio);
+    int e_no;
     char filename[MAX_FILENAME];
     char vstr[16];
 
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/value", gpio); BUF2SMALL(filename);
 
-    if ((fd = open(filename, O_WRONLY)) < 0) {
-        char err[256];
-        snprintf(err, sizeof(err), "gpio_set_value: could not open '%s' (%s)", filename, strerror(errno));
-        add_error_msg(err);
-        return -1;
+    if (!fd)
+    {
+        if ((fd = open_value_file(gpio)) == -1) {
+            char err[256];
+            snprintf(err, sizeof(err), "gpio_get_value: could not open GPIO %d value file", gpio);
+            add_error_msg(err);
+            return -1;
+        }
     }
 
     if (value) {
@@ -396,7 +404,6 @@ int gpio_set_value(int gpio, unsigned int value)
     }
 
     ssize_t s = write(fd, vstr, strlen(vstr));  e_no = errno;
-    close(fd);
 
     if (s != strlen(vstr)) {
         char err[256];
