@@ -57,8 +57,22 @@ struct pwm_dev
     char key[KEYLEN+1]; /* leave room for terminating NUL byte */
     int gpio;
     int initialized;
+    struct pwm_dev *next;
 };
 struct pwm_dev *initialized_pwms = NULL;
+
+struct pwm_dev *lookup_initialized_pwm(const char *key)
+{
+    struct pwm_dev *dev = initialized_pwms;
+    while (dev != NULL)
+    {
+        if (strcmp(dev->key, key) == 0) {
+            return dev;
+        }
+        dev = dev->next;
+    }
+    return NULL;
+}
 
 // pwm exports
 struct pwm_exp
