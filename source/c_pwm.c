@@ -385,10 +385,8 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     //rtnval = pwm_set_polarity(key, polarity);
     //rtnval = 0;
     rtnval = pwm_set_duty_cycle(key, duty);
-    rtnval = 0;
 
-    // TODO: SET RETURN BASED UPON 4 FUNCTIONS ABOVE
-    return 1;
+    return rtnval;
 }
 
 int pwm_disable(const char *key)
@@ -403,7 +401,7 @@ int pwm_disable(const char *key)
 
     // Disable the PWM
     pwm_set_frequency(key, 0);
-    pwm_set_polarity(key, 0);
+    //pwm_set_polarity(key, 0);
     pwm_set_duty_cycle(key, 0);
     pwm_set_enable(key, DISABLE);
 

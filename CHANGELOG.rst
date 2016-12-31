@@ -1,3 +1,10 @@
+0.2.4
+----
+* HW PWM Fixed
+  - Start/Stop/Duty Cycle/Frequency settings work
+  - Polarity cannot be changed, so don't bother setting it to 1 in start()
+* Added the unexport_all() function to Utilites
+
 0.2.3
 ----
 * LRADC Support
