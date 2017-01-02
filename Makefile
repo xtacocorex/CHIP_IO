@@ -6,7 +6,7 @@ publish: package
 
 clean:
 	rm -rf CHIP_IO.* build dist
-	rm -f *.pyo
+	rm -f *.pyo *.pyc
 	rm -f *.egg
 	rm -f overlays/*.pyo overlays/*.pyc
 tests:

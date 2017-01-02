@@ -44,10 +44,10 @@ All scripts that require GPIO, PWM (HW and/or SW), and Overlay Manager need to b
 
 **Allowable Pin Names for the Library**
 
-The following "table" is the allowable pin names that are able to be used by the library.
+The following "table" is the allowable pin names that are able to be used by the library. The Name column is the normal name used on the CHIP Headers, the Alt Name column is the value used by the PocketCHIP header (if it's broken out), and the Key is the Header and Pin Number the the Pin is physically located.  Either of these 3 means is able to specify a pin in CHIP_IO.
 
   +-----------+-------------+--------+
-  |   Name    |  Alt Name   |  Key   |
+  |   CHIP (Name)    |  PocketCHIP (Alt Name)   |  Key   |
   +-----------+-------------+--------+
   | TWI1-SDA  | KPD-I2C-SDA | U13_9  |
   +-----------+-------------+--------+
