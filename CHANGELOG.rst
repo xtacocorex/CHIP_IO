@@ -1,3 +1,8 @@
+0.2.7
+----
+* Fix to the Enable 1.8V Pin code as it wasn't working due to bit shifting isn't allowed on a float.
+* Updated README to denote the PocketCHIP Pin names better
+
 0.2.6
 ----
 * Fix to keep the GPIO value file open until the pin is unexported (issue #34)

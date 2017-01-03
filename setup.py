@@ -20,7 +20,7 @@ classifiers = ['Development Status :: 3 - Alpha',
                'Topic :: System :: Hardware']
 
 setup(name             = 'CHIP_IO',
-      version          = '0.2.6',
+      version          = '0.2.7',
       author           = 'Robert Wolterman',
       author_email     = 'robert.wolterman@gmail.com',
       description      = 'A module to control CHIP IO channels',

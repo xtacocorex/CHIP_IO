@@ -35,7 +35,7 @@ def set_1v8_pin_voltage(voltage):
         return False
     if voltage < 1.8 or voltage > 3.3:
         return False
-    voltage=round((voltage - 1.8) / 0.1) << 4
+    voltage=int(round((voltage - 1.8) / 0.1)) << 4
     if subprocess.call(["/usr/sbin/i2cset", "-f", "-y" ,"0", "0x34", "0x90", "0x03"]):
         return False
     if subprocess.call(["/usr/sbin/i2cset", "-f", "-y", "0", "0x34", "0x91", str(voltage)]):
