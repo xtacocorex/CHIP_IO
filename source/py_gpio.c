@@ -71,13 +71,36 @@ static void remember_gpio_direction(int gpio, int direction)
     dyn_int_array_set(&gpio_direction, gpio, direction, -1);
 }
 
-// python function cleanup()
+// Dummy function to mimic RPi.GPIO for easier porting.
+// python function setmode(mode)
+static PyObject *py_setmode(PyObject *self, PyObject *args)
+{
+    Py_RETURN_NONE;
+}
+
+// python function cleanup(channel=None)
 static PyObject *py_cleanup(PyObject *self, PyObject *args)
 {
-    clear_error_msg();
+    int gpio;
+    char *channel;
 
-    // clean up any exports
-    event_cleanup();
+    clear_error_msg();
+    
+    // Channel is optional
+    if (!PyArg_ParseTuple(args, "|s", &channel))
+        return NULL;
+
+    if (strcmp(channel, "") == 0) {
+        event_cleanup();
+    } else {
+        if (get_gpio_number(channel, &gpio) < 0) {
+            char err[2000];
+            snprintf(err, sizeof(err), "Invalid channel %s. (%s)", channel, get_error_msg());
+            PyErr_SetString(PyExc_ValueError, err);
+            return NULL;
+        }
+        gpio_unexport(gpio);
+    }
 
     Py_RETURN_NONE;
 }
@@ -749,9 +772,6 @@ static PyObject *py_selftest(PyObject *self, PyObject *args)
 
 static const char moduledocstring[] = "GPIO functionality of a CHIP using Python";
 
-
-
-
 /*
 mine for changing pin directipn
 */
@@ -811,7 +831,8 @@ PyMethodDef gpio_methods[] = {
    {"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
    {"get_gpio_base", py_gpio_base, METH_VARARGS, "Get the XIO base number for sysfs"},
    {"selftest", py_selftest, METH_VARARGS, "Internal unit tests"},
-   { "direction", (PyCFunction)py_set_direction, METH_VARARGS, "Change direction of gpio channel. Either INPUT or OUTPUT\n" },
+   {"direction", (PyCFunction)py_set_direction, METH_VARARGS, "Change direction of gpio channel. Either INPUT or OUTPUT\n" },
+   {"setmode", (PyCFunction)py_setmode, METH_VARARGS, "Dummy function that does nothing but maintain compatibility with RPi.GPIO\n" },
    {NULL, NULL, 0, NULL}
 };
 

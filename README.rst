@@ -191,11 +191,11 @@ Polling inputs::
     else:
         print("LOW")
 
+The edge detection code below only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP.
+
 Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::
 
     GPIO.wait_for_edge(channel, GPIO.RISING)
-
-This only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP
 
 Detecting events::
 
@@ -206,11 +206,16 @@ Detecting events::
     if GPIO.event_detected("XIO-P0"):
         print "event detected!"
 
+CHIP_IO can also handle adding callback functions on any pin that supports edge detection.
+
 **GPIO Cleanup**
 
 To clean up the GPIO when done, do the following::
 
+    # Clean up every exported GPIO Pin
     GPIO.cleanup()
+    # Clean up a single pin (keeping everything else intact)
+    GPIO.cleanup("XIO-P0")
 
 **PWM**::
 
@@ -239,7 +244,10 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
     SPWM.set_frequency("XIO-P7", 10)
     # To Stop SPWM
     SPWM.stop("XIO-P7")
+    # Cleanup can have no argument to clean up all SoftPWM outputs
     SPWM.cleanup()
+    # Or you can specify a single SoftPWM output to cleanup (keeping the rest intact)
+    SPWM.cleanup("XIO-P7")
     #For specific polarity: this example sets polarity to 1 on start:
     SPWM.start("XIO-P7", 50, 2000, 1)
 

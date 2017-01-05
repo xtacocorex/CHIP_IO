@@ -34,11 +34,26 @@ SOFTWARE.
 #include "common.h"
 #include "c_softpwm.h"
 
-// python function cleanup()
+// python function cleanup(channel=None)
 static PyObject *py_cleanup(PyObject *self, PyObject *args)
 {
     // unexport the PWM
-    softpwm_cleanup();
+    char key[8];
+    char *channel = NULL;
+    
+    // Channel is optional
+    if (!PyArg_ParseTuple(args, "|s", &channel))
+        return NULL;
+                    
+    if (strcmp(channel, "") == 0) {
+        softpwm_cleanup();
+    } else {
+        if (!get_key(channel, key)) {
+            PyErr_SetString(PyExc_ValueError, "Invalid SOFTPWM key or name.");
+            return NULL;
+        }
+        softpwm_disable(key);
+    }
 
     Py_RETURN_NONE;
 }
@@ -171,15 +186,14 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
     Py_RETURN_NONE;
 }
 
-
 static const char moduledocstring[] = "Software PWM functionality of a CHIP using Python";
 
 PyMethodDef pwm_methods[] = {
-    {"start", (PyCFunction)py_start_channel, METH_VARARGS | METH_KEYWORDS, "Set up and start the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
-    {"stop", (PyCFunction)py_stop_channel, METH_VARARGS | METH_KEYWORDS, "Stop the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
+    { "start", (PyCFunction)py_start_channel, METH_VARARGS | METH_KEYWORDS, "Set up and start the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
+    { "stop", (PyCFunction)py_stop_channel, METH_VARARGS | METH_KEYWORDS, "Stop the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
     { "set_duty_cycle", (PyCFunction)py_set_duty_cycle, METH_VARARGS, "Change the duty cycle\ndutycycle - between 0.0 and 100.0" },
     { "set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
-    {"cleanup", py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
+    { "cleanup", (PyCFunction)py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
     //{"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
     {NULL, NULL, 0, NULL}
 };

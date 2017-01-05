@@ -1,3 +1,10 @@
+0.3.0
+----
+* Added setmode() function for GPIO to maintain compatibility with Raspberry Pi scripts, this function literally does nothing
+* Added per pin cleanup functionality for GPIO and SoftPWM so you can unexport a pin without unexporting every pin
+* Updated README to make edge detection wording a little better and to add the per pin cleanup code
+* Version update since I blasted through 3 issues on github and feel like we need a nice bump to 0.3
+
 0.2.7
 ----
 * Fix to the Enable 1.8V Pin code as it wasn't working due to bit shifting isn't allowed on a float.

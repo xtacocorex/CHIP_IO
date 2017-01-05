@@ -76,6 +76,15 @@ void define_constants(PyObject *module)
    both_edge = Py_BuildValue("i", BOTH_EDGE);
    PyModule_AddObject(module, "BOTH", both_edge);
 
-   version = Py_BuildValue("s", "0.2.7");
+   unknown = Py_BuildValue("i", MODE_UNKNOWN);
+   PyModule_AddObject(module, "UNKNOWN", unknown);
+
+   board = Py_BuildValue("i", BOARD);
+   PyModule_AddObject(module, "BOARD", board);
+
+   bcm = Py_BuildValue("i", BCM);
+   PyModule_AddObject(module, "BCM", bcm);
+
+   version = Py_BuildValue("s", "0.3.0");
    PyModule_AddObject(module, "VERSION", version);
 }

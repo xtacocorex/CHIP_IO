@@ -52,6 +52,8 @@ SOFTWARE.
 } while (0)
 
 #define MODE_UNKNOWN -1
+#define BOARD        10
+#define BCM          11
 #define CHIP         0
 #define CHIPPRO      1
 
