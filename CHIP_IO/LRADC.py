@@ -75,7 +75,7 @@ def get_scale_factor():
 
     # Debug
     if DEBUG:
-        print("Current LRADC Scaling Factor: {0}").format(SCALE_FACTOR)
+        print("Current LRADC Scaling Factor: {0}".format(SCALE_FACTOR))
 
     return SCALE_FACTOR
 
@@ -91,7 +91,7 @@ def get_allowable_sample_rates():
 
     global SAMPLE_RATES
     tmp = dat.strip().split(" ")
-    for i in xrange(len(tmp)):
+    for i in range(len(tmp)):
         if "." in tmp[i]:
             tmp[i] = float(tmp[i])
         else:
@@ -102,7 +102,7 @@ def get_allowable_sample_rates():
     if DEBUG:
         print("Allowable Sampling Rates:")
         for rate in SAMPLE_RATES:
-            print("{0}").format(rate)
+            print("{0}".format(rate))
 
     return tuple(SAMPLE_RATES)
 
@@ -110,10 +110,6 @@ def set_sample_rate(rate):
     # If we do not have a device, lets throw an exception
     if not DEVICE_EXIST:
         raise Exception("LRADC Device does not exist")
-
-    # Debug
-    if DEBUG:
-        print("Setting Sample Rate to: {0}").format(rate)
 
     # Check to see if the rates were gathered already
     global SAMPLE_RATES
@@ -123,6 +119,10 @@ def set_sample_rate(rate):
     # Range check the input rate
     if rate not in SAMPLE_RATES:
         raise ValueError("Input Rate an Acceptable Value")
+
+    # Debug
+    if DEBUG:
+        print("Setting Sample Rate to: {0}".format(rate))
 
     # Write the rate
     f = open(LRADC_BASE_DEVICE_FILE+CURRENT_SAMPLE_RATE_FILE,"w")
@@ -153,7 +153,7 @@ def get_sample_rate():
 
     # Debug
     if DEBUG:
-        print("Current Sampling Rate: {0}").format(dat)
+        print("Current Samplig Rate: {0}".format(dat))
 
     return dat
 
@@ -171,7 +171,7 @@ def get_chan0_raw():
 
     # Debug
     if DEBUG:
-        print("CHAN0 RAW: {0}").format(dat)
+        print("CHAN0 RAW: {0}".format(dat))
 
     return dat
 
@@ -189,7 +189,7 @@ def get_chan1_raw():
 
     # Debug
     if DEBUG:
-        print("CHAN1 RAW: {0}").format(dat)
+        print("CHAN1 RAW: {0}".format(dat))
 
     return dat
 
@@ -205,7 +205,7 @@ def get_chan0():
 
     # Debug
     if DEBUG:
-        print("CHAN0: {0}").format(dat)
+        print("CHAN0: {0}".format(dat))
 
     return dat
 
@@ -221,7 +221,7 @@ def get_chan1():
 
     # Debug
     if DEBUG:
-        print("CHAN1: {0}").format(dat)
+        print("CHAN1: {0}".format(dat))
 
     return dat
 

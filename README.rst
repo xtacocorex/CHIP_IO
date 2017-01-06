@@ -345,11 +345,19 @@ To use the utilities, here is sample code::
 
 Install py.test to run the tests. You'll also need the python compiler package for py.test.::
 
+    # Python 2.7
     sudo apt-get install python-pytest
+    # Python 3
+    sudo apt-get install python3-pytest
 
-Execute the following in the root of the project::
+To run the tests, do the following.::
 
+    # If only one version of Python is installed
     sudo py.test
+    # If more than one version of Python
+    cd test
+    sudo python2 -m pytest
+    sudo python3 -m pytest
 
 **Credits**
 
