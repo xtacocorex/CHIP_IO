@@ -206,7 +206,21 @@ Detecting events::
     if GPIO.event_detected("XIO-P0"):
         print "event detected!"
 
-CHIP_IO can also handle adding callback functions on any pin that supports edge detection.
+CHIP_IO can also handle adding callback functions on any pin that supports edge detection.::
+
+    def mycallback(channel):
+        print("we hit the edge we want")
+
+    GPIO.setup("GPIO3", GPIO.IN)
+    # Add Callback: Falling Edge
+    GPIO.add_event_callback("GPIO3", GPIO.FALLING, mycallback)
+    # Add Callback: Rising Edge
+    GPIO.add_event_callback("GPIO3", GPIO.RISING, mycallback)
+    # Add Callback: Both Edges
+    GPIO.add_event_callback("GPIO3", GPIO.BOTH, mycallback)
+    # Remove callback
+    GPIO.remove_event_detect("GPIO3")
+
 
 **GPIO Cleanup**
 
