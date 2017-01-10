@@ -1,3 +1,7 @@
+0.3.1
+----
+* Fixing issue #50 where I broke GPIO.cleanup() and SOFTPWM.cleanup() when no input is specified.
+
 0.3.0
 ----
 * Added setmode() function for GPIO to maintain compatibility with Raspberry Pi scripts, this function literally does nothing

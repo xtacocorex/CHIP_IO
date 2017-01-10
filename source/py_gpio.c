@@ -79,18 +79,21 @@ static PyObject *py_setmode(PyObject *self, PyObject *args)
 }
 
 // python function cleanup(channel=None)
-static PyObject *py_cleanup(PyObject *self, PyObject *args)
+static PyObject *py_cleanup(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int gpio;
     char *channel;
+    static char *kwlist[] = {"channel", NULL};
 
     clear_error_msg();
-    
-    // Channel is optional
-    if (!PyArg_ParseTuple(args, "|s", &channel))
-        return NULL;
 
-    if (strcmp(channel, "") == 0) {
+    // Channel is optional
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|s", kwlist, &channel)) {
+        return NULL;
+    }
+
+    // The !channel fixes issues #50
+    if (!channel || strcmp(channel, "") == 0) {
         event_cleanup();
     } else {
         if (get_gpio_number(channel, &gpio) < 0) {
@@ -819,7 +822,7 @@ static PyObject *py_set_direction(PyObject *self, PyObject *args, PyObject *kwar
 
 PyMethodDef gpio_methods[] = {
    {"setup", (PyCFunction)py_setup_channel, METH_VARARGS | METH_KEYWORDS, "Set up the GPIO channel, direction and (optional) pull/up down control\nchannel        - Either: CHIP board pin number (not R8 GPIO 00..nn number).  Pins start from 1\n                 or    : CHIP GPIO name\ndirection      - INPUT or OUTPUT\n[pull_up_down] - PUD_OFF (default), PUD_UP or PUD_DOWN\n[initial]      - Initial value for an output channel"},
-   {"cleanup", py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
+   {"cleanup", (PyCFunction)py_cleanup, METH_VARARGS | METH_KEYWORDS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
    {"output", py_output_gpio, METH_VARARGS, "Output to a GPIO channel\ngpio  - gpio channel\nvalue - 0/1 or False/True or LOW/HIGH"},
    {"input", py_input_gpio, METH_VARARGS, "Input from a GPIO channel.  Returns HIGH=1=True or LOW=0=False\ngpio - gpio channel"},
    {"add_event_detect", (PyCFunction)py_add_event_detect, METH_VARARGS | METH_KEYWORDS, "Enable edge detection events for a particular GPIO channel.\nchannel      - either board pin number or BCM number depending on which mode is set.\nedge         - RISING, FALLING or BOTH\n[callback]   - A callback function for the event (optional)\n[bouncetime] - Switch bounce timeout in ms for callback"},
@@ -831,14 +834,14 @@ PyMethodDef gpio_methods[] = {
    {"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
    {"get_gpio_base", py_gpio_base, METH_VARARGS, "Get the XIO base number for sysfs"},
    {"selftest", py_selftest, METH_VARARGS, "Internal unit tests"},
-   {"direction", (PyCFunction)py_set_direction, METH_VARARGS, "Change direction of gpio channel. Either INPUT or OUTPUT\n" },
+   {"direction", (PyCFunction)py_set_direction, METH_VARARGS | METH_KEYWORDS, "Change direction of gpio channel. Either INPUT or OUTPUT\n" },
    {"setmode", (PyCFunction)py_setmode, METH_VARARGS, "Dummy function that does nothing but maintain compatibility with RPi.GPIO\n" },
    {NULL, NULL, 0, NULL}
 };
 
 
 #if PY_MAJOR_VERSION > 2
-static struct PyModuleDef rpigpiomodule = {
+static struct PyModuleDef chipgpiomodule = {
    PyModuleDef_HEAD_INIT,
    "GPIO",       // name of module
    moduledocstring,  // module documentation, may be NULL

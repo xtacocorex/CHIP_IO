@@ -45,7 +45,8 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "|s", &channel))
         return NULL;
                     
-    if (strcmp(channel, "") == 0) {
+    // The !channel fixes issue #50
+    if (!channel || strcmp(channel, "") == 0) {
         softpwm_cleanup();
     } else {
         if (!get_key(channel, key)) {
