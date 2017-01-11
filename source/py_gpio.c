@@ -861,7 +861,7 @@ PyMODINIT_FUNC initGPIO(void)
    clear_error_msg();
 
 #if PY_MAJOR_VERSION > 2
-   if ((module = PyModule_Create(&rpigpiomodule)) == NULL)
+   if ((module = PyModule_Create(&chipgpiomodule)) == NULL)
       return NULL;
 #else
    if ((module = Py_InitModule3("GPIO", gpio_methods, moduledocstring)) == NULL)
