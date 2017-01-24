@@ -47,9 +47,7 @@ SOFTWARE.
 
 // Global variables
 int pwm_initialized = 0;
-int DEBUG = 0;
-//int ENABLE = 1;
-//int DISABLE = 0;
+//int DEBUG = 0;
 
 // pwm devices (future chip pro use)
 struct pwm_dev
@@ -150,17 +148,16 @@ int pwm_set_frequency(const char *key, float freq) {
     period_ns = (unsigned long)(1e9 / freq);
 
     if (pwm->enable) {
-        if (DEBUG)
-            printf(" ** IN pwm_set_frequency: pwm_initialized = %d\n", pwm_initialized);
         if (period_ns != pwm->period_ns) {
             pwm->period_ns = period_ns;
 
             len = snprintf(buffer, sizeof(buffer), "%lu", period_ns); BUF2SMALL(buffer);
-            if (DEBUG)
-                printf(" ** pwm_set_frequency: buffer: %s\n", buffer);
             ssize_t s = write(pwm->period_fd, buffer, len);  //ASSRT(s == len);
-            if (DEBUG)
+            if (DEBUG) {
+                printf(" ** IN pwm_set_frequency: pwm_initialized = %d\n", pwm_initialized);
+                printf(" ** pwm_set_frequency: buffer: %s\n", buffer);
                 printf(" ** IN pwm_set_frequency: s = %d, len = %d\n", s, len);
+            }
             if (s != len) {
                 rtnval = -1;
             } else {
@@ -193,8 +190,6 @@ int pwm_set_polarity(const char *key, int polarity) {
     }
 
     if (pwm->enable) {
-        if (DEBUG)
-            printf(" ** IN pwm_set_polarity: pwm_initialized = %d\n", pwm_initialized);
         if (polarity == 0) {
             len = snprintf(buffer, sizeof(buffer), "%s", "normal"); BUF2SMALL(buffer);
         }
@@ -202,11 +197,12 @@ int pwm_set_polarity(const char *key, int polarity) {
         {
             len = snprintf(buffer, sizeof(buffer), "%s", "inverted"); BUF2SMALL(buffer);
         }
-        if (DEBUG)
-            printf(" ** pwm_set_poliarity: buffer: %s\n", buffer);
         ssize_t s = write(pwm->polarity_fd, buffer, len);  //ASSRT(s == len);
-        if (DEBUG)
+        if (DEBUG) {
+            printf(" ** IN pwm_set_polarity: pwm_initialized = %d\n", pwm_initialized);
+            printf(" ** pwm_set_poliarity: buffer: %s\n", buffer);
             printf(" ** IN pwm_set_polarity: s = %d, len = %d\n", s, len);
+        }
         if (s != len) {
             rtnval = -1;
         } else {
@@ -237,14 +233,13 @@ int pwm_set_duty_cycle(const char *key, float duty) {
     pwm->duty = (unsigned long)(pwm->period_ns * (duty / 100.0));
 
     if (pwm->enable) {
-        if (DEBUG)
-            printf(" ** IN pwm_set_duty_cycle: pwm_initialized = %d\n", pwm_initialized);
         len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty); BUF2SMALL(buffer);
-        if (DEBUG)
-            printf(" ** pwm_set_duty_cycle: buffer: %s\n", buffer);
         ssize_t s = write(pwm->duty_fd, buffer, len);  //ASSRT(s == len);
-        if (DEBUG)
+        if (DEBUG) {
+            printf(" ** IN pwm_set_duty_cycle: pwm_initialized = %d\n", pwm_initialized);
+            printf(" ** pwm_set_duty_cycle: buffer: %s\n", buffer);
             printf(" ** IN pwm_set_duty_cycle: s = %d, len = %d\n", s, len);
+        }
         if (s != len) {
             rtnval = -1;
         } else {
@@ -336,7 +331,7 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
         printf(" ** IN pwm_start: enable_path:   %s\n", enable_path);
         printf(" ** IN pwm_start: period_path:   %s\n", period_path);
         printf(" ** IN pwm_start: duty_path:     %s\n", duty_path);
-        printf(" **IN pwm_start: polarity_path: %s\n", polarity_path);
+        printf(" ** IN pwm_start: polarity_path: %s\n", polarity_path);
     }
     
     //add period and duty fd to pwm list
@@ -393,13 +388,17 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
 
     int rtnval = 0;
     rtnval = pwm_set_enable(key, ENABLE);
-    rtnval = 0;
-    rtnval = pwm_set_frequency(key, freq);
-    rtnval = 0;
-    //rtnval = pwm_set_polarity(key, polarity);
-    //rtnval = 0;
-    rtnval = pwm_set_duty_cycle(key, duty);
-
+    // Fix for issue #53
+    if (rtnval != -1) {
+        rtnval = 0;
+        rtnval = pwm_set_frequency(key, freq);
+        if (rtnval != -1) {
+            rtnval = 0;
+            //rtnval = pwm_set_polarity(key, polarity);
+            //rtnval = 0;
+            rtnval = pwm_set_duty_cycle(key, duty);
+        }
+    }
     return rtnval;
 }
 
@@ -433,6 +432,9 @@ int pwm_disable(const char *key)
     {
         if (strcmp(pwm->key, key) == 0)
         {
+            if (DEBUG) {
+                printf(" ** IN pwm_disable: unexporting %s\n", key);
+            }
             //close the fd
             close(pwm->enable_fd);
             close(pwm->period_fd);
@@ -464,11 +466,3 @@ void pwm_cleanup(void)
     }
 }
 
-void pwm_toggle_debug(void)
-{
-    if (DEBUG) {
-        DEBUG = 0;
-    } else {
-        DEBUG = 1;
-    }
-}

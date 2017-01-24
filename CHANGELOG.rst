@@ -1,3 +1,8 @@
+0.3.2
+----
+* Fixing issue #53 to handle the return values of the set functions in pwm_enable.
+* Start of whole library debug for #55
+
 0.3.1
 ----
 * Fixing issue #50 where I broke GPIO.cleanup() and SOFTPWM.cleanup() when no input is specified.

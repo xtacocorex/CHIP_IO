@@ -49,6 +49,9 @@ SOFTWARE.
 int setup_error = 0;
 int module_setup = 0;
 
+// Library Debug
+int DEBUG = 0;
+
 pins_t pins_info[] = {
   { "GND",       "GND",         "U13_1",   -1, BASE_METHOD_AS_IS, -1, -1, SPWM_DISABLED},
   { "CHG-IN",    "CHG-IN",      "U13_2",   -1, BASE_METHOD_AS_IS, -1, -1, SPWM_DISABLED},
@@ -214,6 +217,14 @@ int get_xio_base(void)
   return xio_base_address; 
 }  /* get_xio_base */
 
+void toggle_debug(void)
+{
+    if (DEBUG) {
+        DEBUG = 0;
+    } else {
+        DEBUG = 1;
+    }
+}
 
 int gpio_number(pins_t *pin)
 {
@@ -351,12 +362,16 @@ int get_pwm_key_by_name(const char *name, char *key)
     pins_t *p;
     for (p = pins_info; p->name != NULL; ++p) {
         if (strcmp(p->name, name) == 0) {
-            printf("## FOUND PWM KEY, VALIDATING MUX MODE ##\n");
+            if (DEBUG) {
+                printf(" ** get_pwm_key_by_name: FOUND PWM KEY, VALIDATING MUX MODE **\n");
+            }
             //validate it's a valid pwm pin
             if (p->pwm_mux_mode == -1)
                 return 0;
 
-            printf("## PWM KEY IS VALID ##\n");
+            if (DEBUG) {
+                printf(" ** get_pwm_key_by_name: PWM KEY IS VALID ##\n");
+            }
             strncpy(key, p->key, 7);
             key[7] = '\0';
             return 1;

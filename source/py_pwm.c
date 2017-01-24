@@ -47,7 +47,7 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args)
 static PyObject *py_toggle_debug(PyObject *self, PyObject *args)
 {
     // toggle debug printing
-    pwm_toggle_debug();
+    toggle_debug();
 
     Py_RETURN_NONE;
 }

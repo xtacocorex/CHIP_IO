@@ -86,6 +86,7 @@ typedef struct dyn_int_array_s dyn_int_array_t;
 
 int setup_error;
 int module_setup;
+int DEBUG;
 
 int get_xio_base(void);
 int gpio_number(pins_t *pin);
@@ -110,3 +111,4 @@ void dyn_int_array_delete(dyn_int_array_t **in_array);
 void clear_error_msg(void);
 char *get_error_msg(void);
 void add_error_msg(char *msg);
+void toggle_debug(void);
