@@ -4,7 +4,7 @@ import CHIP_IO.LRADC as ADC
 
 # == ENABLE DEBUG ==
 print("ENABLING LRADC DEBUG OUTPUT")
-ADC.enable_debug()
+ADC.toggle_debug()
 
 # == SETUP ==
 print("LRADC SETUP WITH SAMPLE RATE OF 125")

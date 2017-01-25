@@ -42,9 +42,12 @@ CURRENT_SAMPLE_RATE_FILE = "/in_voltage_sampling_frequency"
 RAW_VOLTAGE_CHAN0_FILE = "/in_voltage0_raw"
 RAW_VOLTAGE_CHAN1_FILE = "/in_voltage1_raw"
 
-def enable_debug():
+def toggle_debug():
     global DEBUG
-    DEBUG = True
+    if DEBUG:
+        DEBUG = False
+    else:
+        DEBUG = True
 
 def setup(rate=250):
     # First we determine if the device exists

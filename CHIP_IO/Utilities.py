@@ -28,6 +28,16 @@ import subprocess
 import glob
 import re
 
+# Global Variables
+DEBUG = False
+
+def toggle_debug():
+    global DEBUG
+    if DEBUG:
+        DEBUG = False
+    else:
+        DEBUG = True
+
 # Set the 1.8V-pin on the CHIP U13-header to given voltage
 # Return False on error
 def set_1v8_pin_voltage(voltage):
@@ -35,10 +45,16 @@ def set_1v8_pin_voltage(voltage):
         return False
     if voltage < 1.8 or voltage > 3.3:
         return False
+    if DEBUG:
+        print("Setting 1.8V Pin voltage: {0}".format(voltage))
     voltage=int(round((voltage - 1.8) / 0.1)) << 4
     if subprocess.call(["/usr/sbin/i2cset", "-f", "-y" ,"0", "0x34", "0x90", "0x03"]):
+        if DEBUG:
+            print("Pin enable command failed")
         return False
     if subprocess.call(["/usr/sbin/i2cset", "-f", "-y", "0", "0x34", "0x91", str(voltage)]):
+        if DEBUG:
+            print("Pin set voltage command failed")
         return False
     return True
 
@@ -49,10 +65,14 @@ def get_1v8_pin_voltage():
     output=p.communicate()[0].decode("utf-8").strip()
     #Not configured as an output
     if output != "0x03":
+        if DEBUG:
+            print("1.8V Pin is currently disabled")
         return False
     p=subprocess.Popen(["/usr/sbin/i2cget", "-f", "-y", "0", "0x34", "0x91"], stdout=subprocess.PIPE)
     output=p.communicate()[0].decode("utf-8").strip()
     voltage=round((int(output, 16) >> 4) * 0.1 + 1.8, 1)
+    if DEBUG:
+        print("Current 1.8V Pin voltage: {0}".format(voltage))
     return voltage
 
 # Enable 1.8V Pin on CHIP U13 Header
@@ -61,6 +81,8 @@ def enable_1v8_pin():
 
 # Disable 1.8V Pin on CHIP U13 Header
 def disable_1v8_pin():
+    if DEBUG:
+        print("Disabling the 1.8V Pin")
     # CANNOT USE I2C LIB AS WE NEED TO FORCE THE COMMAND DUE TO THE KERNEL OWNING THE DEVICE
     # First we have to write 0x05 to AXP-209 Register 0x91
     subprocess.call('/usr/sbin/i2cset -f -y 0 0x34 0x91 0x05', shell=True)
@@ -69,6 +91,8 @@ def disable_1v8_pin():
 
 # Unexport All
 def unexport_all():
+    if DEBUG:
+        print("Unexporting all the pins")
     gpios = glob.glob("/sys/class/gpio/gpio[0-9]*")
     for g in gpios:
         tmp = g.split("/")

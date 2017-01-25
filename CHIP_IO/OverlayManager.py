@@ -52,9 +52,12 @@ _FOLDERS = {
   "CUST" : "chip-cust"
 }
 
-def enable_debug():
+def toggle_debug():
     global DEBUG
-    DEBUG = True
+    if DEBUG:
+        DEBUG = False
+    else:
+        DEBUG = True
 
 def get_spi_loaded():
     """
