@@ -111,7 +111,7 @@ int initialize_pwm(void)
         int gpio = 0;
 
         if (DEBUG)
-            printf(" ** EXPORTING PWM0 **\n");
+            printf(" ** initialize_pwm **\n");
         if ((fd = open("/sys/class/pwm/pwmchip0/export", O_WRONLY)) < 0)
         {
             return -1;
@@ -119,7 +119,7 @@ int initialize_pwm(void)
         len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
         ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
         if (DEBUG)
-            printf(" ** IN initialize_pwm: s = %d, len = %d\n", s, len);
+            printf(" ** initialize_pwm: export pin: s = %d, len = %d\n", s, len);
         close(fd);
 
         pwm_initialized = 1;
@@ -154,9 +154,9 @@ int pwm_set_frequency(const char *key, float freq) {
             len = snprintf(buffer, sizeof(buffer), "%lu", period_ns); BUF2SMALL(buffer);
             ssize_t s = write(pwm->period_fd, buffer, len);  //ASSRT(s == len);
             if (DEBUG) {
-                printf(" ** IN pwm_set_frequency: pwm_initialized = %d\n", pwm_initialized);
+                printf(" ** pwm_set_frequency: pwm_initialized = %d\n", pwm_initialized);
                 printf(" ** pwm_set_frequency: buffer: %s\n", buffer);
-                printf(" ** IN pwm_set_frequency: s = %d, len = %d\n", s, len);
+                printf(" ** pwm_set_frequency: s = %d, len = %d\n", s, len);
             }
             if (s != len) {
                 rtnval = -1;
@@ -199,9 +199,9 @@ int pwm_set_polarity(const char *key, int polarity) {
         }
         ssize_t s = write(pwm->polarity_fd, buffer, len);  //ASSRT(s == len);
         if (DEBUG) {
-            printf(" ** IN pwm_set_polarity: pwm_initialized = %d\n", pwm_initialized);
-            printf(" ** pwm_set_poliarity: buffer: %s\n", buffer);
-            printf(" ** IN pwm_set_polarity: s = %d, len = %d\n", s, len);
+            printf(" ** pwm_set_polarity: pwm_initialized = %d\n", pwm_initialized);
+            printf(" ** pwm_set_polarity: buffer: %s\n", buffer);
+            printf(" ** pwm_set_polarity: s = %d, len = %d\n", s, len);
         }
         if (s != len) {
             rtnval = -1;
@@ -236,9 +236,9 @@ int pwm_set_duty_cycle(const char *key, float duty) {
         len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty); BUF2SMALL(buffer);
         ssize_t s = write(pwm->duty_fd, buffer, len);  //ASSRT(s == len);
         if (DEBUG) {
-            printf(" ** IN pwm_set_duty_cycle: pwm_initialized = %d\n", pwm_initialized);
+            printf(" ** pwm_set_duty_cycle: pwm_initialized = %d\n", pwm_initialized);
             printf(" ** pwm_set_duty_cycle: buffer: %s\n", buffer);
-            printf(" ** IN pwm_set_duty_cycle: s = %d, len = %d\n", s, len);
+            printf(" ** pwm_set_duty_cycle: s = %d, len = %d\n", s, len);
         }
         if (s != len) {
             rtnval = -1;
@@ -261,7 +261,7 @@ int pwm_set_enable(const char *key, int enable)
 
     if (enable != 0 && enable != 1) {
         if (DEBUG)
-            printf(" ** INVALID ENABLE OPTION, NEEDS TO BE EITHER 0 OR 1! **\n");
+            printf(" ** pwm_set_enable: enable needs to be 0 or 1! **\n");
         return rtnval;
     }
 
@@ -269,7 +269,7 @@ int pwm_set_enable(const char *key, int enable)
 
     if (pwm == NULL) {
         if (DEBUG)
-            printf(" ** SOMETHING BAD HAPPEND IN pwm_set_enable, WE'RE EXITING WITH -1 NOW! **\n");
+            printf(" ** pwm_set_enable: pwm struct is null **\n");
         return rtnval;
     }
 
@@ -277,15 +277,15 @@ int pwm_set_enable(const char *key, int enable)
     len = snprintf(buffer, sizeof(buffer), "%d", enable); BUF2SMALL(buffer);
     ssize_t s = write(pwm->enable_fd, buffer, len);  //ASSRT(s == len);
     if (DEBUG) {
-        printf(" ** IN pwm_set_enable: pwm_initialized = %d\n", pwm_initialized);
+        printf(" ** pwm_set_enable: pwm_initialized = %d\n", pwm_initialized);
         printf(" ** pwm_set_enable: buffer: %s\n", buffer);
-        printf(" ** IN pwm_set_enable: s = %d, len = %d\n", s, len);
+        printf(" ** pwm_set_enable: s = %d, len = %d\n", s, len);
     }
 
     if (s == len)
     {
         if (DEBUG)
-            printf(" ** SETTING pwm->enable to %d\n", enable);
+            printf(" ** pwm_set_enable: pwm->enable to %d\n", enable);
         pwm->enable = enable;
         rtnval = 0;
     } else {
@@ -306,16 +306,16 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     struct pwm_exp *new_pwm, *pwm;
 
     if (DEBUG)
-        printf(" ** IN pwm_start: pwm_initialized = %d\n", pwm_initialized);
+        printf(" ** pwm_start: pwm_initialized = %d\n", pwm_initialized);
     if(!pwm_initialized) {
         initialize_pwm();
     } else {
         if (DEBUG)
-            printf(" ** ALREADY INITIALIZED, CALLING CLEANUP TO START FRESH **");
+            printf(" ** pwm_start: pwm already initialized, cleaning up **");
         pwm_cleanup();   
     }
     if (DEBUG)
-        printf(" ** IN pwm_start: pwm_initialized = %d\n", pwm_initialized);
+        printf(" ** pwm_start: pwm_initialized = %d\n", pwm_initialized);
 
     //setup the pwm base path, the chip only has one pwm
     snprintf(pwm_base_path, sizeof(pwm_base_path), "/sys/class/pwm/pwmchip0/pwm%d", 0); BUF2SMALL(pwm_base_path);
@@ -327,11 +327,11 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     snprintf(polarity_path, sizeof(polarity_path), "%s/polarity", pwm_base_path); BUF2SMALL(polarity_path);
 
     if (DEBUG) {
-        printf(" ** IN pwm_start: pwm_base_path: %s\n", pwm_base_path);
-        printf(" ** IN pwm_start: enable_path:   %s\n", enable_path);
-        printf(" ** IN pwm_start: period_path:   %s\n", period_path);
-        printf(" ** IN pwm_start: duty_path:     %s\n", duty_path);
-        printf(" ** IN pwm_start: polarity_path: %s\n", polarity_path);
+        printf(" ** pwm_start: pwm_base_path: %s\n", pwm_base_path);
+        printf(" ** pwm_start: enable_path:   %s\n", enable_path);
+        printf(" ** pwm_start: period_path:   %s\n", period_path);
+        printf(" ** pwm_start: duty_path:     %s\n", duty_path);
+        printf(" ** pwm_start: polarity_path: %s\n", polarity_path);
     }
     
     //add period and duty fd to pwm list
@@ -365,7 +365,7 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     }
 
     if (DEBUG)
-        printf(" ** IN pwm_start: IF WE MAKE IT HERE, THE FILES WERE SUCCESSFULLY OPEN **\n");
+        printf(" ** pwm_start: sysfs files opened successfully **\n");
     strncpy(new_pwm->key, key, KEYLEN);  /* can leave string unterminated */
     new_pwm->key[KEYLEN] = '\0'; /* terminate string */
     new_pwm->period_fd = period_fd;
@@ -433,7 +433,7 @@ int pwm_disable(const char *key)
         if (strcmp(pwm->key, key) == 0)
         {
             if (DEBUG) {
-                printf(" ** IN pwm_disable: unexporting %s\n", key);
+                printf(" ** pwm_disable: unexporting %s\n", key);
             }
             //close the fd
             close(pwm->enable_fd);

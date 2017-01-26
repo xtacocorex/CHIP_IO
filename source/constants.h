@@ -13,5 +13,6 @@ PyObject *version;
 PyObject *unknown;
 PyObject *board;
 PyObject *bcm;
+PyObject *module_debug;
 
 void define_constants(PyObject *module);

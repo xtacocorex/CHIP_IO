@@ -96,6 +96,8 @@ int softpwm_set_frequency(const char *key, float freq) {
         return -1;
     }
 
+    if (DEBUG)
+        printf(" ** softpwm_set_frequency: %f **\n", freq);
     pthread_mutex_lock(pwm->params_lock);
     pwm->params.freq = freq;
     pthread_mutex_unlock(pwm->params_lock);
@@ -116,6 +118,8 @@ int softpwm_set_polarity(const char *key, int polarity) {
         return -1;
     }
 
+    if (DEBUG)
+        printf(" ** softpwm_set_polarity: %d **\n", polarity);
     pthread_mutex_lock(pwm->params_lock);
     pwm->params.polarity = polarity;
     pthread_mutex_unlock(pwm->params_lock);
@@ -135,6 +139,8 @@ int softpwm_set_duty_cycle(const char *key, float duty) {;
         return -1;
     }
 
+    if (DEBUG)
+        printf(" ** softpwm_set_duty_cycle: %f **\n", duty);
     pthread_mutex_lock(pwm->params_lock);
     pwm->params.duty = duty;
     pthread_mutex_unlock(pwm->params_lock);
@@ -194,7 +200,6 @@ void *softpwm_thread_toggle(void *arg)
 
     if (enabled_local)
     {
-
       /* Force 0 duty cycle to be 0 */
       if (duty_local != 0)
       {
@@ -238,16 +243,27 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
     int gpio;
     int ret;
 
-    if (get_gpio_number(key, &gpio) < 0)
+    if (get_gpio_number(key, &gpio) < 0) {
+        if (DEBUG)
+            printf(" ** softpwm_start: invalid gpio specified **\n");
         return -1;
+    }
+        
     if (gpio_export(gpio) < 0) {
        char err[2000];
        snprintf(err, sizeof(err), "Error setting up softpwm on pin %d, maybe already exported? (%s)", gpio, get_error_msg());
        add_error_msg(err);
        return -1;
     }
-    if (gpio_set_direction(gpio, OUTPUT) < 0)
+    
+    if (DEBUG)
+        printf(" ** softpwm_start: %d exported **\n", gpio);
+    
+    if (gpio_set_direction(gpio, OUTPUT) < 0) {
+        if (DEBUG)
+            printf(" ** softpwm_start: gpio_set_direction failed **\n");
         return -1;
+    }
 
     // add to list
     new_pwm = malloc(sizeof(struct softpwm));  ASSRT(new_pwm != NULL);
@@ -279,12 +295,16 @@ int softpwm_start(const char *key, float duty, float freq, int polarity)
     }
     pthread_mutex_unlock(new_params_lock);
 
+    if (DEBUG)
+        printf(" ** softpwm_enable: setting softpwm parameters **\n");
     ASSRT(softpwm_set_duty_cycle(new_pwm->key, duty) == 0);
     ASSRT(softpwm_set_frequency(new_pwm->key, freq) == 0);
     ASSRT(softpwm_set_polarity(new_pwm->key, polarity) == 0);
 
     pthread_mutex_lock(new_params_lock);
     // create thread for pwm
+    if (DEBUG)
+        printf(" ** softpwm_enable: creating thread **\n");
     ret = pthread_create(&new_thread, NULL, softpwm_thread_toggle, (void *)new_pwm);
     ASSRT(ret == 0);
 
@@ -299,17 +319,23 @@ int softpwm_disable(const char *key)
 {
     struct softpwm *pwm, *temp, *prev_pwm = NULL;
 
+    if (DEBUG)
+        printf(" ** in softpwm_disable **\n");
     // remove from list
     pwm = exported_pwms;
     while (pwm != NULL)
     {
         if (strcmp(pwm->key, key) == 0)
         {
+            if (DEBUG)
+                printf(" ** softpwm_disable: found pin **\n");
             pthread_mutex_lock(pwm->params_lock);
             pwm->params.stop_flag = true;
             pthread_mutex_unlock(pwm->params_lock);
             pthread_join(pwm->thread, NULL);  /* wait for thread to exit */
 
+            if (DEBUG)
+                printf(" ** softpwm_disable: unexporting %d **\n", pwm->gpio);
             gpio_unexport(pwm->gpio);
 
             if (prev_pwm == NULL)

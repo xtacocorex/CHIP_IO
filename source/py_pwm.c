@@ -183,7 +183,6 @@ PyMethodDef pwm_methods[] = {
     {"set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
     {"cleanup", py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
     {"toggle_debug", py_toggle_debug, METH_VARARGS, "Toggles the enabling/disabling of Debug print output"},
-    //{"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
     {NULL, NULL, 0, NULL}
 };
 
