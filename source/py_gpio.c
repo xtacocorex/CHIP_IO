@@ -742,10 +742,6 @@ static PyObject *py_selftest(PyObject *self, PyObject *args)
   ASSRT(0 == build_path("/home", "ip", fp, sizeof(fp)));
   ASSRT(0 == build_path("/NOTFOUND", "ch", fp, sizeof(fp)));
 
-  printf("Testing get_spi_bus_path_number\n");
-  ASSRT(2 == get_spi_bus_path_number(0));  /* doesn't really work on CHIP */
-  ASSRT(2 == get_spi_bus_path_number(1));  /* doesn't really work on CHIP */
-
   printf("Testing error message buffer\n");
   clear_error_msg();
   ASSRT(0 == strlen(get_error_msg()));
