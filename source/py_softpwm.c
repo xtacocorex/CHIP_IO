@@ -41,6 +41,8 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args)
     char key[8];
     char *channel = NULL;
     
+    clear_error_msg();
+    
     // Channel is optional
     if (!PyArg_ParseTuple(args, "|s", &channel))
         return NULL;
@@ -68,6 +70,8 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
     float duty_cycle = 0.0;
     int polarity = 0;
     static char *kwlist[] = {"channel", "duty_cycle", "frequency", "polarity", NULL};
+
+    clear_error_msg();
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ffi", kwlist, &channel, &duty_cycle, &frequency, &polarity)) {
         return NULL;
@@ -114,6 +118,8 @@ static PyObject *py_stop_channel(PyObject *self, PyObject *args, PyObject *kwarg
     char key[8];
     char *channel;
 
+    clear_error_msg();
+
     if (!PyArg_ParseTuple(args, "s", &channel))
         return NULL;
 
@@ -134,6 +140,8 @@ static PyObject *py_set_duty_cycle(PyObject *self, PyObject *args, PyObject *kwa
     char *channel;
     float duty_cycle = 0.0;
     static char *kwlist[] = {"channel", "duty_cycle", NULL};
+
+    clear_error_msg();
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|f", kwlist, &channel, &duty_cycle))
         return NULL;
@@ -164,6 +172,8 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
     char *channel;
     float frequency = 1.0;
     static char *kwlist[] = {"channel", "frequency", NULL};
+
+    clear_error_msg();
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|f", kwlist, &channel, &frequency))
         return NULL;

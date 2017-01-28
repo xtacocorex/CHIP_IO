@@ -62,6 +62,8 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
     int polarity = 0;
     static char *kwlist[] = {"channel", "duty_cycle", "frequency", "polarity", NULL};
 
+    clear_error_msg();
+
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ffi", kwlist, &channel, &duty_cycle, &frequency, &polarity)) {
         return NULL;
     }
@@ -100,6 +102,8 @@ static PyObject *py_stop_channel(PyObject *self, PyObject *args, PyObject *kwarg
     char key[8];
     char *channel;
 
+    clear_error_msg();
+
     if (!PyArg_ParseTuple(args, "s", &channel))
         return NULL;
 
@@ -120,6 +124,8 @@ static PyObject *py_set_duty_cycle(PyObject *self, PyObject *args, PyObject *kwa
     char *channel;
     float duty_cycle = 0.0;
     static char *kwlist[] = {"channel", "duty_cycle", NULL};
+
+    clear_error_msg();
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|f", kwlist, &channel, &duty_cycle))
         return NULL;
@@ -151,6 +157,8 @@ static PyObject *py_set_pulse_width_ns(PyObject *self, PyObject *args, PyObject 
     unsigned long pulse_width_ns = 0.0;
     unsigned long period_ns;
     static char *kwlist[] = {"channel", "pulse_width_ns", NULL};
+
+    clear_error_msg();
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|k", kwlist, &channel, &pulse_width_ns))
         return NULL;
@@ -190,6 +198,8 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
     float frequency = 1.0;
     static char *kwlist[] = {"channel", "frequency", NULL};
 
+    clear_error_msg();
+
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|f", kwlist, &channel, &frequency))
         return NULL;
 
@@ -219,6 +229,8 @@ static PyObject *py_set_period_ns(PyObject *self, PyObject *args, PyObject *kwar
     char *channel;
     unsigned long period_ns = 2e6;
     static char *kwlist[] = {"channel", "period_ns", NULL};
+
+    clear_error_msg();
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|k", kwlist, &channel, &period_ns))
         return NULL;
