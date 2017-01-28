@@ -433,7 +433,7 @@ int pwm_disable(const char *key)
         if (strcmp(pwm->key, key) == 0)
         {
             if (DEBUG) {
-                printf(" ** pwm_disable: unexporting %s\n", key);
+                printf(" ** pwm_disable: freeing memory %s\n", key);
             }
             //close the fd
             close(pwm->enable_fd);

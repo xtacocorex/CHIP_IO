@@ -93,6 +93,9 @@ int gpio_export(int gpio)
     char str_gpio[80];
     struct gpio_exp *new_gpio, *g;
 
+    if (DEBUG)
+        printf(" ** gpio_export **\n");
+
     snprintf(filename, sizeof(filename), "/sys/class/gpio/export"); BUF2SMALL(filename);
 
     if ((fd = open(filename, O_WRONLY)) < 0)
@@ -115,6 +118,8 @@ int gpio_export(int gpio)
     }
 
     // add to list
+    if (DEBUG)
+            printf(" ** gpio_export: creating data struct **\n");
     new_gpio = malloc(sizeof(struct gpio_exp));  ASSRT(new_gpio != NULL);
 
     new_gpio->gpio = gpio;
@@ -217,6 +222,8 @@ int open_value_file(int gpio)
 
     // Changed this to open Read/Write to prevent a ton of file open/closes from happening when using
     // the GPIO for SOFTPWM
+    if (DEBUG)
+        printf(" ** open_value_file **\n");
     if ((fd = open(filename, O_RDWR | O_NONBLOCK)) < 0) {
         char err[256];
         snprintf(err, sizeof(err), "open_value_file: could not open '%s' (%s)", filename, strerror(errno));
@@ -236,6 +243,8 @@ int open_edge_file(int gpio)
     // create file descriptor of value file
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/edge", gpio); BUF2SMALL(filename);
 
+    if (DEBUG)
+        printf(" ** open_edge_file **\n");
     if ((fd = open(filename, O_RDONLY | O_NONBLOCK)) < 0) {
         char err[256];
         snprintf(err, sizeof(err), "open_edge_file: could not open '%s' (%s)", filename, strerror(errno));
@@ -252,6 +261,9 @@ int gpio_unexport(int gpio)
     char filename[MAX_FILENAME];
     char str_gpio[16];
     struct gpio_exp *g, *temp, *prev_g = NULL;
+
+    if (DEBUG)
+        printf(" ** gpio_unexport **\n");
 
     close_value_fd(gpio);
 
@@ -274,6 +286,8 @@ int gpio_unexport(int gpio)
         return -1;
     }
 
+    if (DEBUG)
+        printf(" ** gpio_unexport: freeing memory **\n");
     // remove from list
     g = exported_gpios;
     while (g != NULL)
@@ -315,6 +329,9 @@ int gpio_set_direction(int gpio, unsigned int in_flag)
     } else {
         strncpy(direction, "in", ARRAY_SIZE(direction) - 1);
     }
+    if (DEBUG)
+        printf(" ** gpio_set_direction: %s **\n",direction);
+    
     ssize_t s = write(fd, direction, strlen(direction));  e_no = errno;
     close(fd);
     if (s != strlen(direction)) {
@@ -360,6 +377,9 @@ int gpio_get_direction(int gpio, unsigned int *value)
         add_error_msg(err);
         return -1;
     }
+    
+    if (DEBUG)
+        printf(" ** gpio_get_direction: %s **\n",direction);
 
     if (strcmp(direction, "out") == 0)
         *value = OUTPUT;
@@ -403,6 +423,9 @@ int gpio_set_value(int gpio, unsigned int value)
         strncpy(vstr, "0", ARRAY_SIZE(vstr) - 1);
     }
 
+    if (DEBUG)
+        printf(" ** gpio_set_value: writing %s **\n", vstr);
+
     ssize_t s = write(fd, vstr, strlen(vstr));  e_no = errno;
 
     if (s != strlen(vstr)) {
@@ -444,6 +467,9 @@ int gpio_get_value(int gpio, unsigned int *value)
         return -1;
     }
 
+    if (DEBUG)
+        printf(" ** gpio_get_value: %c **\n", ch);
+
     if (ch == '1') {
         *value = 1;
     } else if (ch == '0') {
@@ -471,6 +497,9 @@ int gpio_set_edge(int gpio, unsigned int edge)
         add_error_msg(err);
         return -1;
     }
+
+    if (DEBUG)
+        printf(" ** gpio_set_edge: %s **\n", stredge[edge]);
 
     ssize_t s = write(fd, stredge[edge], strlen(stredge[edge]) + 1);
     if (s < 0) {
@@ -521,6 +550,9 @@ int gpio_get_edge(int gpio)
         return -1;
     }
 
+    if (DEBUG)
+        printf(" ** gpio_get_edge: %s **\n", edge);
+
     if (strcmp(edge, "rising") == 0)
     {
         rtnedge = 1;
@@ -553,6 +585,8 @@ int gpio_lookup(int fd)
 void exports_cleanup(void)
 {
     // unexport everything
+    if (DEBUG)
+        printf(" ** exports_cleanup **\n");
     while (exported_gpios != NULL)
         gpio_unexport(exported_gpios->gpio);
 }
@@ -562,6 +596,8 @@ int add_edge_callback(int gpio, int edge, void (*func)(int gpio, void* data), vo
     struct callback *cb = callbacks;
     struct callback *new_cb;
 
+    if (DEBUG)
+        printf(" ** add_edge_callback **\n");
     new_cb = malloc(sizeof(struct callback));  ASSRT(new_cb != NULL);
 
     new_cb->fde  = open_edge_file(gpio);
@@ -611,6 +647,8 @@ void run_callbacks(int gpio)
             // Only run if we are allowed
             if (canrun)
             {
+                if (DEBUG)
+                    printf(" ** run_callbacks: gpio triggered: %d **\n", gpio);
                 cb->func(cb->gpio, cb->data);
             }
 
@@ -629,6 +667,8 @@ void remove_callbacks(int gpio)
     {
         if (cb->gpio == gpio)
         {
+            if (DEBUG)
+                printf(" ** remove_callbacks: gpio: %d **\n", gpio);
             close(cb->fde);
             if (prev == NULL)
                 callbacks = cb->next;
@@ -762,6 +802,9 @@ int add_edge_detect(int gpio, unsigned int edge)
     struct epoll_event ev;
     long t = 0;
 
+    if (DEBUG)
+        printf(" ** add_edge_detect: gpio: %d **\n", gpio);
+
     // check to see if this gpio has been added already
     if (gpio_event_add(gpio) != 0)
         return 1;
@@ -828,6 +871,9 @@ void remove_edge_detect(int gpio)
     struct epoll_event ev;
     int fd = fd_lookup(gpio);
 
+    if (DEBUG)
+        printf(" ** remove_edge_detect: gpio : %d **\n", gpio);
+
     // delete callbacks for gpio
     remove_callbacks(gpio);
 
@@ -870,6 +916,9 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
     int epfd, n, i;
     struct epoll_event events, ev;
     char buf;
+
+    if (DEBUG)
+        printf(" ** blocking_wait_for_edge: gpio: %d **\n", gpio);
 
     if ((epfd = epoll_create(1)) == -1) {
         char err[256];
@@ -948,6 +997,9 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
             return 7;
         }
     }
+
+    if (DEBUG)
+        printf(" ** blocking_wait_for_edge: gpio triggered: %d **\n", gpio);
 
     gpio_event_remove(gpio);
     close(epfd);

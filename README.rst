@@ -169,6 +169,13 @@ You can also refer to the bin based upon its alternate name::
 
     GPIO.setup("GPIO1", GPIO.IN)
 
+**GPIO Debug**
+
+Debug can be enabled/disabled by the following command::
+
+    # Enable Debug
+    GPIO.toggle_debug()
+
 **GPIO Output**
 
 Setup the pin for output, and write GPIO.HIGH or GPIO.LOW. Or you can use 1 or 0.::
@@ -236,6 +243,8 @@ To clean up the GPIO when done, do the following::
 Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to know there is a PWM device available to use.
 ::
     import CHIP_IO.PWM as PWM
+    # Enable/Disable Debug
+    PWM.toggle_debug()
     #PWM.start(channel, duty, freq=2000, polarity=0)
     #duty values are valid 0 (off) to 100 (on)
     PWM.start("PWM0", 50)
@@ -250,6 +259,8 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
 **SOFTPWM**::
 
     import CHIP_IO.SOFTPWM as SPWM
+    # Enable/Disable Debug
+    SPWM.toggle_debug()
     #SPWM.start(channel, duty, freq=2000, polarity=0)
     #duty values are valid 0 (off) to 100 (on)
     #you can choose any pin
@@ -275,8 +286,8 @@ The LRADC was enabled in the 4.4.13-ntc-mlc.  This is a 6 bit ADC that is 2 Volt
 Sample code below details how to talk to the LRADC.::
 
     import CHIP_IO.LRADC as ADC
-    # Enable Debug
-    ADC.enable_debug()
+    # Enable/Disable Debug
+    ADC.toggle_debug()
     # Check to see if the LRADC Device exists
     # Returns True/False
     ADC.get_device_exists()
@@ -310,8 +321,8 @@ PWM0, SPI2, I2C1, CUST
 Only one of each type of overlay can be loaded at a time, but all three options can be loaded simultaneously.  So you can have SPI2 and I2C1 without PWM0, but you cannot have SPI2 loaded twice.
 ::
     import CHIP_IO.OverlayManager as OM
-    # The enable_debug() function turns on debug printing
-    #OM.enable_debug()
+    # The toggle_debug() function turns on/off debug printing
+    #OM.toggle_debug()
     # To load an overlay, feed in the name to load()
     OM.load("PWM0")
     # To verify the overlay was properly loaded, the get_ functions return booleans
@@ -340,6 +351,8 @@ CHIP_IO now supports the ability to enable and disable the 1.8V port on U13.  Th
 To use the utilities, here is sample code::
 
     import CHIP_IO.Utilities as UT
+    # Enable/Disable Debug
+    UT.toggle_debug()
     # Enable 1.8V Output
     UT.enable_1v8_pin()
     # Set 2.0V Output
