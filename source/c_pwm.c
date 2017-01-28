@@ -47,7 +47,6 @@ SOFTWARE.
 
 // Global variables
 int pwm_initialized = 0;
-//int DEBUG = 0;
 
 // pwm devices (future chip pro use)
 struct pwm_dev
@@ -173,6 +172,66 @@ int pwm_set_frequency(const char *key, float freq) {
     return rtnval;
 }
 
+int pwm_set_period_ns(const char *key, unsigned long period_ns) {
+    int len;
+    int rtnval = -1;
+    char buffer[80];
+    struct pwm_exp *pwm;
+
+    //TODO: ADD CHECK FOR period_ns
+
+    pwm = lookup_exported_pwm(key);
+
+    if (pwm == NULL) {
+        return rtnval;
+    }
+    
+    if (pwm->enable) {
+        if (period_ns != pwm->period_ns) {
+            pwm->period_ns = period_ns;
+
+            len = snprintf(buffer, sizeof(buffer), "%lu", period_ns); BUF2SMALL(buffer);
+            ssize_t s = write(pwm->period_fd, buffer, len);  //ASSRT(s == len);
+            if (DEBUG) {
+                printf(" ** pwm_set_period_ns: pwm_initialized = %d\n", pwm_initialized);
+                printf(" ** pwm_set_period_ns: buffer: %s\n", buffer);
+                printf(" ** pwm_set_period_ns: s = %d, len = %d\n", s, len);
+            }
+            if (s != len) {
+                rtnval = -1;
+            } else {
+                rtnval = 1;
+            }
+        } else {
+            rtnval = 0;
+        }
+    } else {
+        rtnval = 0;
+    }
+
+    return rtnval;
+}
+
+int pwm_get_period_ns(const char *key, unsigned long *period_ns) {
+    int rtnval = -1;
+    struct pwm_exp *pwm;
+    
+    pwm = lookup_exported_pwm(key);
+
+    if (pwm == NULL) {
+        return rtnval;
+    }
+    
+    if (DEBUG)
+        printf(" ** pwm_get_period_ns: %lu **\n",pwm->period_ns);
+    
+    // Set period_ns to what we have in the struct
+    *period_ns = pwm->period_ns;
+    
+    rtnval = 0;
+    return rtnval;
+}
+
 int pwm_set_polarity(const char *key, int polarity) {
     int len;
     int rtnval = -1;
@@ -250,6 +309,44 @@ int pwm_set_duty_cycle(const char *key, float duty) {
     }
 
     return rtnval;
+}
+
+int pwm_set_pulse_width_ns(const char *key, unsigned long pulse_width_ns) {
+    int len;
+    int rtnval = -1;
+    char buffer[80];
+    struct pwm_exp *pwm;
+
+    pwm = lookup_exported_pwm(key);
+
+    if (pwm == NULL) {
+        return rtnval;
+    }
+
+    if (pulse_width_ns < 0 || pulse_width_ns > pwm->period_ns)
+        return rtnval;
+
+    pwm->duty = pulse_width_ns / pwm->period_ns;
+    
+    if (pwm->enable) {
+        len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty); BUF2SMALL(buffer);
+        ssize_t s = write(pwm->duty_fd, buffer, len);  //ASSRT(s == len);
+        if (DEBUG) {
+            printf(" ** pwm_set_pulse_width_ns: pwm_initialized = %d\n", pwm_initialized);
+            printf(" ** pwm_set_pulse_width_ns: buffer: %s\n", buffer);
+            printf(" ** pwm_set_pulse_width_ns: s = %d, len = %d\n", s, len);
+        }
+        if (s != len) {
+            rtnval = -1;
+        } else {
+            rtnval = 1;
+        }
+    } else {
+        rtnval = 0;
+    }
+
+    return rtnval;
+       
 }
 
 int pwm_set_enable(const char *key, int enable)
