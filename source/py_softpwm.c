@@ -83,14 +83,12 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
         return NULL;
     }
 
-    if (duty_cycle < 0.0 || duty_cycle > 100.0)
-    {
+    if (duty_cycle < 0.0 || duty_cycle > 100.0) {
         PyErr_SetString(PyExc_ValueError, "duty_cycle must have a value from 0.0 to 100.0");
         return NULL;
     }
 
-    if (frequency <= 0.0)
-    {
+    if (frequency <= 0.0) {
         PyErr_SetString(PyExc_ValueError, "frequency must be greater than 0.0");
         return NULL;
     }
@@ -100,8 +98,7 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
         return NULL;
     }
 
-    if (softpwm_start(key, duty_cycle, frequency, polarity) < 0)
-    {
+    if (softpwm_start(key, duty_cycle, frequency, polarity) < 0) {
        printf("softpwm_start failed");
        char err[2000];
        snprintf(err, sizeof(err), "Error starting softpwm on pin %s (%s)", key, get_error_msg());
@@ -146,8 +143,7 @@ static PyObject *py_set_duty_cycle(PyObject *self, PyObject *args, PyObject *kwa
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|f", kwlist, &channel, &duty_cycle))
         return NULL;
 
-    if (duty_cycle < 0.0 || duty_cycle > 100.0)
-    {
+    if (duty_cycle < 0.0 || duty_cycle > 100.0) {
         PyErr_SetString(PyExc_ValueError, "duty_cycle must have a value from 0.0 to 100.0");
         return NULL;
     }
@@ -178,8 +174,7 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|f", kwlist, &channel, &frequency))
         return NULL;
 
-    if ((frequency <= 0.0) || (frequency > 10000.0))
-    {
+    if ((frequency <= 0.0) || (frequency > 10000.0)) {
         PyErr_SetString(PyExc_ValueError, "frequency must be greater than 0.0 and less than 10000.0");
         return NULL;
     }

@@ -127,7 +127,6 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
       init_module();
    }
 
-
    if (direction != INPUT && direction != OUTPUT)
    {
       PyErr_SetString(PyExc_ValueError, "An invalid direction was passed to setup()");
