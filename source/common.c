@@ -455,33 +455,6 @@ int build_path(const char *partial_path, const char *prefix, char *full_path, si
     return 0;
 }
 
-int get_spi_bus_path_number(unsigned int spi)
-{
-  char path[FILENAME_BUFFER_SIZE];
-  char ocp_dir[FILENAME_BUFFER_SIZE];
-
-  build_path("/sys/devices", "ocp", ocp_dir, sizeof(ocp_dir)); BUF2SMALL(ocp_dir);
-
-  if (spi == 0) {
-    snprintf(path, sizeof(path), "%s/48030000.spi/spi_master/spi1", ocp_dir); BUF2SMALL(path);
-  } else {
-    snprintf(path, sizeof(path), "%s/481a0000.spi/spi_master/spi1", ocp_dir); BUF2SMALL(path);
-  }
-
-  DIR* dir = opendir(path);
-  if (dir) {
-    closedir(dir);
-    //device is using /dev/spidev1.x
-    return 1;
-  } else if (ENOENT == errno) {
-    //device is using /dev/spidev2.x
-    return 2;
-  } else {
-    return -1;
-  }
-}
-
-
 // We do not know at compile time how many GPIOs there are, so it is not safe
 // to declare per-GPIO arrays with a static size.  The "dyn_int_array_*"
 // functions implement a dynamic integer array which grows as needed at run

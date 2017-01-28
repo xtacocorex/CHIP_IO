@@ -33,6 +33,7 @@ SOFTWARE.
 #include <stdlib.h>
 #include <sys/types.h>
 #include <string.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include "c_pwm.h"
@@ -102,6 +103,7 @@ struct pwm_exp *lookup_exported_pwm(const char *key)
 
 int initialize_pwm(void)
 {
+    int e_no;
     if (!pwm_initialized) {
         int fd, len;
         char str_gpio[80];
@@ -113,23 +115,37 @@ int initialize_pwm(void)
             printf(" ** initialize_pwm **\n");
         if ((fd = open("/sys/class/pwm/pwmchip0/export", O_WRONLY)) < 0)
         {
+            char err[256];
+            snprintf(err, sizeof(err), "initialize_pwm: could not open export file");
+            add_error_msg(err);
             return -1;
         }
         len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
-        ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
+        ssize_t s = write(fd, str_gpio, len); e_no = errno;
+        close(fd);
+        
+        if (s != len) {
+            char err[256];
+            snprintf(err, sizeof(err), "initialize_pwm: could not export pwm (%s)", strerror(e_no));
+            add_error_msg(err);
+            return -1;
+        }
+        
         if (DEBUG)
             printf(" ** initialize_pwm: export pin: s = %d, len = %d\n", s, len);
-        close(fd);
-
+        
         pwm_initialized = 1;
         return 1;
+    } else {
+        if (DEBUG)
+            printf(" ** initialize_pwm: pwm is already initialized\n");
     }
 
     return 0;
 }
 
 int pwm_set_frequency(const char *key, float freq) {
-    int len;
+    int len, e_no;
     int rtnval = -1;
     char buffer[80];
     unsigned long period_ns;
@@ -151,13 +167,16 @@ int pwm_set_frequency(const char *key, float freq) {
             pwm->period_ns = period_ns;
 
             len = snprintf(buffer, sizeof(buffer), "%lu", period_ns); BUF2SMALL(buffer);
-            ssize_t s = write(pwm->period_fd, buffer, len);  //ASSRT(s == len);
+            ssize_t s = write(pwm->period_fd, buffer, len);  e_no = errno;
             if (DEBUG) {
                 printf(" ** pwm_set_frequency: pwm_initialized = %d\n", pwm_initialized);
                 printf(" ** pwm_set_frequency: buffer: %s\n", buffer);
                 printf(" ** pwm_set_frequency: s = %d, len = %d\n", s, len);
             }
             if (s != len) {
+                char err[256];
+                snprintf(err, sizeof(err), "pwm_set_frequency: could not change frequency of pwm (%s)", strerror(e_no));
+                add_error_msg(err);
                 rtnval = -1;
             } else {
                 rtnval = 1;
@@ -173,7 +192,7 @@ int pwm_set_frequency(const char *key, float freq) {
 }
 
 int pwm_set_period_ns(const char *key, unsigned long period_ns) {
-    int len;
+    int len, e_no;
     int rtnval = -1;
     char buffer[80];
     struct pwm_exp *pwm;
@@ -191,13 +210,16 @@ int pwm_set_period_ns(const char *key, unsigned long period_ns) {
             pwm->period_ns = period_ns;
 
             len = snprintf(buffer, sizeof(buffer), "%lu", period_ns); BUF2SMALL(buffer);
-            ssize_t s = write(pwm->period_fd, buffer, len);  //ASSRT(s == len);
+            ssize_t s = write(pwm->period_fd, buffer, len);  e_no = errno;
             if (DEBUG) {
                 printf(" ** pwm_set_period_ns: pwm_initialized = %d\n", pwm_initialized);
                 printf(" ** pwm_set_period_ns: buffer: %s\n", buffer);
                 printf(" ** pwm_set_period_ns: s = %d, len = %d\n", s, len);
             }
             if (s != len) {
+                char err[256];
+                snprintf(err, sizeof(err), "pwm_set_period_ns: could not change period of pwm (%s)", strerror(e_no));
+                add_error_msg(err);
                 rtnval = -1;
             } else {
                 rtnval = 1;
@@ -233,7 +255,7 @@ int pwm_get_period_ns(const char *key, unsigned long *period_ns) {
 }
 
 int pwm_set_polarity(const char *key, int polarity) {
-    int len;
+    int len, e_no;
     int rtnval = -1;
     char buffer[80];
     struct pwm_exp *pwm;
@@ -256,13 +278,16 @@ int pwm_set_polarity(const char *key, int polarity) {
         {
             len = snprintf(buffer, sizeof(buffer), "%s", "inverted"); BUF2SMALL(buffer);
         }
-        ssize_t s = write(pwm->polarity_fd, buffer, len);  //ASSRT(s == len);
+        ssize_t s = write(pwm->polarity_fd, buffer, len);  e_no = errno;
         if (DEBUG) {
             printf(" ** pwm_set_polarity: pwm_initialized = %d\n", pwm_initialized);
             printf(" ** pwm_set_polarity: buffer: %s\n", buffer);
             printf(" ** pwm_set_polarity: s = %d, len = %d\n", s, len);
         }
         if (s != len) {
+            char err[256];
+            snprintf(err, sizeof(err), "pwm_set_polarity: could not change polarity of pwm (%s)", strerror(e_no));
+            add_error_msg(err);
             rtnval = -1;
         } else {
             rtnval = 1;
@@ -274,7 +299,7 @@ int pwm_set_polarity(const char *key, int polarity) {
 }
 
 int pwm_set_duty_cycle(const char *key, float duty) {
-    int len;
+    int len, e_no;
     int rtnval = -1;
     char buffer[80];
     struct pwm_exp *pwm;
@@ -293,13 +318,16 @@ int pwm_set_duty_cycle(const char *key, float duty) {
 
     if (pwm->enable) {
         len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty); BUF2SMALL(buffer);
-        ssize_t s = write(pwm->duty_fd, buffer, len);  //ASSRT(s == len);
+        ssize_t s = write(pwm->duty_fd, buffer, len);  e_no = errno;
         if (DEBUG) {
             printf(" ** pwm_set_duty_cycle: pwm_initialized = %d\n", pwm_initialized);
             printf(" ** pwm_set_duty_cycle: buffer: %s\n", buffer);
             printf(" ** pwm_set_duty_cycle: s = %d, len = %d\n", s, len);
         }
         if (s != len) {
+            char err[256];
+            snprintf(err, sizeof(err), "pwm_set_duty_cycle: could not change duty cycle of pwm (%s)", strerror(e_no));
+            add_error_msg(err);
             rtnval = -1;
         } else {
             rtnval = 1;
@@ -312,7 +340,7 @@ int pwm_set_duty_cycle(const char *key, float duty) {
 }
 
 int pwm_set_pulse_width_ns(const char *key, unsigned long pulse_width_ns) {
-    int len;
+    int len, e_no;
     int rtnval = -1;
     char buffer[80];
     struct pwm_exp *pwm;
@@ -330,13 +358,16 @@ int pwm_set_pulse_width_ns(const char *key, unsigned long pulse_width_ns) {
     
     if (pwm->enable) {
         len = snprintf(buffer, sizeof(buffer), "%lu", pwm->duty); BUF2SMALL(buffer);
-        ssize_t s = write(pwm->duty_fd, buffer, len);  //ASSRT(s == len);
+        ssize_t s = write(pwm->duty_fd, buffer, len);  e_no = errno;
         if (DEBUG) {
             printf(" ** pwm_set_pulse_width_ns: pwm_initialized = %d\n", pwm_initialized);
             printf(" ** pwm_set_pulse_width_ns: buffer: %s\n", buffer);
             printf(" ** pwm_set_pulse_width_ns: s = %d, len = %d\n", s, len);
         }
         if (s != len) {
+            char err[256];
+            snprintf(err, sizeof(err), "pwm_set_pulse_width_ns: could not change pulse width of pwm (%s)", strerror(e_no));
+            add_error_msg(err);
             rtnval = -1;
         } else {
             rtnval = 1;
@@ -351,7 +382,7 @@ int pwm_set_pulse_width_ns(const char *key, unsigned long pulse_width_ns) {
 
 int pwm_set_enable(const char *key, int enable)
 {
-    int len;
+    int len, e_no;
     int rtnval = -1;
     char buffer[80];
     struct pwm_exp *pwm;
@@ -372,7 +403,7 @@ int pwm_set_enable(const char *key, int enable)
 
 
     len = snprintf(buffer, sizeof(buffer), "%d", enable); BUF2SMALL(buffer);
-    ssize_t s = write(pwm->enable_fd, buffer, len);  //ASSRT(s == len);
+    ssize_t s = write(pwm->enable_fd, buffer, len);  e_no = errno;
     if (DEBUG) {
         printf(" ** pwm_set_enable: pwm_initialized = %d\n", pwm_initialized);
         printf(" ** pwm_set_enable: buffer: %s\n", buffer);
@@ -386,6 +417,9 @@ int pwm_set_enable(const char *key, int enable)
         pwm->enable = enable;
         rtnval = 0;
     } else {
+        char err[256];
+        snprintf(err, sizeof(err), "pwm_set_enable: could not enable/disable pwm (%s)", strerror(e_no));
+        add_error_msg(err);
         rtnval = -1;
     }
 
@@ -432,11 +466,18 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     }
     
     //add period and duty fd to pwm list
-    if ((enable_fd = open(enable_path, O_WRONLY)) < 0)
+    if ((enable_fd = open(enable_path, O_WRONLY)) < 0) {
+        char err[256];
+        snprintf(err, sizeof(err), "pwm_start: could not open enable file");
+        add_error_msg(err);
         return -1;
+    }
 
     if ((period_fd = open(period_path, O_WRONLY)) < 0) {
         close(enable_fd);
+        char err[256];
+        snprintf(err, sizeof(err), "pwm_start: could not open period file");
+        add_error_msg(err);
         return -1;
     }
 
@@ -444,6 +485,9 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
         //error, close already opened period_fd.
         close(enable_fd);
         close(period_fd);
+        char err[256];
+        snprintf(err, sizeof(err), "pwm_start: could not open duty cycle file");
+        add_error_msg(err);
         return -1;
     }
 
@@ -452,13 +496,19 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
         close(enable_fd);
         close(period_fd);
         close(duty_fd);
+        char err[256];
+        snprintf(err, sizeof(err), "pwm_start: could not open polarity file");
+        add_error_msg(err);
         return -1;
     }
 
     // add to list
     new_pwm = malloc(sizeof(struct pwm_exp));
     if (new_pwm == 0) {
-        return -1; // out of memory
+        char err[256];
+        snprintf(err, sizeof(err), "pwm_start: unable to allocate memory");
+        add_error_msg(err);
+        return -1;
     }
 
     if (DEBUG)
@@ -503,7 +553,7 @@ int pwm_disable(const char *key)
 {
     struct pwm_exp *pwm, *temp, *prev_pwm = NULL;
 
-    int fd, len;
+    int fd, len, e_no;
     char str_gpio[80];
     // Per https://github.com/NextThingCo/CHIP-linux/pull/4
     // we need to export 0 here to enable pwm0
@@ -517,12 +567,21 @@ int pwm_disable(const char *key)
 
     if ((fd = open("/sys/class/pwm/pwmchip0/unexport", O_WRONLY)) < 0)
     {
+        char err[256];
+        snprintf(err, sizeof(err), "pwm_disable: could not open unexport file");
+        add_error_msg(err);
         return -1;
     }
     len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
-    ssize_t s = write(fd, str_gpio, len);  ASSRT(s == len);
+    ssize_t s = write(fd, str_gpio, len); e_no = errno;
     close(fd);
-
+    if (s != len) {
+        char err[256];
+        snprintf(err, sizeof(err), "pwm_disable: could not unexport pwm (%s)", strerror(e_no));
+        add_error_msg(err);
+        return -1;
+    }
+    
     // remove from list
     pwm = exported_pwms;
     while (pwm != NULL)

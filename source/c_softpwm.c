@@ -35,6 +35,7 @@ SOFTWARE.
 #include <sys/types.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
