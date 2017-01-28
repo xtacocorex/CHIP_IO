@@ -24,6 +24,7 @@ import time
 DEBUG = False
 
 OVERLAYINSTALLPATH = "/lib/firmware/chip_io"
+SPIINSTALLPATH = "/lib/firmware/nextthingco/chip"
 OVERLAYCONFIGPATH  = "/sys/kernel/config/device-tree/overlays"
 CUSTOMOVERLAYFILEPATH = ""
 
@@ -41,7 +42,7 @@ _LOADED = {
 }
 
 _OVERLAYS = {
-  "SPI2" : "chip-spi2.dtbo",
+  "SPI2" : "sample-spi.dtbo",
   "PWM0" : "chip-pwm0.dtbo",
   "CUST" : ""
 }
@@ -160,7 +161,11 @@ def load(overlay, path=""):
 
         # SET UP THE OVERLAY PATH FOR OUR USE
         if overlay.upper() != "CUST":
-            opath = OVERLAYINSTALLPATH + "/" + _OVERLAYS[overlay.upper()]
+            opath = OVERLAYINSTALLPATH
+            # IF THE OVERLAY IS SPI, USE THE NTC PATH
+            if overlay.upper() == "SPI2":
+                opath = SPIINSTALLPATH
+            opath += "/" + _OVERLAYS[overlay.upper()]
         else:
             opath = path
         if DEBUG:

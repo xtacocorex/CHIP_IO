@@ -9,7 +9,7 @@ Manual::
 For Python2.7::
 
     sudo apt-get update
-    sudo apt-get install git build-essential python-dev python-pip flex bison -y
+    sudo apt-get install git build-essential python-dev python-pip flex bison chip-dt-overlays -y
     git clone https://github.com/atenart/dtc
     cd dtc
     make
@@ -24,7 +24,7 @@ For Python2.7::
 For Python3::
 
     sudo apt-get update
-    sudo apt-get install git build-essential python3-dev python3-pip flex bison -y
+    sudo apt-get install git build-essential python3-dev python3-pip flex bison chip-dt-overlays -y
     git clone https://github.com/atenart/dtc
     cd dtc
     make
