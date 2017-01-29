@@ -290,6 +290,58 @@ static PyObject *py_input_gpio(PyObject *self, PyObject *args)
     return py_value;
 }
 
+// python function value = read_byte(channel)
+static PyObject *py_read_byte_gpio(PyObject *self, PyObject *args)
+{
+    int gpio;
+    char *channel;
+    int i;
+    unsigned int bit;
+    unsigned int value = 0;
+    PyObject *py_value;
+
+    clear_error_msg();
+
+    if (!PyArg_ParseTuple(args, "s", &channel))
+        return NULL;
+
+    if (get_gpio_number(channel, &gpio)) {
+    }
+
+    if (strcmp(channel, "XIO") == 0) {
+      int base_gpio = get_xio_base();
+      for (i = 0; i < 8; i++) {
+        gpio = base_gpio + i;
+        if (gpio_get_value(gpio, &bit) < 0) {
+          char err[1024];
+          snprintf(err, sizeof(err), "Could not get bit ('%s')", get_error_msg());
+          PyErr_SetString(PyExc_RuntimeError, err);
+          return NULL;
+        }
+        value |= (bit << i);
+      }
+    } else if (strcmp(channel, "CSID") == 0) {
+      int base_gpio = 132;
+      for (i = 0; i < 8; i++) {
+        gpio = base_gpio + i;
+        if (gpio_get_value(gpio, &bit) < 0) {
+          char err[1024];
+          snprintf(err, sizeof(err), "Could not get bit ('%s')", get_error_msg());
+          PyErr_SetString(PyExc_RuntimeError, err);
+          return NULL;
+        }
+        value |= (bit << i);
+      }
+    } else {
+        PyErr_SetString(PyExc_ValueError, "Invalid channel");
+        return NULL;
+    }
+
+    py_value = Py_BuildValue("i", value);
+
+    return py_value;
+}
+
 static void run_py_callbacks(int gpio, void* data)
 {
    PyObject *result;
@@ -860,6 +912,7 @@ PyMethodDef gpio_methods[] = {
    {"cleanup", (PyCFunction)py_cleanup, METH_VARARGS | METH_KEYWORDS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
    {"output", py_output_gpio, METH_VARARGS, "Output to a GPIO channel\ngpio  - gpio channel\nvalue - 0/1 or False/True or LOW/HIGH"},
    {"input", py_input_gpio, METH_VARARGS, "Input from a GPIO channel.  Returns HIGH=1=True or LOW=0=False\ngpio - gpio channel"},
+   {"read_byte", py_read_byte_gpio, METH_VARARGS, "Read a byte from a set of GPIO channels. Returns 8-bit integer\ngpio - gpio channel. Valid channels: 'XIO', 'CSID'"},
    {"add_event_detect", (PyCFunction)py_add_event_detect, METH_VARARGS | METH_KEYWORDS, "Enable edge detection events for a particular GPIO channel.\nchannel      - either board pin number or BCM number depending on which mode is set.\nedge         - RISING, FALLING or BOTH\n[callback]   - A callback function for the event (optional)\n[bouncetime] - Switch bounce timeout in ms for callback"},
    {"remove_event_detect", py_remove_event_detect, METH_VARARGS, "Remove edge detection for a particular GPIO channel\ngpio - gpio channel"},
    {"event_detected", py_event_detected, METH_VARARGS, "Returns True if an edge has occured on a given GPIO.  You need to enable edge detection using add_event_detect() first.\ngpio - gpio channel"},
