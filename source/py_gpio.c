@@ -186,13 +186,9 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
     }
     
     // Pull Up/Down
+    // Only if the pin we want is able to use it (R8 Owned, no XIO)
     int port, pin;
-    if (compute_port_pin(channel, gpio, &port, &pin) < 0) {
-        char err[2000];
-        snprintf(err, sizeof(err), "Pull Up/Down setting not capable for %s. (%s)", channel, get_error_msg());
-        PyErr_SetString(PyExc_ValueError, err);
-        return NULL;
-    } else {
+    if (compute_port_pin(channel, gpio, &port, &pin) == 0) {
         // Set the PUD
         gpio_set_pud(port, pin, pud);
         // Check it was set properly

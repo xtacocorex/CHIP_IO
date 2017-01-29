@@ -1,3 +1,7 @@
+0.3.4.1
+---
+* Quick fix as I borked XIO setup as inputs with the latest change that enabled PUD
+
 0.3.4
 ---
 * Pull Up/Pull Down resistor setting now available for the R8 GPIO.
