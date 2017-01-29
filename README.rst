@@ -19,7 +19,6 @@ For Python2.7::
     cd CHIP_IO
     sudo python setup.py install
     cd ..
-    sudo rm -rf CHIP_IO
 
 For Python3::
 
@@ -34,7 +33,6 @@ For Python3::
     cd CHIP_IO
     sudo python3 setup.py install
     cd ..
-    sudo rm -rf CHIP_IO
 
 **Usage**
 
