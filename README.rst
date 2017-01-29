@@ -191,6 +191,15 @@ Inputs work similarly to outputs.::
     import CHIP_IO.GPIO as GPIO
     GPIO.setup("CSID0", GPIO.IN)
 
+Other options when setting up pins::
+
+    # Specify pull up/pull down settings on a pin
+    GPIO.setup("CSID0", GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # Specify initial value for an output
+    GPIO.setup("CSID0", GPIO.OUT, initial=1)
+    
+Pull Up/Down values are only for pins that are provided by the R8, the XIO are not capable of this.  The allowable values are: PUD_OFF, PUD_UP, and PUD_DOWN.
+
 Polling inputs::
 
     if GPIO.input("CSID0"):

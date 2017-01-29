@@ -34,6 +34,15 @@ SOFTWARE.
 #include "common.h"
 #include "c_softpwm.h"
 
+// python function toggle_debug()
+static PyObject *py_toggle_debug(PyObject *self, PyObject *args)
+{
+    // toggle debug printing
+    toggle_debug();
+
+    Py_RETURN_NONE;
+}
+
 // python function cleanup(channel=None)
 static PyObject *py_cleanup(PyObject *self, PyObject *args)
 {
@@ -48,8 +57,9 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args)
         return NULL;
                     
     // The !channel fixes issue #50
-    if (!channel || strcmp(channel, "") == 0) {
+    if (channel == NULL || strcmp(channel, "\0") == 0) {
         softpwm_cleanup();
+        return NULL;
     } else {
         if (!get_key(channel, key)) {
             PyErr_SetString(PyExc_ValueError, "Invalid SOFTPWM key or name.");
@@ -195,11 +205,12 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
 static const char moduledocstring[] = "Software PWM functionality of a CHIP using Python";
 
 PyMethodDef pwm_methods[] = {
-    { "start", (PyCFunction)py_start_channel, METH_VARARGS | METH_KEYWORDS, "Set up and start the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
-    { "stop", (PyCFunction)py_stop_channel, METH_VARARGS | METH_KEYWORDS, "Stop the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
-    { "set_duty_cycle", (PyCFunction)py_set_duty_cycle, METH_VARARGS, "Change the duty cycle\ndutycycle - between 0.0 and 100.0" },
-    { "set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
-    { "cleanup", (PyCFunction)py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
+    {"start", (PyCFunction)py_start_channel, METH_VARARGS | METH_KEYWORDS, "Set up and start the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
+    {"stop", (PyCFunction)py_stop_channel, METH_VARARGS | METH_KEYWORDS, "Stop the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
+    {"set_duty_cycle", (PyCFunction)py_set_duty_cycle, METH_VARARGS, "Change the duty cycle\ndutycycle - between 0.0 and 100.0" },
+    {"set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
+    {"cleanup", (PyCFunction)py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
+    {"toggle_debug", py_toggle_debug, METH_VARARGS, "Toggles the enabling/disabling of Debug print output"},
     {NULL, NULL, 0, NULL}
 };
 

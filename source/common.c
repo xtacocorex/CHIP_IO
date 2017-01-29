@@ -249,6 +249,22 @@ int gpio_number(pins_t *pin)
   return gpio_num;
 }  /* gpio_number */
 
+int gpio_pud_capable(pins_t *pin)
+{
+  int capable = -1;
+
+  switch (pin->base_method) {
+    case BASE_METHOD_AS_IS:
+      capable = 1;
+      break;
+    
+    case BASE_METHOD_XIO:
+      capable = 0;
+      break;
+  }
+
+  return capable;
+}
 
 int lookup_gpio_by_key(const char *key)
 {
@@ -278,6 +294,39 @@ int lookup_gpio_by_altname(const char *altname)
   for (p = pins_info; p->altname != NULL; ++p) {
       if (strcmp(p->altname, altname) == 0) {
           return gpio_number(p);
+      }
+  }
+  return -1;
+}
+
+int lookup_pud_capable_by_key(const char *key)
+{
+  pins_t *p;
+  for (p = pins_info; p->key != NULL; ++p) {
+      if (strcmp(p->key, key) == 0) {
+          return gpio_pud_capable(p);
+      }
+  }
+  return -1;
+}
+
+int lookup_pud_capable_by_name(const char *name)
+{
+  pins_t *p;
+  for (p = pins_info; p->name != NULL; ++p) {
+      if (strcmp(p->name, name) == 0) {
+          return gpio_pud_capable(p);
+      }
+  }
+  return -1;
+}
+
+int lookup_pud_capable_by_altname(const char *altname)
+{
+  pins_t *p;
+  for (p = pins_info; p->altname != NULL; ++p) {
+      if (strcmp(p->altname, altname) == 0) {
+          return gpio_pud_capable(p);
       }
   }
   return -1;
@@ -396,17 +445,29 @@ int get_gpio_number(const char *key, int *gpio)
     return status;
 }
 
-int compute_port_pin(const char *key, int *port, int *pin)
+int compute_port_pin(const char *key, int gpio, int *port, int *pin)
 {
-    int gpio;
-    int rtn;
-    
-    rtn = get_gpio_number(key, &gpio);
-    
-    // Method from:
-    //https://bbs.nextthing.co/t/chippy-gonzales-fast-gpio/14056/6?u=xtacocorex
-    *port = gpio / 32;
-    *pin = gpio % 32;
+    int capable = 0;
+    int rtn = -1;
+
+    capable = lookup_pud_capable_by_key(key);
+    if (capable < 0) {
+        capable = lookup_pud_capable_by_name(key);
+        if (capable < 0) {
+             capable = lookup_gpio_by_altname(key);
+             if (capable < 0) {
+                 capable = 0;  // default to false
+             }
+        }
+    }
+
+    if (capable) {
+        // Method from:
+        // https://bbs.nextthing.co/t/chippy-gonzales-fast-gpio/14056/6?u=xtacocorex
+        *port = gpio / 32;
+        *pin = gpio % 32;
+        rtn = 0;
+    }
     
     return rtn;
 }

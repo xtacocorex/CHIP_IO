@@ -58,8 +58,29 @@ struct py_callback
 };
 static struct py_callback *py_callbacks = NULL;
 
+// python function toggle_debug()
+static PyObject *py_toggle_debug(PyObject *self, PyObject *args)
+{
+    // toggle debug printing
+    toggle_debug();
+
+    Py_RETURN_NONE;
+}
+
 static int init_module(void)
 {
+    clear_error_msg();
+    
+    if (map_pio_memory() < 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "init_module error (%s)", get_error_msg());
+        PyErr_SetString(PyExc_RuntimeError, err);
+        return 0;
+    }
+
+    // If we make it here, we're good to go
+    if (DEBUG)
+        printf(" ** init_module: setup complete **\n");
     module_setup = 1;
 
     return 0;
@@ -93,7 +114,7 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     // The !channel fixes issues #50
-    if (!channel || strcmp(channel, "") == 0) {
+    if (channel == NULL || strcmp(channel, "\0") == 0) {
         event_cleanup();
     } else {
         if (get_gpio_number(channel, &gpio) < 0) {
@@ -111,68 +132,91 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args, PyObject *kwargs)
 // python function setup(channel, direction, pull_up_down=PUD_OFF, initial=None)
 static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-   int gpio;
-   char *channel;
-   int direction;
-   int pud = PUD_OFF;
-   int initial = 0;
-   static char *kwlist[] = {"channel", "direction", "pull_up_down", "initial", NULL};
-
-   clear_error_msg();
-
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si|ii", kwlist, &channel, &direction, &pud, &initial))
-      return NULL;
-
-   if (!module_setup) {
-      init_module();
-   }
-
-   if (direction != INPUT && direction != OUTPUT)
-   {
-      PyErr_SetString(PyExc_ValueError, "An invalid direction was passed to setup()");
-      return NULL;
-   }
-
-   if (direction == OUTPUT)
-      pud = PUD_OFF;
-
-   if (pud != PUD_OFF && pud != PUD_DOWN && pud != PUD_UP)
-   {
-      PyErr_SetString(PyExc_ValueError, "Invalid value for pull_up_down - should be either PUD_OFF, PUD_UP or PUD_DOWN");
-      return NULL;
-   }
-
-   if (get_gpio_number(channel, &gpio) < 0) {
-      char err[2000];
-      snprintf(err, sizeof(err), "Invalid channel %s. (%s)", channel, get_error_msg());
-      PyErr_SetString(PyExc_ValueError, err);
-      return NULL;
-   }
-
-   if (gpio_export(gpio) < 0) {
-      char err[2000];
-      snprintf(err, sizeof(err), "Error setting up channel %s, maybe already exported? (%s)", channel, get_error_msg());
-      PyErr_SetString(PyExc_RuntimeError, err);
-      return NULL;
-   }
-   if (gpio_set_direction(gpio, direction) < 0) {
-      char err[2000];
-      snprintf(err, sizeof(err), "Error setting direction %d on channel %s. (%s)", direction, channel, get_error_msg());
-      PyErr_SetString(PyExc_RuntimeError, err);
-      return NULL;
-   }
-   if (direction == OUTPUT) {
-       if (gpio_set_value(gpio, initial) < 0) {
+    int gpio;
+    char *channel;
+    int direction;
+    int pud = PUD_OFF;
+    int initial = 0;
+    static char *kwlist[] = {"channel", "direction", "pull_up_down", "initial", NULL};
+ 
+    clear_error_msg();
+ 
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si|ii", kwlist, &channel, &direction, &pud, &initial))
+        return NULL;
+ 
+    if (!module_setup) {
+        init_module();
+    }
+ 
+    if (direction != INPUT && direction != OUTPUT)
+    {
+        PyErr_SetString(PyExc_ValueError, "An invalid direction was passed to setup()");
+        return NULL;
+    }
+    
+    // Force pud to be off if we're configured for output
+    if (direction == OUTPUT) {
+        pud = PUD_OFF;
+    }
+ 
+    if (pud != PUD_OFF && pud != PUD_DOWN && pud != PUD_UP)
+    {
+        PyErr_SetString(PyExc_ValueError, "Invalid value for pull_up_down - should be either PUD_OFF, PUD_UP or PUD_DOWN");
+        return NULL;
+    }
+ 
+    if (get_gpio_number(channel, &gpio) < 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Invalid channel %s. (%s)", channel, get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    }
+ 
+    if (gpio_export(gpio) < 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error setting up channel %s, maybe already exported? (%s)", channel, get_error_msg());
+        PyErr_SetString(PyExc_RuntimeError, err);
+        return NULL;
+    }
+    if (gpio_set_direction(gpio, direction) < 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error setting direction %d on channel %s. (%s)", direction, channel, get_error_msg());
+        PyErr_SetString(PyExc_RuntimeError, err);
+        return NULL;
+    }
+    
+    // Pull Up/Down
+    int port, pin;
+    if (compute_port_pin(channel, gpio, &port, &pin) < 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Pull Up/Down setting not capable for %s. (%s)", channel, get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else {
+        // Set the PUD
+        gpio_set_pud(port, pin, pud);
+        // Check it was set properly
+        int pudr = gpio_get_pud(port, pin);
+        if (pudr != pud) {
+            char err[2000];
+            snprintf(err, sizeof(err), "Error setting pull up down %d on channel %s", pud, channel);
+            PyErr_SetString(PyExc_RuntimeError, err);
+            return NULL;
+        }
+    }
+    
+    if (direction == OUTPUT) {
+        if (gpio_set_value(gpio, initial) < 0) {
             char err[2000];
             snprintf(err, sizeof(err), "Error setting initial value %d on channel %s. (%s)", initial, channel, get_error_msg());
             PyErr_SetString(PyExc_RuntimeError, err);
             return NULL;
-       }
-   }
-
-   remember_gpio_direction(gpio, direction);
-
-   Py_RETURN_NONE;
+        }
+    }
+ 
+    remember_gpio_direction(gpio, direction);
+ 
+    Py_RETURN_NONE;
 }  /* py_setup_channel */
 
 
@@ -831,6 +875,7 @@ PyMethodDef gpio_methods[] = {
    {"selftest", py_selftest, METH_VARARGS, "Internal unit tests"},
    {"direction", (PyCFunction)py_set_direction, METH_VARARGS | METH_KEYWORDS, "Change direction of gpio channel. Either INPUT or OUTPUT\n" },
    {"setmode", (PyCFunction)py_setmode, METH_VARARGS, "Dummy function that does nothing but maintain compatibility with RPi.GPIO\n" },
+   {"toggle_debug", py_toggle_debug, METH_VARARGS, "Toggles the enabling/disabling of Debug print output"},
    {NULL, NULL, 0, NULL}
 };
 

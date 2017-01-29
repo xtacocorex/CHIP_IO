@@ -36,6 +36,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <stdint.h>
+
 #define NO_EDGE      0
 #define RISING_EDGE  1
 #define FALLING_EDGE 2
@@ -53,6 +55,12 @@ SOFTWARE.
 #define PUD_OFF  0
 #define PUD_DOWN 1
 #define PUD_UP   2
+
+extern uint8_t *memmap;
+
+int map_pio_memory(void);
+int gpio_get_pud(int port, int pin);
+int gpio_set_pud(int port, int pin, uint8_t value);
 
 int gpio_export(int gpio);
 int gpio_unexport(int gpio);

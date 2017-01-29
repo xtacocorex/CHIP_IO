@@ -1,3 +1,8 @@
+0.3.4
+---
+* Pull Up/Pull Down resistor setting now available for the R8 GPIO.
+* Some general cleanup
+
 0.3.3
 ----
 * Added Debug printing for all the capabilities with the toggle_debug() function
