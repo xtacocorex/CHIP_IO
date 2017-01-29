@@ -69,6 +69,7 @@ int gpio_set_direction(int gpio, unsigned int in_flag);
 int gpio_get_direction(int gpio, unsigned int *value);
 int gpio_set_value(int gpio, unsigned int value);
 int gpio_get_value(int gpio, unsigned int *value);
+int gpio_get_more(int gpio, int bits, unsigned int *value);
 int fd_lookup(int gpio);
 int open_value_file(int gpio);
 

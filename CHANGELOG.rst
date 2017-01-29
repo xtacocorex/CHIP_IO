@@ -1,3 +1,10 @@
+0.3.5
+---
+* Merged in brettcvz's code to read a byte of data from the GPIO
+  - Cleaned the code up and expanded it (in the low level C code) to read up to 32 bits of data
+  - Presented 8 bit and 16 bits of data functions to the Python interface with brettcvz's read_byte() and my read_word()
+* I think I finally fixed the GPIO.cleanup() code one and for all
+
 0.3.4.1
 ---
 * Quick fix as I borked XIO setup as inputs with the latest change that enabled PUD

@@ -88,6 +88,6 @@ void define_constants(PyObject *module)
    module_debug = Py_BuildValue("i", DEBUG ? Py_True: Py_False);
    PyModule_AddObject(module, "DEBUG", module_debug);
 
-   version = Py_BuildValue("s", "0.3.4.1");
+   version = Py_BuildValue("s", "0.3.5");
    PyModule_AddObject(module, "VERSION", version);
 }

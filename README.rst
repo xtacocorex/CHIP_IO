@@ -205,6 +205,15 @@ Polling inputs::
     else:
         print("LOW")
 
+Read lots of data::
+
+    # Get 8 bits of data in one shot
+    mybyte = GPIO.read_byte("LCD-D3")
+    # Get 16 bits of data in one shot
+    myword = GPIO.read_word("XIO-P4")
+
+This code was initially added by brettcvz and I cleaned it up and expanded it.
+
 The edge detection code below only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP.
 
 Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::

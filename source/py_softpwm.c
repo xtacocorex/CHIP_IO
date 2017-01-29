@@ -62,8 +62,7 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args)
         return NULL;
     } else {
         if (!get_key(channel, key)) {
-            PyErr_SetString(PyExc_ValueError, "Invalid SOFTPWM key or name.");
-            return NULL;
+            softpwm_cleanup();
         }
         softpwm_disable(key);
     }

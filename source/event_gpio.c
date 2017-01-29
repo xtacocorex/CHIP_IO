@@ -506,8 +506,7 @@ int gpio_get_value(int gpio, unsigned int *value)
     int fd = fd_lookup(gpio);
     char ch;
 
-    if (!fd)
-    {
+    if (!fd) {
         if ((fd = open_value_file(gpio)) == -1) {
             char err[256];
             snprintf(err, sizeof(err), "gpio_get_value: could not open GPIO %d value file", gpio);
@@ -545,6 +544,58 @@ int gpio_get_value(int gpio, unsigned int *value)
     }
 
     return 0;
+}
+
+int gpio_get_more(int gpio, int bits, unsigned int *value)
+{
+    int fd = fd_lookup(gpio);
+    char ch;
+    
+    if (!fd) {
+        if ((fd = open_value_file(gpio)) == -1) {
+            char err[256];
+            snprintf(err, sizeof(err), "gpio_get_more: could not open GPIO %d value file", gpio);
+            add_error_msg(err);
+            return -1;
+        }
+    }
+
+    // Loop for our number of bits
+    int i;
+    for (i = 0; i < bits; i++) {
+
+        if (lseek(fd, 0, SEEK_SET) < 0) {
+            char err[256];
+            snprintf(err, sizeof(err), "gpio_get_more: could not seek GPIO %d (%s)", gpio, strerror(errno));
+            add_error_msg(err);
+            return -1;
+        }
+        ssize_t s = read(fd, &ch, sizeof(ch));
+        if (s < 0) {
+            char err[256];
+            snprintf(err, sizeof(err), "gpio_get_more: could not read GPIO %d (%s)", gpio, strerror(errno));
+            add_error_msg(err);
+            return -1;
+        }
+    
+        if (ch == '1') {
+            *value |= (1 << i);
+        } else if (ch == '0') {
+            *value |= (0 << i);
+        } else {
+            char err[256];
+            snprintf(err, sizeof(err), "gpio_get_more: unrecognized read GPIO %d (%c)", gpio, ch);
+            add_error_msg(err);
+            return -1;
+        }
+        if (DEBUG) {
+            printf(" ** gpio_get_more: %c **\n", ch);
+            printf(" ** gpio_get_more: current value: %u **\n", *value);
+        }
+    }
+
+    return 0;
+    
 }
 
 int gpio_set_edge(int gpio, unsigned int edge)
