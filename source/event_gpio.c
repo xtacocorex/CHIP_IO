@@ -486,8 +486,8 @@ int gpio_set_value(int gpio, unsigned int value)
         strncpy(vstr, "0", ARRAY_SIZE(vstr) - 1);
     }
 
-    if (DEBUG)
-        printf(" ** gpio_set_value: writing %s **\n", vstr);
+    //if (DEBUG)
+    //    printf(" ** gpio_set_value: writing %s **\n", vstr);
 
     ssize_t s = write(fd, vstr, strlen(vstr));  e_no = errno;
 

@@ -285,16 +285,32 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
     SPWM.set_frequency("XIO-P7", 10)
     # To Stop SPWM
     SPWM.stop("XIO-P7")
-    # Cleanup can have no argument to clean up all SoftPWM outputs
+    # Cleanup
     SPWM.cleanup()
-    # Or you can specify a single SoftPWM output to cleanup (keeping the rest intact)
-    SPWM.cleanup("XIO-P7")
     #For specific polarity: this example sets polarity to 1 on start:
     SPWM.start("XIO-P7", 50, 2000, 1)
 
 Use SOFTPWM at low speeds (hundreds of Hz) for the best results. Do not use for anything that needs high precision or reliability.
 
 If using SOFTPWM and PWM at the same time, import CHIP_IO.SOFTPWM as SPWM or something different than PWM as to not confuse the library.
+
+**SERVO**::
+
+    import CHIP_IO.SERVO as SERVO
+    # Enable/Disable Debug
+    SERVO.toggle_debug()
+    #SPWM.start(channel, angle=0, range=180)
+    #angle values are between +/- range/2)
+    #you can choose any pin except the XIO's
+    SERVO.start("CSID4", 50)
+    SERVO.set_angle("CSID4", 25.5)
+    SERVO.set_range("CSID4", 90)
+    # To Stop Servo
+    SERVO.stop("CSID4")
+    # Cleanup
+    SERVO.cleanup()
+
+The Software Servo control only works on the LCD and CSI pins.  The XIO is too slow to control.
 
 **LRADC**::
 

@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import CHIP_IO.LRADC as ADC
 
 # == ENABLE DEBUG ==

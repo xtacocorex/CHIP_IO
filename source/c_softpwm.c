@@ -39,7 +39,7 @@ SOFTWARE.
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
-#include "c_pwm.h"
+#include "c_softpwm.h"
 #include "common.h"
 #include "event_gpio.h"
 

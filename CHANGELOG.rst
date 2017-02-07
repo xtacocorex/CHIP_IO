@@ -1,3 +1,11 @@
+0.4.0
+---
+* Software Servo code added
+  - Only works on the LCD and CSI pins
+* Fixed cleanup() for the SOFTPWM and SERVO
+  - The per pin cleanup for SOFTPWM doesn't work as stop() clears up the memory for the pin used
+  - SERVO code was based on SOFTPWM, so it inherited this issue
+
 0.3.5
 ---
 * Merged in brettcvz's code to read a byte of data from the GPIO

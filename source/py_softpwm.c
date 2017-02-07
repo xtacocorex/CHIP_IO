@@ -43,29 +43,11 @@ static PyObject *py_toggle_debug(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-// python function cleanup(channel=None)
+// python function cleanup()
 static PyObject *py_cleanup(PyObject *self, PyObject *args)
 {
     // unexport the PWM
-    char key[8];
-    char *channel = NULL;
-    
-    clear_error_msg();
-    
-    // Channel is optional
-    if (!PyArg_ParseTuple(args, "|s", &channel))
-        return NULL;
-                    
-    // The !channel fixes issue #50
-    if (channel == NULL || strcmp(channel, "\0") == 0) {
-        softpwm_cleanup();
-        return NULL;
-    } else {
-        if (!get_key(channel, key)) {
-            softpwm_cleanup();
-        }
-        softpwm_disable(key);
-    }
+    softpwm_cleanup();
 
     Py_RETURN_NONE;
 }
