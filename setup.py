@@ -1,10 +1,3 @@
-try:
-    from overlays import builder
-    builder.compile()
-    builder.copy()
-except:
-    pass
-
 import distribute_setup
 distribute_setup.use_setuptools()
 from setuptools import setup, Extension, find_packages
@@ -26,7 +19,7 @@ setup(name             = 'CHIP_IO',
       description      = 'A module to control CHIP IO channels',
       long_description = open('README.rst').read() + open('CHANGELOG.rst').read(),
       license          = 'MIT',
-      keywords         = 'CHIP NextThingCo IO GPIO PWM ADC',
+      keywords         = 'CHIP NextThingCo IO GPIO PWM ADC GR8 R8',
       url              = 'https://github.com/xtacocorex/CHIP_IO/',
       classifiers      = classifiers,
       packages         = find_packages(),

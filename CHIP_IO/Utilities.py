@@ -35,8 +35,10 @@ def toggle_debug():
     global DEBUG
     if DEBUG:
         DEBUG = False
+        print("debug disabled")
     else:
         DEBUG = True
+        print("debug enabled")
 
 # Set the 1.8V-pin on the CHIP U13-header to given voltage
 # Return False on error
@@ -101,3 +103,22 @@ def unexport_all():
         cmd = "echo " + num + " > /sys/class/gpio/unexport"
         subprocess.Popen(cmd,shell=True, stdout=subprocess.PIPE)
 
+# Determine Processor
+def is_chip_pro():
+    isgr8 = False
+    if DEBUG:
+        print("Determining if computer has R8 or GR8 SOC")
+    
+    files = glob.glob("/boot/*.dtb")
+    for f in files:
+        if "gr8" in f.lower():
+            isgr8 = True
+            if DEBUG:
+                print("Found gr8 SOC")
+            break
+    
+    if DEBUG and not isgr8:
+        print("Found r8 SOC")
+    
+    # Return isgr8
+    return isgr8

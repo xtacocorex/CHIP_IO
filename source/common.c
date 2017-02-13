@@ -52,6 +52,9 @@ int module_setup = 0;
 // Library Debug
 int DEBUG = 0;
 
+// Is This a CHIP PRO
+int ISCHIPPRO = 0;
+
 pins_t pins_info[] = {
   { "GND",       "GND",         "U13_1",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "CHG-IN",    "CHG-IN",      "U13_2",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
@@ -69,35 +72,36 @@ pins_t pins_info[] = {
   { "X2",        "X2",          "U13_14",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "Y1",        "Y1",          "U13_15",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "Y2",        "Y2",          "U13_16",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D2",    "LCD-D2",      "U13_17",  98, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "LCD-D2",    "UART2-TX",    "U13_17",  98, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "PWM0",      "PWM0",        "U13_18",  34, BASE_METHOD_AS_IS,  0, -1, BOTH},
-  { "LCD-D4",    "LCD-D4",      "U13_19", 100, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D3",    "LCD-D3",      "U13_20",  99, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D6",    "LCD-D6",      "U13_21", 102, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D5",    "LCD-D5",      "U13_22", 101, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D10",   "LCD-D10",     "U13_23", 106, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D7",    "LCD-D7",      "U13_24", 103, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D12",   "LCD-D12",     "U13_25", 108, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D11",   "LCD-D11",     "U13_26", 107, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D14",   "LCD-D14",     "U13_27", 110, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D13",   "LCD-D13",     "U13_28", 109, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D18",   "LCD-D18",     "U13_29", 114, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D15",   "LCD-D15",     "U13_30", 111, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D20",   "LCD-D20",     "U13_31", 116, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D19",   "LCD-D19",     "U13_32", 115, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D22",   "LCD-D22",     "U13_33", 118, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D21",   "LCD-D21",     "U13_34", 117, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-CLK",   "LCD-CLK",     "U13_35", 120, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-D23",   "LCD-D23",     "U13_36", 119, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-VSYNC", "LCD-VSYNC",   "U13_37", 123, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-HSYNC", "LCD-HSYNC",   "U13_38", 122, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "PWM1",      "PWM1",        "EINT13", 205, BASE_METHOD_AS_IS,  0, -1, CHIPPRO},
+  { "LCD-D4",    "UART2-CTS",   "U13_19", 100, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "LCD-D3",    "UART2-RX",    "U13_20",  99, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "LCD-D6",    "LCD-D6",      "U13_21", 102, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D5",    "UART2-RTS",   "U13_22", 101, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "LCD-D10",   "LCD-D10",     "U13_23", 106, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D7",    "LCD-D7",      "U13_24", 103, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D12",   "LCD-D12",     "U13_25", 108, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D11",   "LCD-D11",     "U13_26", 107, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D14",   "LCD-D14",     "U13_27", 110, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D13",   "LCD-D13",     "U13_28", 109, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D18",   "LCD-D18",     "U13_29", 114, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D15",   "LCD-D15",     "U13_30", 111, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D20",   "LCD-D20",     "U13_31", 116, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D19",   "LCD-D19",     "U13_32", 115, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D22",   "LCD-D22",     "U13_33", 118, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D21",   "LCD-D21",     "U13_34", 117, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-CLK",   "LCD-CLK",     "U13_35", 120, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-D23",   "LCD-D23",     "U13_36", 119, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-VSYNC", "LCD-VSYNC",   "U13_37", 123, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "LCD-HSYNC", "LCD-HSYNC",   "U13_38", 122, BASE_METHOD_AS_IS, -1, -1, CHIP},
   { "GND",       "GND",         "U13_39",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "LCD-DE",    "LCD-DE",      "U13_40", 121, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "LCD-DE",    "LCD-DE",      "U13_40", 121, BASE_METHOD_AS_IS, -1, -1, CHIP},
   { "GND",       "GND",         "U14_1",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "VCC-5V",    "VCC-5V",      "U14_2",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "UART1-TX",  "UART-TX",     "U14_3",  195, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "UART1-TX",  "UART-TX",     "U14_3",  195, BASE_METHOD_AS_IS, -1, -1, BOTH}, /* THIS IS AP-EINT3 ON CHIP PRO */
   { "HPL",       "HPL",         "U14_4",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "UART1-RX",  "UART-RX",     "U14_5",  196, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "UART1-RX",  "UART-RX",     "U14_5",  196, BASE_METHOD_AS_IS, -1, -1, BOTH}, /* THIS IS AP-EINT4 ON CHIP PRO */
   { "HPCOM",     "HPCOM",       "U14_6",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "FEL",       "FEL",         "U14_7",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "HPR",       "HPR",         "U14_8",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
@@ -123,14 +127,14 @@ pins_t pins_info[] = {
   { "CSICK",     "SPI-CLK",     "U14_28", 129, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "CSIHSYNC",  "SPI-MOSI",    "U14_29", 130, BASE_METHOD_AS_IS,  1, -1, BOTH},
   { "CSIVSYNC",  "SPI-MISO",    "U14_30", 131, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "CSID0",     "CSID0",       "U14_31", 132, BASE_METHOD_AS_IS,  1, -1, BOTH},
-  { "CSID1",     "CSID1",       "U14_32", 133, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "CSID2",     "CSID2",       "U14_33", 134, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "CSID3",     "CSID3",       "U14_34", 135, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "CSID4",     "CSID4",       "U14_35", 136, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "CSID5",     "CSID5",       "U14_36", 137, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "CSID6",     "CSID6",       "U14_37", 138, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "CSID7",     "CSID7",       "U14_38", 139, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "CSID0",     "D0",          "U14_31", 132, BASE_METHOD_AS_IS,  1, -1, BOTH},
+  { "CSID1",     "D1",          "U14_32", 133, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "CSID2",     "D2",          "U14_33", 134, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "CSID3",     "D3",          "U14_34", 135, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "CSID4",     "D4",          "U14_35", 136, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "CSID5",     "D5",          "U14_36", 137, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "CSID6",     "D6",          "U14_37", 138, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "CSID7",     "D7",          "U14_38", 139, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "GND",       "GND",         "U14_39",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "GND",       "GND",         "U14_40",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { NULL,        NULL,          NULL,      -1, 0,                 -1, -1, -1}
@@ -216,12 +220,59 @@ int get_xio_base(void)
   return xio_base_address; 
 }  /* get_xio_base */
 
+#define BOOTPATH "/boot"
+
+int is_this_chippro(void)
+{
+    int rtnval = -1;
+    DIR *dir;
+    struct dirent *ent;
+    
+    // Default ISCHIPPRO to 0 for CHIP
+    ISCHIPPRO = 0;
+    
+    // Get the boot directory open
+    dir = opendir (BOOTPATH);
+    if (dir == NULL) {
+        char err[256];
+        snprintf(err, sizeof(err), "is_this_chippro: could not open '%s' (%s)", BOOTPATH, strerror(errno));
+        add_error_msg(err);
+        return -1;
+    }
+    
+    if (DEBUG)
+        printf(" ** is_this_chippro: checking boot directory\n");
+    // Loop through the directory files
+    while ((ent = readdir (dir)) != NULL) {
+        //printf ("%s\n", ent->d_name);
+        if(strstr(ent->d_name, "gr8") != NULL) {
+            rtnval = 1;
+            ISCHIPPRO = 1;
+            if (DEBUG)
+                printf(" ** is_this_chippro: this is a chip pro!\n");
+            break;
+        }
+    }
+    closedir (dir);
+    
+    if (ISCHIPPRO == 0)
+    {
+        rtnval = 0;
+        if (DEBUG)
+            printf(" ** is_this_chippro: this is a chip!\n");
+    }
+    
+    return rtnval;
+}
+
 void toggle_debug(void)
 {
     if (DEBUG) {
         DEBUG = 0;
+        printf(" ** debug disabled\n");
     } else {
         DEBUG = 1;
+        printf(" ** debug enabled\n");
     }
 }
 

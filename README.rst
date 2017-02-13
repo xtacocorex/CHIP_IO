@@ -135,21 +135,21 @@ The following "table" is the allowable pin names that are able to be used by the
   +------------------+--------------------------+--------+
   | CSIVSYNC         | SPI-MISO                 | U14_30 |
   +------------------+--------------------------+--------+
-  | CSID0            | CSID0                    | U14_31 |
+  | CSID0            | D0                       | U14_31 |
   +------------------+--------------------------+--------+
-  | CSID1            | CSID1                    | U14_32 |
+  | CSID1            | D1                       | U14_32 |
   +------------------+--------------------------+--------+
-  | CSID2            | CSID2                    | U14_33 |
+  | CSID2            | D2                       | U14_33 |
   +------------------+--------------------------+--------+
-  | CSID3            | CSID3                    | U14_34 |
+  | CSID3            | D3                       | U14_34 |
   +------------------+--------------------------+--------+
-  | CSID4            | CSID4                    | U14_35 |
+  | CSID4            | D4                       | U14_35 |
   +------------------+--------------------------+--------+
-  | CSID5            | CSID5                    | U14_36 |
+  | CSID5            | D5                       | U14_36 |
   +------------------+--------------------------+--------+
-  | CSID6            | CSID6                    | U14_37 |
+  | CSID6            | D6                       | U14_37 |
   +------------------+--------------------------+--------+
-  | CSID7            | CSID7                    | U14_38 |
+  | CSID7            | D7                       | U14_38 |
   +------------------+--------------------------+--------+
 
 **GPIO Setup**
@@ -348,9 +348,9 @@ SPI requires a DTB Overlay to access.  CHIP_IO does not contain any SPI specific
 **Overlay Manager**::
 
 The Overlay Manager enables you to quickly load simple Device Tree Overlays.  The options for loading are:
-PWM0, SPI2, I2C1, CUST
+PWM0, SPI2, CUST.  The Overlay Manager is smart enough to determine if you are trying to load PWM on a CHIP Pro and will fail due to the base DTB for the CHIP Pro supporting PWM0/1 out of the box.
 
-Only one of each type of overlay can be loaded at a time, but all three options can be loaded simultaneously.  So you can have SPI2 and I2C1 without PWM0, but you cannot have SPI2 loaded twice.
+Only one of each type of overlay can be loaded at a time, but all three options can be loaded simultaneously.  So you can have SPI2 without PWM0, but you cannot have SPI2 loaded twice.
 ::
     import CHIP_IO.OverlayManager as OM
     # The toggle_debug() function turns on/off debug printing
@@ -399,6 +399,9 @@ To use the utilities, here is sample code::
     UT.get_1v8_pin_voltage()
     # Unexport Everything
     UT.unexport_all()
+    # Determine if you are running a CHIP/CHIP Pro
+    # This returns True if the computer is a CHIP Pro and False if it is a CHIP
+    UT.is_chip_pro()
 
 **Running tests**
 

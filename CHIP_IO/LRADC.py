@@ -46,8 +46,10 @@ def toggle_debug():
     global DEBUG
     if DEBUG:
         DEBUG = False
+        print("debug disabled")
     else:
         DEBUG = True
+        print("debug enabled")
 
 def setup(rate=250):
     # First we determine if the device exists

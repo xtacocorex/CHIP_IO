@@ -78,12 +78,35 @@ static int init_module(void)
         return 0;
     }
 
+    // figure out if we're a chip pro
+    if (is_this_chippro() < 1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "init_module error (%s)", get_error_msg());
+        PyErr_SetString(PyExc_RuntimeError, err);
+        return 0;
+    }
+    // After this point, ISCHIPPRO variable should be good to go
+
     // If we make it here, we're good to go
     if (DEBUG)
         printf(" ** init_module: setup complete **\n");
     module_setup = 1;
 
     return 0;
+}
+
+// python function value = is_chip_pro
+static PyObject *py_is_chip_pro(PyObject *self, PyObject *args)
+{
+    PyObject *py_value;
+    
+    if (!module_setup) {
+        init_module();
+    }
+    
+    py_value = Py_BuildValue("i", ISCHIPPRO);
+
+    return py_value;
 }
 
 static void remember_gpio_direction(int gpio, int direction)
@@ -947,6 +970,7 @@ PyMethodDef gpio_methods[] = {
    {"direction", (PyCFunction)py_set_direction, METH_VARARGS | METH_KEYWORDS, "Change direction of gpio channel. Either INPUT or OUTPUT\n" },
    {"setmode", (PyCFunction)py_setmode, METH_VARARGS, "Dummy function that does nothing but maintain compatibility with RPi.GPIO\n" },
    {"toggle_debug", py_toggle_debug, METH_VARARGS, "Toggles the enabling/disabling of Debug print output"},
+   {"is_chip_pro", py_is_chip_pro, METH_VARARGS, "Is hardware a CHIP Pro? Boolean False for normal CHIP/PocketCHIP (R8 SOC)"},
    {NULL, NULL, 0, NULL}
 };
 

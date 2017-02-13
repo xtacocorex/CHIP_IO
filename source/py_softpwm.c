@@ -52,6 +52,41 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static int init_module(void)
+{
+    clear_error_msg();
+    
+    // figure out if we're a chip pro
+    if (is_this_chippro() < 1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "init_module error (%s)", get_error_msg());
+        PyErr_SetString(PyExc_RuntimeError, err);
+        return 0;
+    }
+    // After this point, ISCHIPPRO variable should be good to go
+
+    // If we make it here, we're good to go
+    if (DEBUG)
+        printf(" ** init_module: setup complete **\n");
+    module_setup = 1;
+
+    return 0;
+}
+
+// python function value = is_chip_pro
+static PyObject *py_is_chip_pro(PyObject *self, PyObject *args)
+{
+    PyObject *py_value;
+
+    if (!module_setup) {
+        init_module();
+    }
+    
+    py_value = Py_BuildValue("i", ISCHIPPRO);
+
+    return py_value;
+}
+
 // python function start(channel, duty_cycle, freq)
 static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -68,6 +103,10 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
         return NULL;
     }
     ASSRT(channel != NULL);
+
+    if (!module_setup) {
+        init_module();
+    }
 
     if (!get_key(channel, key)) {
         PyErr_SetString(PyExc_ValueError, "Invalid SOFTPWM key or name.");
@@ -192,6 +231,7 @@ PyMethodDef pwm_methods[] = {
     {"set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
     {"cleanup", (PyCFunction)py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
     {"toggle_debug", py_toggle_debug, METH_VARARGS, "Toggles the enabling/disabling of Debug print output"},
+    {"is_chip_pro", py_is_chip_pro, METH_VARARGS, "Is hardware a CHIP Pro? Boolean False for normal CHIP/PocketCHIP (R8 SOC)"},
     {NULL, NULL, 0, NULL}
 };
 

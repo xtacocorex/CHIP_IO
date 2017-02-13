@@ -20,11 +20,11 @@
 import os
 import shutil
 import time
+import Utilities as UT
 
 DEBUG = False
 
-OVERLAYINSTALLPATH = "/lib/firmware/chip_io"
-SPIINSTALLPATH = "/lib/firmware/nextthingco/chip"
+OVERLAYINSTALLPATH = "/lib/firmware/nextthingco/chip"
 OVERLAYCONFIGPATH  = "/sys/kernel/config/device-tree/overlays"
 CUSTOMOVERLAYFILEPATH = ""
 
@@ -43,7 +43,7 @@ _LOADED = {
 
 _OVERLAYS = {
   "SPI2" : "sample-spi.dtbo",
-  "PWM0" : "chip-pwm0.dtbo",
+  "PWM0" : "sample-pwm.dtbo",
   "CUST" : ""
 }
 
@@ -57,8 +57,10 @@ def toggle_debug():
     global DEBUG
     if DEBUG:
         DEBUG = False
+        print("debug disabled")
     else:
         DEBUG = True
+        print("debug enabled")
 
 def get_spi_loaded():
     """
@@ -159,12 +161,14 @@ def load(overlay, path=""):
             print("Custom Overlay path does not exist")
             return 1
 
+        # DETERMINE IF WE ARE A CHIP PRO AND WE ARE COMMANDED TO LOAD PWM0
+        if UT.is_chip_pro() and overlay.upper() == "PWM0":
+            print("CHIP Pro supports PWM0 in base DTB, exiting")
+            return 1
+
         # SET UP THE OVERLAY PATH FOR OUR USE
         if overlay.upper() != "CUST":
             opath = OVERLAYINSTALLPATH
-            # IF THE OVERLAY IS SPI, USE THE NTC PATH
-            if overlay.upper() == "SPI2":
-                opath = SPIINSTALLPATH
             opath += "/" + _OVERLAYS[overlay.upper()]
         else:
             opath = path
@@ -194,6 +198,12 @@ def unload(overlay):
     global _LOADED
     if DEBUG:
         print("UNLOAD OVERLAY: {0}".format(overlay))
+    
+    # DETERMINE IF WE ARE A CHIP PRO AND WE ARE COMMANDED TO UNLOAD PWM0
+    if UT.is_chip_pro() and overlay.upper() == "PWM0":
+        print("CHIP Pro supports PWM0 in base DTB, exiting")
+        return
+    
     # SEE IF OUR OVERLAY NAME IS IN THE KEYS
     if overlay.upper() in _OVERLAYS.keys():
         # BRUTE FORCE REMOVE AS THE DIRECTORY CONTAINS FILES
