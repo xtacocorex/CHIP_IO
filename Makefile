@@ -9,6 +9,10 @@ clean:
 	rm -f *.pyo *.pyc
 	rm -f *.egg
 	rm -f overlays/*.pyo overlays/*.pyc
+	rm -rf __pycache__
+	rm -rf debian/python-chip-io*
+	rm -rf debian/python3-chip-io*
+
 tests:
 	py.test
 
@@ -17,3 +21,6 @@ build:
 
 install: build
 	python setup.py install --force
+
+debfile:
+	dpkg-buildpackage -rfakeroot -uc -b
