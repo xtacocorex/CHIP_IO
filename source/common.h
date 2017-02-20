@@ -120,3 +120,5 @@ char *get_error_msg(void);
 void add_error_msg(char *msg);
 void toggle_debug(void);
 int compute_port_pin(const char *key, int gpio, int *port, int *pin);
+int gpio_allowed(int gpio);
+int pwm_allowed(const char *key);

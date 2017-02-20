@@ -99,6 +99,7 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
     char *channel = NULL;
     float angle = 0.0;
     float range = 180.0;
+    int allowed = -1;
     static char *kwlist[] = {"channel", "angle", "range", NULL};
 
     clear_error_msg();
@@ -125,6 +126,21 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
         return NULL;
     }
 
+    // Check to see if GPIO is allowed on the hardware
+    // A 1 means we're good to go
+    allowed = gpio_allowed(gpio);
+    if (allowed == -1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error determining hardware. (%s)", get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else if (allowed == 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    }
+
     if (servo_start(key, angle, range) < 0) {
        printf("servo_start failed");
        char err[2000];
@@ -141,6 +157,7 @@ static PyObject *py_stop_channel(PyObject *self, PyObject *args, PyObject *kwarg
 {
     int gpio;
     char key[8];
+    int allowed = -1;
     char *channel;
 
     clear_error_msg();
@@ -161,6 +178,21 @@ static PyObject *py_stop_channel(PyObject *self, PyObject *args, PyObject *kwarg
         return NULL;
     }
 
+    // Check to see if GPIO is allowed on the hardware
+    // A 1 means we're good to go
+    allowed = gpio_allowed(gpio);
+    if (allowed == -1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error determining hardware. (%s)", get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else if (allowed == 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    }
+
     servo_disable(key);
 
     Py_RETURN_NONE;
@@ -173,6 +205,7 @@ static PyObject *py_set_range(PyObject *self, PyObject *args, PyObject *kwargs)
     char key[8];
     char *channel;
     float range = 180.0;
+    int allowed = -1;
     static char *kwlist[] = {"channel", "range", NULL};
 
     clear_error_msg();
@@ -198,6 +231,21 @@ static PyObject *py_set_range(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
+    // Check to see if GPIO is allowed on the hardware
+    // A 1 means we're good to go
+    allowed = gpio_allowed(gpio);
+    if (allowed == -1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error determining hardware. (%s)", get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else if (allowed == 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    }
+
     if (servo_set_range(key, range) == -1) {
         PyErr_SetString(PyExc_RuntimeError, "You must start() the Servo channel first");
         return NULL;
@@ -213,6 +261,7 @@ static PyObject *py_set_angle(PyObject *self, PyObject *args, PyObject *kwargs)
     char key[8];
     char *channel;
     float angle = 0.0;
+    int allowed = -1;
     static char *kwlist[] = {"channel", "angle", NULL};
 
     clear_error_msg();
@@ -235,6 +284,21 @@ static PyObject *py_set_angle(PyObject *self, PyObject *args, PyObject *kwargs)
     get_gpio_number(channel, &gpio);
     if ((gpio >= lookup_gpio_by_name("XIO-P0") && gpio <= lookup_gpio_by_name("XIO-P7"))) {
         PyErr_SetString(PyExc_ValueError, "Servo currently not available on XIO-P0 to XIO-P7");
+        return NULL;
+    }
+
+    // Check to see if GPIO is allowed on the hardware
+    // A 1 means we're good to go
+    allowed = gpio_allowed(gpio);
+    if (allowed == -1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error determining hardware. (%s)", get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else if (allowed == 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
+        PyErr_SetString(PyExc_ValueError, err);
         return NULL;
     }
 

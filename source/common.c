@@ -68,10 +68,10 @@ pins_t pins_info[] = {
   { "PWRON",     "PWRON",       "U13_10",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "TWI1-SCK",  "KPD-I2C-SCL", "U13_11",  47, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "GND",       "GND",         "U13_12",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "X1",        "X1",          "U13_13",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "X2",        "X2",          "U13_14",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "Y1",        "Y1",          "U13_15",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
-  { "Y2",        "Y2",          "U13_16",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "X1",        "X1",          "U13_13",  -1, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "X2",        "X2",          "U13_14",  -1, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "Y1",        "Y1",          "U13_15",  -1, BASE_METHOD_AS_IS, -1, -1, CHIP},
+  { "Y2",        "Y2",          "U13_16",  -1, BASE_METHOD_AS_IS, -1, -1, CHIP},
   { "LCD-D2",    "UART2-TX",    "U13_17",  98, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "PWM0",      "PWM0",        "U13_18",  34, BASE_METHOD_AS_IS,  0, -1, BOTH},
   { "PWM1",      "PWM1",        "EINT13", 205, BASE_METHOD_AS_IS,  0, -1, CHIPPRO},
@@ -262,6 +262,61 @@ int is_this_chippro(void)
             printf(" ** is_this_chippro: this is a chip!\n");
     }
     
+    return rtnval;
+}
+
+int gpio_allowed(int gpio)
+{
+    int rtnval = -1;
+    pins_t *p;
+    // Determine if we are CHIP Pro
+    // Running because we cannot be sure if it was previously run
+    int iscpro = is_this_chippro();
+    
+    // If the return is good, we should be good to go, so let's check the data
+    if (iscpro != -1) {
+        // Loop through the pins
+        for (p = pins_info; p->key != NULL; ++p) {
+            if (p->gpio == gpio) {
+                // We have a CHIP and the pin is for CHIP/BOTH
+                if (((p->sbc_type == CHIP) || (p->sbc_type == BOTH)) && (ISCHIPPRO == 0)) {
+                    rtnval = 1;
+                // We have a CHIP Pro and the pin is for CHIPPRO/BOTH
+                 } else if (((p->sbc_type == CHIPPRO) || (p->sbc_type == BOTH)) && (ISCHIPPRO == 1)) {
+                    rtnval = 1;
+                } else {
+                    rtnval = 0;
+                }
+            }
+        }
+    }
+    return rtnval;
+}
+
+int pwm_allowed(const char *key)
+{
+    int rtnval = -1;
+    pins_t *p;
+    // Determine if we are CHIP Pro
+    // Running because we cannot be sure if it was previously run
+    int iscpro = is_this_chippro();
+    
+    // If the return is good, we should be good to go, so let's check the data
+    if (iscpro != -1) {
+        for (p = pins_info; p->key != NULL; ++p) {
+            if (strcmp(p->key, key) == 0) {
+                // We have a CHIP and the pin is for CHIP/BOTH
+                if ((p->sbc_type == BOTH) && (ISCHIPPRO == 0)) {
+                    rtnval = 1;
+                // We have a CHIP Pro and the pin is for CHIPPRO/BOTH
+                } else if (((p->sbc_type == CHIPPRO) || (p->sbc_type == BOTH)) && (ISCHIPPRO == 1)) {
+                    rtnval = 1;
+                } else {
+                    rtnval = 0;
+                }
+            }
+        }
+    }
     return rtnval;
 }
 

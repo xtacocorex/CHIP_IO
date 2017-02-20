@@ -95,6 +95,8 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
     float frequency = 2000.0;
     float duty_cycle = 0.0;
     int polarity = 0;
+    int gpio;
+    int allowed = -1;
     static char *kwlist[] = {"channel", "duty_cycle", "frequency", "polarity", NULL};
 
     clear_error_msg();
@@ -110,6 +112,25 @@ static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwar
 
     if (!get_key(channel, key)) {
         PyErr_SetString(PyExc_ValueError, "Invalid SOFTPWM key or name.");
+        return NULL;
+    }
+
+    // check to ensure gpio is one of the allowed pins
+    // Not protecting the call as if the get_key() fails, we won't make it here
+    get_gpio_number(channel, &gpio);
+
+    // Check to see if GPIO is allowed on the hardware
+    // A 1 means we're good to go
+    allowed = gpio_allowed(gpio);
+    if (allowed == -1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error determining hardware. (%s)", get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else if (allowed == 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
+        PyErr_SetString(PyExc_ValueError, err);
         return NULL;
     }
 
@@ -144,6 +165,8 @@ static PyObject *py_stop_channel(PyObject *self, PyObject *args, PyObject *kwarg
 {
     char key[8];
     char *channel;
+    int gpio;
+    int allowed = -1;
 
     clear_error_msg();
 
@@ -152,6 +175,25 @@ static PyObject *py_stop_channel(PyObject *self, PyObject *args, PyObject *kwarg
 
     if (!get_key(channel, key)) {
         PyErr_SetString(PyExc_ValueError, "Invalid PWM key or name.");
+        return NULL;
+    }
+
+    // check to ensure gpio is one of the allowed pins
+    // Not protecting the call as if the get_key() fails, we won't make it here
+    get_gpio_number(channel, &gpio);
+
+    // Check to see if GPIO is allowed on the hardware
+    // A 1 means we're good to go
+    allowed = gpio_allowed(gpio);
+    if (allowed == -1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error determining hardware. (%s)", get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else if (allowed == 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
+        PyErr_SetString(PyExc_ValueError, err);
         return NULL;
     }
 
@@ -165,6 +207,8 @@ static PyObject *py_set_duty_cycle(PyObject *self, PyObject *args, PyObject *kwa
 {
     char key[8];
     char *channel;
+    int gpio;
+    int allowed = -1;
     float duty_cycle = 0.0;
     static char *kwlist[] = {"channel", "duty_cycle", NULL};
 
@@ -183,6 +227,25 @@ static PyObject *py_set_duty_cycle(PyObject *self, PyObject *args, PyObject *kwa
         return NULL;
     }
 
+    // check to ensure gpio is one of the allowed pins
+    // Not protecting the call as if the get_key() fails, we won't make it here
+    get_gpio_number(channel, &gpio);
+
+    // Check to see if GPIO is allowed on the hardware
+    // A 1 means we're good to go
+    allowed = gpio_allowed(gpio);
+    if (allowed == -1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error determining hardware. (%s)", get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else if (allowed == 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    }
+
     if (softpwm_set_duty_cycle(key, duty_cycle) == -1) {
         PyErr_SetString(PyExc_RuntimeError, "You must start() the PWM channel first");
         return NULL;
@@ -196,6 +259,8 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
 {
     char key[8];
     char *channel;
+    int gpio;
+    int allowed = -1;
     float frequency = 1.0;
     static char *kwlist[] = {"channel", "frequency", NULL};
 
@@ -211,6 +276,25 @@ static PyObject *py_set_frequency(PyObject *self, PyObject *args, PyObject *kwar
 
     if (!get_key(channel, key)) {
         PyErr_SetString(PyExc_ValueError, "Invalid PWM key or name.");
+        return NULL;
+    }
+
+    // check to ensure gpio is one of the allowed pins
+    // Not protecting the call as if the get_key() fails, we won't make it here
+    get_gpio_number(channel, &gpio);
+
+    // Check to see if GPIO is allowed on the hardware
+    // A 1 means we're good to go
+    allowed = gpio_allowed(gpio);
+    if (allowed == -1) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Error determining hardware. (%s)", get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    } else if (allowed == 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
+        PyErr_SetString(PyExc_ValueError, err);
         return NULL;
     }
 
