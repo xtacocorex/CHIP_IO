@@ -89,7 +89,6 @@ typedef struct dyn_int_array_s dyn_int_array_t;
 int setup_error;
 int module_setup;
 int DEBUG;
-int ISCHIPPRO;
 
 int get_xio_base(void);
 int is_this_chippro(void);

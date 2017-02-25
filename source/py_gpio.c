@@ -43,6 +43,7 @@ SOFTWARE.
 #include "event_gpio.h"
 
 static int gpio_warnings = 1;
+static int r8_mem_setup = 0;
 
 int max_gpio = -1;
 dyn_int_array_t *gpio_direction = NULL;
@@ -70,22 +71,6 @@ static PyObject *py_toggle_debug(PyObject *self, PyObject *args)
 static int init_module(void)
 {
     clear_error_msg();
-    
-    if (map_pio_memory() < 0) {
-        char err[2000];
-        snprintf(err, sizeof(err), "init_module error (%s)", get_error_msg());
-        PyErr_SetString(PyExc_RuntimeError, err);
-        return 0;
-    }
-
-    // figure out if we're a chip pro
-    if (is_this_chippro() < 1) {
-        char err[2000];
-        snprintf(err, sizeof(err), "init_module error (%s)", get_error_msg());
-        PyErr_SetString(PyExc_RuntimeError, err);
-        return 0;
-    }
-    // After this point, ISCHIPPRO variable should be good to go
 
     // If we make it here, we're good to go
     if (DEBUG)
@@ -95,16 +80,34 @@ static int init_module(void)
     return 0;
 }
 
+static int init_r8_gpio_mem(void)
+{
+    clear_error_msg();
+
+    if (DEBUG)
+        printf(" ** init_r8_gpio_mem: mapping memory **\n");
+    
+    if (map_pio_memory() < 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "init_r8_gpio_mem error (%s)", get_error_msg());
+        PyErr_SetString(PyExc_RuntimeError, err);
+        return 0;
+    }
+
+    // If we make it here, we're good to go
+    if (DEBUG)
+        printf(" ** init_r8_gpio_mem: setup complete **\n");
+    r8_mem_setup = 1;
+    
+    return 0;
+}
+
 // python function value = is_chip_pro
 static PyObject *py_is_chip_pro(PyObject *self, PyObject *args)
 {
     PyObject *py_value;
     
-    if (!module_setup) {
-        init_module();
-    }
-    
-    py_value = Py_BuildValue("i", ISCHIPPRO);
+    py_value = Py_BuildValue("i", is_this_chippro());
 
     return py_value;
 }
@@ -205,6 +208,11 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
         snprintf(err, sizeof(err), "GPIO %d not available on current Hardware", gpio);
         PyErr_SetString(PyExc_ValueError, err);
         return NULL;
+    }
+
+    // Only map /dev/mem if we're not an XIO
+    if (!r8_mem_setup && !(gpio >= lookup_gpio_by_name("XIO-P0") && gpio <= lookup_gpio_by_name("XIO-P7"))) {
+        init_r8_gpio_mem();
     }
  
     if (gpio_export(gpio) < 0) {

@@ -60,15 +60,6 @@ static int init_module(void)
 {
     clear_error_msg();
     
-    // figure out if we're a chip pro
-    if (is_this_chippro() < 1) {
-        char err[2000];
-        snprintf(err, sizeof(err), "init_module error (%s)", get_error_msg());
-        PyErr_SetString(PyExc_RuntimeError, err);
-        return 0;
-    }
-    // After this point, ISCHIPPRO variable should be good to go
-
     // If we make it here, we're good to go
     if (DEBUG)
         printf(" ** init_module: setup complete **\n");
@@ -82,11 +73,7 @@ static PyObject *py_is_chip_pro(PyObject *self, PyObject *args)
 {
     PyObject *py_value;
     
-    if (!module_setup) {
-        init_module();
-    }
-    
-    py_value = Py_BuildValue("i", ISCHIPPRO);
+    py_value = Py_BuildValue("i", is_this_chippro());
 
     return py_value;
 }

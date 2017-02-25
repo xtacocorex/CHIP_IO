@@ -45,6 +45,7 @@ SOFTWARE.
 #include <string.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <sys/sysinfo.h>
 
 int setup_error = 0;
 int module_setup = 0;
@@ -53,7 +54,7 @@ int module_setup = 0;
 int DEBUG = 0;
 
 // Is This a CHIP PRO
-int ISCHIPPRO = 0;
+int is_chip_pro = 0;
 
 pins_t pins_info[] = {
   { "GND",       "GND",         "U13_1",   -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
@@ -220,76 +221,57 @@ int get_xio_base(void)
   return xio_base_address; 
 }  /* get_xio_base */
 
-#define BOOTPATH "/boot"
+#define RAMDETERMINER 380.0
+#define MEGABYTE 1024.0*1024.0
 
 int is_this_chippro(void)
 {
-    int rtnval = -1;
-    DIR *dir;
-    struct dirent *ent;
+    int is_pro = 0;
     
-    // Default ISCHIPPRO to 0 for CHIP
-    ISCHIPPRO = 0;
-    
-    // Get the boot directory open
-    dir = opendir (BOOTPATH);
-    if (dir == NULL) {
-        char err[256];
-        snprintf(err, sizeof(err), "is_this_chippro: could not open '%s' (%s)", BOOTPATH, strerror(errno));
-        add_error_msg(err);
-        return -1;
+    struct sysinfo si;
+    sysinfo (&si);
+        
+    if ((si.totalram/MEGABYTE) > RAMDETERMINER) {
+        is_pro = 0;
+    } else {
+        is_pro = 1;
     }
     
-    if (DEBUG)
-        printf(" ** is_this_chippro: checking boot directory\n");
-    // Loop through the directory files
-    while ((ent = readdir (dir)) != NULL) {
-        //printf ("%s\n", ent->d_name);
-        if(strstr(ent->d_name, "gr8") != NULL) {
-            rtnval = 1;
-            ISCHIPPRO = 1;
-            if (DEBUG)
-                printf(" ** is_this_chippro: this is a chip pro!\n");
-            break;
-        }
-    }
-    closedir (dir);
-    
-    if (ISCHIPPRO == 0)
-    {
-        rtnval = 0;
-        if (DEBUG)
-            printf(" ** is_this_chippro: this is a chip!\n");
-    }
-    
-    return rtnval;
+    return is_pro;
 }
 
 int gpio_allowed(int gpio)
 {
     int rtnval = -1;
     pins_t *p;
-    // Determine if we are CHIP Pro
-    // Running because we cannot be sure if it was previously run
-    int iscpro = is_this_chippro();
+    int tmpgpio = -1;
     
     // If the return is good, we should be good to go, so let's check the data
-    if (iscpro != -1) {
-        // Loop through the pins
-        for (p = pins_info; p->key != NULL; ++p) {
-            if (p->gpio == gpio) {
-                // We have a CHIP and the pin is for CHIP/BOTH
-                if (((p->sbc_type == CHIP) || (p->sbc_type == BOTH)) && (ISCHIPPRO == 0)) {
-                    rtnval = 1;
-                // We have a CHIP Pro and the pin is for CHIPPRO/BOTH
-                 } else if (((p->sbc_type == CHIPPRO) || (p->sbc_type == BOTH)) && (ISCHIPPRO == 1)) {
-                    rtnval = 1;
-                } else {
-                    rtnval = 0;
-                }
+
+    // Loop through the pins
+    for (p = pins_info; p->key != NULL; ++p) {
+        tmpgpio = gpio_number(p);
+        if (tmpgpio == gpio) {
+            if (DEBUG)
+                printf(" ** gpio_allowed: found match\n");
+            // We have a CHIP and the pin is for CHIP/BOTH
+            if (((p->sbc_type == CHIP) || (p->sbc_type == BOTH)) && (is_this_chippro() == 0)) {
+                if (DEBUG)
+                    printf(" ** gpio_allowed: pin allowed for chip or bth and we're a chip\n");
+                rtnval = 1;
+            // We have a CHIP Pro and the pin is for CHIPPRO/BOTH
+            } else if (((p->sbc_type == CHIPPRO) || (p->sbc_type == BOTH)) && (is_this_chippro() == 1)) {
+                if (DEBUG)
+                    printf(" ** gpio_allowed: pin allowed for chip pro or both and we're a chip pro\n");
+                rtnval = 1;
+            } else {
+                if (DEBUG)
+                    printf(" ** gpio_allowed: pin is not allowed on hardware\n");
+                rtnval = 0;
             }
         }
     }
+
     return rtnval;
 }
 
@@ -299,24 +281,30 @@ int pwm_allowed(const char *key)
     pins_t *p;
     // Determine if we are CHIP Pro
     // Running because we cannot be sure if it was previously run
-    int iscpro = is_this_chippro();
     
     // If the return is good, we should be good to go, so let's check the data
-    if (iscpro != -1) {
-        for (p = pins_info; p->key != NULL; ++p) {
-            if (strcmp(p->key, key) == 0) {
-                // We have a CHIP and the pin is for CHIP/BOTH
-                if ((p->sbc_type == BOTH) && (ISCHIPPRO == 0)) {
-                    rtnval = 1;
-                // We have a CHIP Pro and the pin is for CHIPPRO/BOTH
-                } else if (((p->sbc_type == CHIPPRO) || (p->sbc_type == BOTH)) && (ISCHIPPRO == 1)) {
-                    rtnval = 1;
-                } else {
-                    rtnval = 0;
-                }
+    for (p = pins_info; p->key != NULL; ++p) {
+        if (strcmp(p->key, key) == 0) {
+            if (DEBUG)
+                printf(" ** pwm_allowed: found match\n");
+            // We have a CHIP and the pin is for CHIP/BOTH
+            if ((p->sbc_type == BOTH) && (is_this_chippro() == 0)) {
+                if (DEBUG)
+                    printf(" ** pwm_allowed: pwm allowed for chip or bth and we're a chip\n");
+                rtnval = 1;
+            // We have a CHIP Pro and the pin is for CHIPPRO/BOTH
+            } else if (((p->sbc_type == CHIPPRO) || (p->sbc_type == BOTH)) && (is_this_chippro() == 1)) {
+                if (DEBUG)
+                    printf(" ** pwm_allowed: pwm allowed for chip pro or both and we're a chip pro\n");
+                rtnval = 1;
+            } else {
+                if (DEBUG)
+                    printf(" ** pwm_allowed: pwm is not allowed on hardware\n");
+                rtnval = 0;
             }
         }
     }
+
     return rtnval;
 }
 
