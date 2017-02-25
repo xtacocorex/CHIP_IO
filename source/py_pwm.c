@@ -76,13 +76,11 @@ static int init_module(void)
 // python function value = is_chip_pro
 static PyObject *py_is_chip_pro(PyObject *self, PyObject *args)
 {
+    int is_cpro;
     PyObject *py_value;
     
-    if (!module_setup) {
-        init_module();
-    }
-    
-    py_value = Py_BuildValue("i", ISCHIPPRO);
+    is_cpro = is_this_chippro();
+    py_value = Py_BuildValue("i", is_cpro);
 
     return py_value;
 }

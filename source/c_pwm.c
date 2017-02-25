@@ -52,6 +52,7 @@ SOFTWARE.
 struct pwm_exp
 {
     char key[KEYLEN+1]; /* leave room for terminating NUL byte */
+    int iscpro;
     int gpio;
     int initialized;
     int period_fd;
@@ -412,6 +413,10 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     struct pwm_exp *new_pwm, *pwm;
     int gpio = 0;
     int initialized = 0;
+    int iscpro = 0;
+
+    // Figure out if we are a CPro
+    iscpro = is_this_chippro();
 
     // Figure out which pin we are
     if (strcmp(key,"U13_18") == 0) {
@@ -501,6 +506,7 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     strncpy(new_pwm->key, key, KEYLEN);  /* can leave string unterminated */
     new_pwm->key[KEYLEN] = '\0'; /* terminate string */
     new_pwm->gpio = gpio;
+    new_pwm->iscpro = iscpro;
     new_pwm->initialized = initialized;
     new_pwm->period_fd = period_fd;
     new_pwm->duty_fd = duty_fd;
@@ -522,7 +528,7 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
 
     int rtnval = 0;
     // Always set polarity first
-    if (ISCHIPPRO == 1) {
+    if (iscpro == 1) {
         rtnval = pwm_set_polarity(key, polarity);
     }
     rtnval = pwm_set_enable(key, ENABLE);
@@ -557,7 +563,7 @@ int pwm_disable(const char *key)
     pwm_set_frequency(key, 0);
     pwm_set_duty_cycle(key, 0);
     pwm_set_enable(key, DISABLE);
-    if (ISCHIPPRO == 1) {
+    if (pwm->iscpro == 1) {
         pwm_set_polarity(key, 0);
     }
 
