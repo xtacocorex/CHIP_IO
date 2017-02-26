@@ -85,6 +85,6 @@ void define_constants(PyObject *module)
    bcm = Py_BuildValue("i", BCM);
    PyModule_AddObject(module, "BCM", bcm);
 
-   version = Py_BuildValue("s", "0.4.0");
+   version = Py_BuildValue("s", "0.5.0");
    PyModule_AddObject(module, "VERSION", version);
 }
