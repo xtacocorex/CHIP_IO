@@ -2,19 +2,12 @@ CHIP_IO
 ============================
 A CHIP GPIO library
 
-NOTE: Now requires the custom DTC to install the library
-
-Manual::
+Manual Installation::
 
 For Python2.7::
 
     sudo apt-get update
     sudo apt-get install git build-essential python-dev python-pip flex bison chip-dt-overlays -y
-    git clone https://github.com/atenart/dtc.git
-    cd dtc
-    make
-    sudo  make install PREFIX=/usr
-    cd ..
     git clone git://github.com/xtacocorex/CHIP_IO.git
     cd CHIP_IO
     sudo python setup.py install
@@ -24,15 +17,24 @@ For Python3::
 
     sudo apt-get update
     sudo apt-get install git build-essential python3-dev python3-pip flex bison chip-dt-overlays -y
-    git clone https://github.com/atenart/dtc.git
-    cd dtc
-    make
-    sudo  make install PREFIX=/usr
-    cd ..
     git clone git://github.com/xtacocorex/CHIP_IO.git
     cd CHIP_IO
     sudo python3 setup.py install
     cd ..
+
+PyPi Installation::
+
+For Python2.7::
+
+    sudo apt-get update
+    sudo apt-get install git build-essential python-dev python-pip flex bison chip-dt-overlays -y
+    sudo pip install CHIP-IO
+
+For Python3::
+
+    sudo apt-get update
+    sudo apt-get install git build-essential python3-dev python3-pip flex bison chip-dt-overlays -y
+    sudo pip3 install CHIP-IO
 
 **Usage**
 

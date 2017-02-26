@@ -1,3 +1,11 @@
+chip-io (0.5.2-1) unstable; urgency=low
+
+  * Updating Utilities to determine CHIP Pro better
+  * Updating Utilities to only run CHIP appropriate code on the CHIP and not CHIP Pro
+  * Updated README
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Sun, 26 Feb 2017 13:56:00 -0600
+
 chip-io (0.5.0-1) unstable; urgency=low
 
   * CHIP Pro support for PWM1, reduced GPIO capability

@@ -1,3 +1,8 @@
+0.5.2
+---
+* Updating Utilties to determine CHIP Pro better
+* Updating the README to fix things
+
 0.5.0
 ---
 * CHIP Pro Support
