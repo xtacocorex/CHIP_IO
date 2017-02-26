@@ -178,6 +178,9 @@ Debug can be enabled/disabled by the following command::
     
 You can determine if the hardware is a CHIP/CHIP Pro using the following::
 
+    # Determine hardware
+    # 0 For CHIP
+    # 1 For CHIP Pro
     GPIO.is_chip_pro()
 
 **GPIO Output**
@@ -265,6 +268,10 @@ To clean up the GPIO when done, do the following::
 Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to know there is a PWM device available to use.
 ::
     import CHIP_IO.PWM as PWM
+    # Determine hardware
+    # 0 For CHIP
+    # 1 For CHIP Pro
+    PWM.is_chip_pro()
     # Enable/Disable Debug
     PWM.toggle_debug()
     #PWM.start(channel, duty, freq=2000, polarity=0)
@@ -281,6 +288,10 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
 **SOFTPWM**::
 
     import CHIP_IO.SOFTPWM as SPWM
+    # Determine hardware
+    # 0 For CHIP
+    # 1 For CHIP Pro
+    SPWM.is_chip_pro()
     # Enable/Disable Debug
     SPWM.toggle_debug()
     #SPWM.start(channel, duty, freq=2000, polarity=0)
@@ -303,6 +314,10 @@ If using SOFTPWM and PWM at the same time, import CHIP_IO.SOFTPWM as SPWM or som
 **SERVO**::
 
     import CHIP_IO.SERVO as SERVO
+    # Determine hardware
+    # 0 For CHIP
+    # 1 For CHIP Pro
+    SERVO.is_chip_pro()
     # Enable/Disable Debug
     SERVO.toggle_debug()
     #SPWM.start(channel, angle=0, range=180)

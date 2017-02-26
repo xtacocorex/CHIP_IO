@@ -1,3 +1,11 @@
+chip-io (0.5.0-1) unstable; urgency=low
+
+  * CHIP Pro support for PWM1, reduced GPIO capability
+  * New is_chip_pro() in each of the PWM, GPIO, SoftPWM, and Servo modules
+  * Updated README
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Sat, 25 Feb 2017 19:00:00 -0600
+
 chip-io (0.4.0-1) unstable; urgency=low
 
   * source package automatically created by stdeb 0.8.2

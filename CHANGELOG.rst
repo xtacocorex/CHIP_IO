@@ -1,3 +1,8 @@
+0.5.0
+---
+* CHIP Pro Support
+* README Updates
+
 0.4.0
 ---
 * Software Servo code added
