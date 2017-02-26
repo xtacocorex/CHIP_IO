@@ -222,19 +222,25 @@ int get_xio_base(void)
 }  /* get_xio_base */
 
 #define RAMDETERMINER 380.0
-#define MEGABYTE 1024.0*1024.0
 
 int is_this_chippro(void)
 {
     int is_pro = 0;
-    
     struct sysinfo si;
     sysinfo (&si);
-        
-    if ((si.totalram/MEGABYTE) > RAMDETERMINER) {
+    const double megabyte = 1024 * 1024;
+    
+    if (DEBUG)
+        printf(" ** is_this_chippro: total system ram: %5.1f mb\n", si.totalram / megabyte);
+    
+    if ((si.totalram/megabyte) > RAMDETERMINER) {
         is_pro = 0;
+        if (DEBUG)
+            printf(" ** is_this_chippro: we are a chip\n");
     } else {
         is_pro = 1;
+        if (DEBUG)
+            printf(" ** is_this_chippro: we are a chip pro\n");
     }
     
     return is_pro;
