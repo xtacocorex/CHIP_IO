@@ -1,3 +1,9 @@
+0.5.3
+---
+* Fixes to the PWM pytest
+* Added pytest for LRADC and Utilities
+* Makefile updates for all the things
+
 0.5.2
 ---
 * Updating Utilties to determine CHIP Pro better

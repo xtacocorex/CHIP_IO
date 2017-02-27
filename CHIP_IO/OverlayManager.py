@@ -20,7 +20,8 @@
 import os
 import shutil
 import time
-import Utilities as UT
+import sys
+from .Utilities import is_chip_pro
 
 DEBUG = False
 
@@ -162,7 +163,7 @@ def load(overlay, path=""):
             return 1
 
         # DETERMINE IF WE ARE A CHIP PRO AND WE ARE COMMANDED TO LOAD PWM0
-        if UT.is_chip_pro() and overlay.upper() == "PWM0":
+        if is_chip_pro() and overlay.upper() == "PWM0":
             print("CHIP Pro supports PWM0 in base DTB, exiting")
             return 1
 
@@ -200,7 +201,7 @@ def unload(overlay):
         print("UNLOAD OVERLAY: {0}".format(overlay))
     
     # DETERMINE IF WE ARE A CHIP PRO AND WE ARE COMMANDED TO UNLOAD PWM0
-    if UT.is_chip_pro() and overlay.upper() == "PWM0":
+    if is_chip_pro() and overlay.upper() == "PWM0":
         print("CHIP Pro supports PWM0 in base DTB, exiting")
         return
     

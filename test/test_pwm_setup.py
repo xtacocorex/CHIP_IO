@@ -4,28 +4,21 @@ import time
 
 import CHIP_IO.PWM as PWM
 import CHIP_IO.OverlayManager as OM
+import CHIP_IO.Utilities as UT
 
 def setup_module(module):
-    OM.load("PWM0")
+    if not UT.is_chip_pro():
+        OM.load("PWM0")
 
 def teardown_module(module):
     PWM.cleanup()
-    OM.unload("PWM0")
+    if not UT.is_chip_pro():
+        OM.unload("PWM0")
 
 class TestPwmSetup:
 
     def setup_method(self, test_method):
         time.sleep(0.5)
-
-    #def teardown_method(self, test_method):
-    #    PWM.cleanup()
-        #OM.unload("PWM0")
-
-    #def setup_module(self, module):
-    #    OM.load("PWM0")
-
-    #def teardown_module(self, module):
-    #    OM.unload("PWM0")
 
     def test_start_pwm(self):
         PWM.start("PWM0", 0)
@@ -91,10 +84,12 @@ class TestPwmSetup:
     def test_pwm_start_valid_duty_cycle_min(self):
         #testing an exception isn't thrown
         PWM.start("PWM0", 0)
+        PWM.cleanup()
 
     def test_pwm_start_valid_duty_cycle_max(self):
         #testing an exception isn't thrown
         PWM.start("PWM0", 100)
+        PWM.cleanup()
 
     def test_pwm_start_invalid_duty_cycle_high(self):
         with pytest.raises(ValueError):
@@ -143,7 +138,8 @@ class TestPwmSetup:
         assert int(period) == 500000
 
     def test_pwm_duty_cycle_non_setup_key(self):
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ValueError):
+            PWM.cleanup()
             PWM.set_duty_cycle("PWM0", 100)
 
     def test_pwm_duty_cycle_invalid_key(self):
@@ -154,26 +150,31 @@ class TestPwmSetup:
         PWM.start("PWM0", 0)
         with pytest.raises(ValueError):
             PWM.set_duty_cycle("PWM0", 101)
+        PWM.cleanup()
 
     def test_pwm_duty_cycle_invalid_value_negative(self):
         PWM.start("PWM0", 0)
         with pytest.raises(ValueError):
             PWM.set_duty_cycle("PWM0", -1)
+        PWM.cleanup()
 
     def test_pwm_duty_cycle_invalid_value_string(self):
         PWM.start("PWM0", 0)
         with pytest.raises(TypeError):
             PWM.set_duty_cycle("PWM0", "a")
+        PWM.cleanup()
 
     def test_pwm_frequency_invalid_value_negative(self):
         PWM.start("PWM0", 0)
         with pytest.raises(ValueError):
             PWM.set_frequency("PWM0", -1)
+        PWM.cleanup()
 
     def test_pwm_frequency_invalid_value_string(self):
         PWM.start("PWM0", 0)
         with pytest.raises(TypeError):
             PWM.set_frequency("PWM0", "11")
+        PWM.cleanup()
 
     def test_pwm_freq_non_setup_key(self):
         with pytest.raises(RuntimeError):

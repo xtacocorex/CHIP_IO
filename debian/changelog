@@ -1,3 +1,11 @@
+chip-io (0.5.3-1) unstable; urgency=low
+
+  * Fixes to the PWM pytest
+  * Added pytest for LRADC and Utilities
+  * Makefile updates for all the things
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Sun, 26 Feb 2017 20:46:00 -0600
+
 chip-io (0.5.2-1) unstable; urgency=low
 
   * Updating Utilities to determine CHIP Pro better

@@ -438,11 +438,12 @@ Install py.test to run the tests. You'll also need the python compiler package f
 To run the tests, do the following.::
 
     # If only one version of Python is installed
-    sudo py.test
-    # If more than one version of Python
-    cd test
-    sudo python2 -m pytest
-    sudo python3 -m pytest
+    # Python 2
+    sudo make pytest2
+    # Python 3
+    sudo make pytest3
+    # If more than one version of Python, run through both
+    sudo make test
 
 **Credits**
 
