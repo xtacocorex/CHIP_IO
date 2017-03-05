@@ -1,3 +1,12 @@
+chip-io (0.5.4-1) unstable; urgency=low
+
+  * Re-enabled the polarity setting for PWM based upon Issue #61
+  * Fixed a 1 letter bug was trying to write inverted to polarity when it wants inversed (such facepalm)
+  * Cleaned up the polarity setting code to work when PWM is not enabled
+  * Fixed the unit test for pwm to verify we can set polarity
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Sun, 26 Feb 2017 20:46:00 -0600
+
 chip-io (0.5.3-1) unstable; urgency=low
 
   * Fixes to the PWM pytest

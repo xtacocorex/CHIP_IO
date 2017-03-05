@@ -246,13 +246,14 @@ int pwm_set_polarity(const char *key, int polarity) {
         return rtnval;
     }
 
-    if (pwm->enable) {
+    // THIS ONLY WORKS WHEN PWM IS NOT ENABLED
+    if (pwm->enable == 0) {
         if (polarity == 0) {
             len = snprintf(buffer, sizeof(buffer), "%s", "normal"); BUF2SMALL(buffer);
         }
         else
         {
-            len = snprintf(buffer, sizeof(buffer), "%s", "inverted"); BUF2SMALL(buffer);
+            len = snprintf(buffer, sizeof(buffer), "%s", "inversed"); BUF2SMALL(buffer);
         }
         ssize_t s = write(pwm->polarity_fd, buffer, len);  e_no = errno;
         if (DEBUG) {
@@ -271,6 +272,7 @@ int pwm_set_polarity(const char *key, int polarity) {
     } else {
         rtnval = 0;
     }
+
     return rtnval;
 }
 
@@ -527,18 +529,19 @@ int pwm_start(const char *key, float duty, float freq, int polarity)
     }
 
     int rtnval = 0;
-    // Always set polarity first
-    if (iscpro == 1) {
-        rtnval = pwm_set_polarity(key, polarity);
-    }
-    rtnval = pwm_set_enable(key, ENABLE);
     // Fix for issue #53
+    // Always set polarity first
+    rtnval = pwm_set_polarity(key, polarity);
     if (rtnval != -1) {
         rtnval = 0;
-        rtnval = pwm_set_frequency(key, freq);
+        rtnval = pwm_set_enable(key, ENABLE);
         if (rtnval != -1) {
             rtnval = 0;
-            rtnval = pwm_set_duty_cycle(key, duty);
+            rtnval = pwm_set_frequency(key, freq);
+            if (rtnval != -1) {
+                rtnval = 0;
+                rtnval = pwm_set_duty_cycle(key, duty);
+            }
         }
     }
     return rtnval;
@@ -563,9 +566,7 @@ int pwm_disable(const char *key)
     pwm_set_frequency(key, 0);
     pwm_set_duty_cycle(key, 0);
     pwm_set_enable(key, DISABLE);
-    if (pwm->iscpro == 1) {
-        pwm_set_polarity(key, 0);
-    }
+    pwm_set_polarity(key, 0);
 
     if ((fd = open("/sys/class/pwm/pwmchip0/unexport", O_WRONLY)) < 0)
     {

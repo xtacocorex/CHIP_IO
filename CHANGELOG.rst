@@ -1,3 +1,10 @@
+0.5.4
+---
+* Re-enabled the polarity setting for PWM based upon Issue #61
+* Fixed a 1 letter bug was trying to write inverted to polarity when it wants inversed (such facepalm)
+* Cleaned up the polarity setting code to work when PWM is not enabled
+* Fixed the unit test for pwm to verify we can set polarity
+
 0.5.3
 ---
 * Fixes to the PWM pytest

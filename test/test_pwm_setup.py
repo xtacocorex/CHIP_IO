@@ -31,27 +31,25 @@ class TestPwmSetup:
         assert int(duty) == 0
         assert int(period) == 500000
 
-    @pytest.mark.xfail(reason="pwm cleanup is doing weirdness for this test")
     def test_start_pwm_with_polarity_one(self):
+        PWM.cleanup()
         PWM.start("PWM0", 0, 2000, 1)
 
         pwm_test = '/sys/class/pwm/pwmchip0/pwm0/'
 
-        #assert os.path.exists(pwm_test) == True
         duty = open(pwm_test + 'duty_cycle').readline().strip()
         period = open(pwm_test + 'period').readline().strip()
         polarity = open(pwm_test + 'polarity').readline().strip()
         assert int(duty) == 0
         assert int(period) == 500000
-        assert str(polarity) == "inverted"
+        assert str(polarity) == "inversed"
 
-    @pytest.mark.xfail(reason="pwm cleanup is doing weirdness for this test")
     def test_start_pwm_with_polarity_default(self):
+        PWM.cleanup()
         PWM.start("PWM0", 0, 2000, 0)
 
         pwm_test = '/sys/class/pwm/pwmchip0/pwm0/'
 
-        #assert os.path.exists(pwm_test) == True
         duty = open(pwm_test + 'duty_cycle').readline().strip()
         period = open(pwm_test + 'period').readline().strip()
         polarity = open(pwm_test + 'polarity').readline().strip()
@@ -59,13 +57,12 @@ class TestPwmSetup:
         assert int(period) == 500000
         assert str(polarity) == "normal"
 
-    @pytest.mark.xfail(reason="pwm cleanup is doing weirdness for this test")
     def test_start_pwm_with_polarity_zero(self):
+        PWM.cleanup()
         PWM.start("PWM0", 0, 2000, 0)
 
         pwm_test = '/sys/class/pwm/pwmchip0/pwm0/'
 
-        #assert os.path.exists(pwm_test) == True
         duty = open(pwm_test + 'duty_cycle').readline().strip()
         period = open(pwm_test + 'period').readline().strip()
         polarity = open(pwm_test + 'polarity').readline().strip()
@@ -83,6 +80,7 @@ class TestPwmSetup:
 
     def test_pwm_start_valid_duty_cycle_min(self):
         #testing an exception isn't thrown
+        PWM.cleanup()
         PWM.start("PWM0", 0)
         PWM.cleanup()
 
