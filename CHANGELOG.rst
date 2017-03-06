@@ -1,3 +1,7 @@
+0.5.5
+---
+* Fix for Issue #62 where using alternate name of an XIO would cause a segfault due to trying to set pull up/down resistor setting
+
 0.5.4
 ---
 * Re-enabled the polarity setting for PWM based upon Issue #61

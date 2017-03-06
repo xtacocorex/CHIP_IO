@@ -263,7 +263,7 @@ int gpio_allowed(int gpio)
             // We have a CHIP and the pin is for CHIP/BOTH
             if (((p->sbc_type == CHIP) || (p->sbc_type == BOTH)) && (is_this_chippro() == 0)) {
                 if (DEBUG)
-                    printf(" ** gpio_allowed: pin allowed for chip or bth and we're a chip\n");
+                    printf(" ** gpio_allowed: pin allowed for chip or both and we're a chip\n");
                 rtnval = 1;
             // We have a CHIP Pro and the pin is for CHIPPRO/BOTH
             } else if (((p->sbc_type == CHIPPRO) || (p->sbc_type == BOTH)) && (is_this_chippro() == 1)) {
@@ -296,7 +296,7 @@ int pwm_allowed(const char *key)
             // We have a CHIP and the pin is for CHIP/BOTH
             if ((p->sbc_type == BOTH) && (is_this_chippro() == 0)) {
                 if (DEBUG)
-                    printf(" ** pwm_allowed: pwm allowed for chip or bth and we're a chip\n");
+                    printf(" ** pwm_allowed: pwm allowed for chip or both and we're a chip\n");
                 rtnval = 1;
             // We have a CHIP Pro and the pin is for CHIPPRO/BOTH
             } else if (((p->sbc_type == CHIPPRO) || (p->sbc_type == BOTH)) && (is_this_chippro() == 1)) {
@@ -554,7 +554,7 @@ int compute_port_pin(const char *key, int gpio, int *port, int *pin)
     if (capable < 0) {
         capable = lookup_pud_capable_by_name(key);
         if (capable < 0) {
-             capable = lookup_gpio_by_altname(key);
+             capable = lookup_pud_capable_by_altname(key);
              if (capable < 0) {
                  capable = 0;  // default to false
              }

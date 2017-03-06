@@ -15,6 +15,7 @@ clean:
 	rm -f *.pyo *.pyc
 	rm -f *.egg
 	rm -rf __pycache__
+	rm -rf test/__pycache__/
 	rm -rf debian/python-chip-io*
 	rm -rf debian/python3-chip-io*
 

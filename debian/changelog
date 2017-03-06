@@ -1,3 +1,9 @@
+chip-io (0.5.5-1) unstable; urgency=low
+
+  * Fix for Issue #62 where using alternate name of an XIO would cause a segfault due to trying to set pull up/down resistor setting
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Mon, 6 Mar 2017 17:02:00 -0600
+
 chip-io (0.5.4-1) unstable; urgency=low
 
   * Re-enabled the polarity setting for PWM based upon Issue #61
@@ -5,7 +11,7 @@ chip-io (0.5.4-1) unstable; urgency=low
   * Cleaned up the polarity setting code to work when PWM is not enabled
   * Fixed the unit test for pwm to verify we can set polarity
 
- -- Robert Wolterman <robert.wolterman@gmail.com>  Sun, 26 Feb 2017 20:46:00 -0600
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Sat, 4 Mar 2017 20:46:00 -0600
 
 chip-io (0.5.3-1) unstable; urgency=low
 
