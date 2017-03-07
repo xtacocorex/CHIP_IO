@@ -246,13 +246,15 @@ CHIP_IO can also handle adding callback functions on any pin that supports edge 
         print("we hit the edge we want")
 
     GPIO.setup("GPIO3", GPIO.IN)
-    # Add Callback: Falling Edge
-    GPIO.add_event_callback("GPIO3", GPIO.FALLING, mycallback)
-    # Add Callback: Rising Edge
-    GPIO.add_event_callback("GPIO3", GPIO.RISING, mycallback)
-    # Add Callback: Both Edges
-    GPIO.add_event_callback("GPIO3", GPIO.BOTH, mycallback)
-    # Remove callback
+    # Add Event Detect and Callback Separately for Falling Edge
+    GPIO.add_event_detect("GPIO3", GPIO.FALLING)
+    GPIO.add_event_callback("GPIO3", mycallback)
+    # Add Event Detect and Callback Separately for Rising Edge
+    GPIO.add_event_detect("GPIO3", GPIO.RISING)
+    GPIO.add_event_callback("GPIO3", mycallback)
+    # Add Callback for Both Edges using the add_event_detect() method
+    GPIO.add_event_detect("GPIO3", GPIO.BOTH, mycallback)
+    # Remove callback with the following
     GPIO.remove_event_detect("GPIO3")
 
 
