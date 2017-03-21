@@ -225,6 +225,16 @@ Read lots of data::
 
 This code was initially added by brettcvz and I cleaned it up and expanded it.
 
+You can quickly change a pins direction::
+
+    GPIO.direction("XIO-P3", GPIO.OUT)
+    GPIO.direction("XIO-P3", GPIO.IN)
+    
+You can also re-setup a pin in order to change direction, not that this is a slower operation::
+
+    GPIO.setup("XIO-P3", GPIO.OUT)
+    GPIO.setup("XIO-P3", GPIO.IN)
+
 The edge detection code below only works for the AP-EINT1, AP-EINT3, and XPO Pins on the CHIP.
 
 Waiting for an edge (GPIO.RISING, GPIO.FALLING, or GPIO.BOTH::

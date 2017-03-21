@@ -177,7 +177,7 @@ int gpio_export(int gpio)
         char err[256];
         snprintf(err, sizeof(err), "gpio_export: could not write '%s' to %s (%s)", str_gpio, filename, strerror(e_no));
         add_error_msg(err);
-        return -1;
+        return -2;
     }
 
     // add to list

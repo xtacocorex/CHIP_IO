@@ -215,11 +215,16 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
         init_r8_gpio_mem();
     }
  
-    if (gpio_export(gpio) < 0) {
+    int exprtn = gpio_export(gpio);
+    if (exprtn == -1) {
         char err[2000];
         snprintf(err, sizeof(err), "Error setting up channel %s, maybe already exported? (%s)", channel, get_error_msg());
         PyErr_SetString(PyExc_RuntimeError, err);
         return NULL;
+    } else if (exprtn == -2 && gpio_warnings) {
+        char warn[2000];
+        snprintf(warn, sizeof(warn), "Channel %s may already be exported, proceeding with rest of setup", channel);
+        PyErr_WarnEx(PyExc_Warning, warn, 1);
     }
     if (gpio_set_direction(gpio, direction) < 0) {
         char err[2000];

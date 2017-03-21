@@ -1,3 +1,8 @@
+0.5.6
+---
+* Fix for Issue #63 where re-setting up a pin wasn't lining up with RPi.GPIO standards. Calling setup after the first time will now update direction.
+* README updates to point out the direction() function since that was missing
+
 0.5.5
 ---
 * Fix for Issue #62 where using alternate name of an XIO would cause a segfault due to trying to set pull up/down resistor setting
