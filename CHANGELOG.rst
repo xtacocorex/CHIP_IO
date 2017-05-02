@@ -1,3 +1,8 @@
+0.5.7
+---
+* Added the I2S pins on the CHIP Pro as GPIO capable
+* Added per PWM/SoftPWM cleanup per Issue #64
+
 0.5.6
 ---
 * Fix for Issue #63 where re-setting up a pin wasn't lining up with RPi.GPIO standards. Calling setup after the first time will now update direction.

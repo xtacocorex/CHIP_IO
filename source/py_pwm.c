@@ -34,11 +34,29 @@ SOFTWARE.
 #include "common.h"
 #include "c_pwm.h"
 
-// python function cleanup()
-static PyObject *py_cleanup(PyObject *self, PyObject *args)
+// python function cleanup(channel)
+static PyObject *py_cleanup(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    // unexport the PWM
-    pwm_cleanup();
+    char key[8];
+    char *channel;
+    static char *kwlist[] = {"channel", NULL};
+
+    clear_error_msg();
+
+    // Channel is optional
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|s", kwlist, &channel)) {
+        return NULL;
+    }
+
+    // The !channel fixes issues #50
+    if (channel == NULL || strcmp(channel, "\0") == 0) {
+        pwm_cleanup();
+    } else {
+        if (!get_pwm_key(channel, key)) {
+            pwm_cleanup();
+        }
+        pwm_disable(key);
+    }
 
     Py_RETURN_NONE;
 }
@@ -395,7 +413,7 @@ PyMethodDef pwm_methods[] = {
     {"set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
     {"set_period_ns", (PyCFunction)py_set_period_ns, METH_VARARGS, "Change the period\nperiod_ns - period in nanoseconds" },
     {"set_pulse_width_ns", (PyCFunction)py_set_pulse_width_ns, METH_VARARGS, "Change the period\npulse_width_ns - pulse width in nanoseconds" },
-    {"cleanup", py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
+    {"cleanup", (PyCFunction)py_cleanup, METH_VARARGS | METH_KEYWORDS, "Clean up by resetting PWM channel(s) that have been used by this program to be disabled"},
     {"toggle_debug", py_toggle_debug, METH_VARARGS, "Toggles the enabling/disabling of Debug print output"},
     {"is_chip_pro", py_is_chip_pro, METH_VARARGS, "Is hardware a CHIP Pro? Boolean False for normal CHIP/PocketCHIP (R8 SOC)"},
     {NULL, NULL, 0, NULL}

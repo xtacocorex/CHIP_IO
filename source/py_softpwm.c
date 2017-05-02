@@ -43,11 +43,29 @@ static PyObject *py_toggle_debug(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-// python function cleanup()
-static PyObject *py_cleanup(PyObject *self, PyObject *args)
+// python function cleanup(channel)
+static PyObject *py_cleanup(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    // unexport the PWM
-    softpwm_cleanup();
+    char key[8];
+    char *channel;
+    static char *kwlist[] = {"channel", NULL};
+
+    clear_error_msg();
+
+    // Channel is optional
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|s", kwlist, &channel)) {
+        return NULL;
+    }
+
+    // The !channel fixes issues #50
+    if (channel == NULL || strcmp(channel, "\0") == 0) {
+        softpwm_cleanup();
+    } else {
+        if (!get_key(channel, key)) {
+            softpwm_cleanup();
+        }
+        softpwm_disable(key);
+    }
 
     Py_RETURN_NONE;
 }
@@ -300,7 +318,7 @@ PyMethodDef pwm_methods[] = {
     {"stop", (PyCFunction)py_stop_channel, METH_VARARGS | METH_KEYWORDS, "Stop the PWM channel.  channel can be in the form of 'XIO-P0', or 'U14_13'"},
     {"set_duty_cycle", (PyCFunction)py_set_duty_cycle, METH_VARARGS, "Change the duty cycle\ndutycycle - between 0.0 and 100.0" },
     {"set_frequency", (PyCFunction)py_set_frequency, METH_VARARGS, "Change the frequency\nfrequency - frequency in Hz (freq > 0.0)" },
-    {"cleanup", (PyCFunction)py_cleanup, METH_VARARGS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
+    {"cleanup", (PyCFunction)py_cleanup, METH_VARARGS | METH_KEYWORDS, "Clean up by resetting all GPIO channels that have been used by this program to INPUT with no pullup/pulldown and no event detection"},
     {"toggle_debug", py_toggle_debug, METH_VARARGS, "Toggles the enabling/disabling of Debug print output"},
     {"is_chip_pro", py_is_chip_pro, METH_VARARGS, "Is hardware a CHIP Pro? Boolean False for normal CHIP/PocketCHIP (R8 SOC)"},
     {NULL, NULL, 0, NULL}

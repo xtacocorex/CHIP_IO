@@ -138,6 +138,11 @@ pins_t pins_info[] = {
   { "CSID7",     "D7",          "U14_38", 139, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "GND",       "GND",         "U14_39",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
   { "GND",       "GND",         "U14_40",  -1, BASE_METHOD_AS_IS, -1, -1, BOTH},
+  { "I2S-MCLK",  "EINT19",      "21",      37, BASE_METHOD_AS_IS, -1, -1, CHIPPRO},
+  { "I2S-BCLK",  "I2S-BCLK",    "22",      38, BASE_METHOD_AS_IS, -1, -1, CHIPPRO},
+  { "I2S-LCLK",  "I2S-LCLK",    "23",      39, BASE_METHOD_AS_IS, -1, -1, CHIPPRO},
+  { "I2S-DO",    "I2S-DO",      "24",      40, BASE_METHOD_AS_IS, -1, -1, CHIPPRO},
+  { "I2S-DI",    "EINT24",      "25",      41, BASE_METHOD_AS_IS, -1, -1, CHIPPRO},
   { NULL,        NULL,          NULL,      -1, 0,                 -1, -1, -1}
 };
 

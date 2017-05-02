@@ -1,3 +1,10 @@
+chip-io (0.5.7-1) unstable; urgency=low
+
+  * Added the I2S pins on the CHIP Pro as GPIO capable
+  * Added per PWM/SoftPWM cleanup per Issue #64
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Mon, 01 May 2017 22:47:00 -0600
+
 chip-io (0.5.6-1) unstable; urgency=low
 
   * Fix for Issue #63 where re-setting up a pin wasn't lining up with RPi.GPIO standards. Calling setup after the first time will now update direction.
