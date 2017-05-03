@@ -1,3 +1,7 @@
+0.5.8
+---
+* Added 3 pins for the CHIP Pro as allowable for setting callbacks and edge detection to close out Issue #68
+
 0.5.7
 ---
 * Added the I2S pins on the CHIP Pro as GPIO capable

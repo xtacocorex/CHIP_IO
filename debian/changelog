@@ -1,3 +1,10 @@
+chip-io (0.5.8-1) unstable; urgency=low
+
+  * Added 3 pins for the CHIP Pro as allowable for setting callbacks and edge
+    detection to close out Issue #68
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Tue, 02 May 2017 22:43:00 -0600
+
 chip-io (0.5.7-1) unstable; urgency=low
 
   * Added the I2S pins on the CHIP Pro as GPIO capable
