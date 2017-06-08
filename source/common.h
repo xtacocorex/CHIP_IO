@@ -86,9 +86,9 @@ typedef struct dyn_int_array_s dyn_int_array_t;
 
 #define FILENAME_BUFFER_SIZE 128
 
-int setup_error;
-int module_setup;
-int DEBUG;
+extern int setup_error;
+extern int module_setup;
+extern int DEBUG;
 
 int get_xio_base(void);
 int is_this_chippro(void);
