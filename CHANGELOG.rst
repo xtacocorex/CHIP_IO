@@ -1,3 +1,9 @@
+0.5.9
+---
+* Merged PR#70 to enable the underlying C code to be used properly in C based code
+* Updated README to add missing pins on the CHIP Pro that are available as GPIO
+* Updated README to denote pins that are available for Edge Detection
+
 0.5.8
 ---
 * Added 3 pins for the CHIP Pro as allowable for setting callbacks and edge detection to close out Issue #68
