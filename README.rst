@@ -36,6 +36,15 @@ For Python3::
     sudo apt-get install git build-essential python3-dev python3-pip flex bison chip-dt-overlays -y
     sudo pip3 install CHIP-IO
 
+Debian File Installation:
+
+Go to this page: https://github.com/xtacocorex/CHIP_IO/releases/latest
+Download the .deb file for the version of Python you are running.
+Then install with dpkg, like the following example:
+
+    sudo dpkg -i python-chip-io_0.5.9-1_armhf.deb
+
+
 **Usage**
 
 Using the library is very similar to the excellent RPi.GPIO library used on the Raspberry Pi. Below are some examples.
@@ -165,6 +174,7 @@ The following "table" is the allowable pin names that are able to be used by the
   +------------------+--------------------------+----------------+-----------------+-----------------+
   | I2S-DI           | EINT24                   | 25             | CHIP PRO        | YES             |
   +------------------+--------------------------+----------------+-----------------+-----------------+
+
 **GPIO Setup**
 
 Import the library, and setup as GPIO.OUT or GPIO.IN::
@@ -213,6 +223,7 @@ Other options when setting up pins::
 
     # Specify pull up/pull down settings on a pin
     GPIO.setup("CSID0", GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    
     # Specify initial value for an output
     GPIO.setup("CSID0", GPIO.OUT, initial=1)
     
@@ -229,6 +240,7 @@ Read lots of data::
 
     # Get 8 bits of data in one shot
     mybyte = GPIO.read_byte("LCD-D3")
+    
     # Get 16 bits of data in one shot
     myword = GPIO.read_word("XIO-P4")
 
@@ -255,6 +267,7 @@ Detecting events::
     GPIO.setup("XIO-P0", GPIO.IN)
     GPIO.add_event_detect("XIO-P0", GPIO.FALLING)
     #your amazing code here
+    
     #detect wherever:
     if GPIO.event_detected("XIO-P0"):
         print "event detected!"
@@ -265,17 +278,24 @@ CHIP_IO can also handle adding callback functions on any pin that supports edge 
         print("we hit the edge we want")
 
     GPIO.setup("GPIO3", GPIO.IN)
+    
     # Add Event Detect and Callback Separately for Falling Edge
     GPIO.add_event_detect("GPIO3", GPIO.FALLING)
     GPIO.add_event_callback("GPIO3", mycallback)
+    
     # Add Event Detect and Callback Separately for Rising Edge
     GPIO.add_event_detect("GPIO3", GPIO.RISING)
     GPIO.add_event_callback("GPIO3", mycallback)
+    
     # Add Callback for Both Edges using the add_event_detect() method
     GPIO.add_event_detect("GPIO3", GPIO.BOTH, mycallback)
+    
     # Remove callback with the following
     GPIO.remove_event_detect("GPIO3")
 
+    # bouncetime is also able to be set for both GPIO.add_event_detect() and GPIO.add_event_callback()
+    GPIO.add_event_detect("GPIO3", GPIO.FALLING, bouncetime=300)
+    GPIO.add_event_callback("GPIO3", GPIO.RISING, mycallback, bouncetime=300)
 
 **GPIO Cleanup**
 
@@ -283,6 +303,7 @@ To clean up the GPIO when done, do the following::
 
     # Clean up every exported GPIO Pin
     GPIO.cleanup()
+    
     # Clean up a single pin (keeping everything else intact)
     GPIO.cleanup("XIO-P0")
 
@@ -295,16 +316,20 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
     # 0 For CHIP
     # 1 For CHIP Pro
     PWM.is_chip_pro()
+    
     # Enable/Disable Debug
     PWM.toggle_debug()
+    
     #PWM.start(channel, duty, freq=2000, polarity=0)
     #duty values are valid 0 (off) to 100 (on)
     PWM.start("PWM0", 50)
     PWM.set_duty_cycle("PWM0", 25.5)
     PWM.set_frequency("PWM0", 10)
+    
     # To stop PWM
     PWM.stop("PWM0")
     PWM.cleanup()
+    
     #For specific polarity: this example sets polarity to 1 on start:
     PWM.start("PWM0", 50, 2000, 1)
 
@@ -315,18 +340,23 @@ Hardware PWM requires a DTB Overlay loaded on the CHIP to allow the kernel to kn
     # 0 For CHIP
     # 1 For CHIP Pro
     SPWM.is_chip_pro()
+    
     # Enable/Disable Debug
     SPWM.toggle_debug()
+    
     #SPWM.start(channel, duty, freq=2000, polarity=0)
     #duty values are valid 0 (off) to 100 (on)
     #you can choose any pin
     SPWM.start("XIO-P7", 50)
     SPWM.set_duty_cycle("XIO-P7", 25.5)
     SPWM.set_frequency("XIO-P7", 10)
+    
     # To Stop SPWM
     SPWM.stop("XIO-P7")
+    
     # Cleanup
     SPWM.cleanup()
+    
     #For specific polarity: this example sets polarity to 1 on start:
     SPWM.start("XIO-P7", 50, 2000, 1)
 
@@ -341,16 +371,20 @@ If using SOFTPWM and PWM at the same time, import CHIP_IO.SOFTPWM as SPWM or som
     # 0 For CHIP
     # 1 For CHIP Pro
     SERVO.is_chip_pro()
+    
     # Enable/Disable Debug
     SERVO.toggle_debug()
+    
     #SPWM.start(channel, angle=0, range=180)
     #angle values are between +/- range/2)
     #you can choose any pin except the XIO's
     SERVO.start("CSID4", 50)
     SERVO.set_angle("CSID4", 25.5)
     SERVO.set_range("CSID4", 90)
+    
     # To Stop Servo
     SERVO.stop("CSID4")
+    
     # Cleanup
     SERVO.cleanup()
 
@@ -364,23 +398,31 @@ Sample code below details how to talk to the LRADC.::
     import CHIP_IO.LRADC as ADC
     # Enable/Disable Debug
     ADC.toggle_debug()
+    
     # Check to see if the LRADC Device exists
     # Returns True/False
     ADC.get_device_exists()
+    
     # Setup the LRADC
     # Specify a sampling rate if needed
     ADC.setup(rate)
+    
     # Get the Scale Factor
     factor = ADC.get_scale_factor()
+    
     # Get the allowable Sampling Rates
     sampleratestuple = ADC.get_allowable_sample_rates()
+    
     # Set the sampling rate
     ADC.set_sample_rate(rate)
+    
     # Get the current sampling rate
     currentrate = ADC.get_sample_rate()
+    
     # Get the Raw Channel 0 or 1 data
     raw = ADC.get_chan0_raw()
     raw = ADC.get_chan1_raw()
+    
     # Get the factored ADC Channel data
     fulldata = ADC.get_chan0()
     fulldata = ADC.get_chan1()
@@ -398,12 +440,15 @@ Only one of each type of overlay can be loaded at a time, but all three options 
 ::
     import CHIP_IO.OverlayManager as OM
     # The toggle_debug() function turns on/off debug printing
-    #OM.toggle_debug()
+    OM.toggle_debug()
+    
     # To load an overlay, feed in the name to load()
     OM.load("PWM0")
+    
     # To verify the overlay was properly loaded, the get_ functions return booleans
     OM.get_pwm_loaded()
     OM.get_spi_loaded()
+    
     # To unload an overlay, feed in the name to unload()
     OM.unload("PWM0")
 
@@ -413,8 +458,10 @@ There is no verification that the Custom Overlay is setup properly, it's fire an
     import CHIP_IO.OverlayManager as OM
     # The full path to the dtbo file needs to be specified
     OM.load("CUST","/home/chip/projects/myfunproject/overlays/mycustomoverlay.dtbo")
+    
     # You can check for loading like above, but it's really just there for sameness
     OM.get_custom_loaded()
+    
     # To unload, just call unload()
     OM.unload("CUST")
 
@@ -429,20 +476,28 @@ To use the utilities, here is sample code::
     import CHIP_IO.Utilities as UT
     # Enable/Disable Debug
     UT.toggle_debug()
+    
     # Enable 1.8V Output
     UT.enable_1v8_pin()
+    
     # Set 2.0V Output
     UT.set_1v8_pin_voltage(2.0)
+    
     # Set 2.6V Output
     UT.set_1v8_pin_voltage(2.6)
+    
     # Set 3.3V Output
     UT.set_1v8_pin_voltage(3.3)
+    
     # Disable 1.8V Output
     UT.disable_1v8_pin()
+    
     # Get currently-configured voltage (returns False if the pin is not enabled as output)
     UT.get_1v8_pin_voltage()
+    
     # Unexport Everything
     UT.unexport_all()
+    
     # Determine if you are running a CHIP/CHIP Pro
     # This returns True if the computer is a CHIP Pro and False if it is a CHIP
     UT.is_chip_pro()
