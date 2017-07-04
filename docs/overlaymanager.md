@@ -5,6 +5,8 @@ Import the OverlayManager module as follows
   import CHIP_IO.OverlayManager as OM
   ```
 
+This module requires NTC's [CHIP-dt-overlays](https://github.com/NextThingCo/CHIP-dt-overlays) to be loaded.
+
 ### toggle_debug()
 Enable/Disable the Debug
 
@@ -20,6 +22,45 @@ Enable/Disable the Debug
 
   ```python
   OM.toggle_debug()
+  ```
+
+### load(overlay, path="")
+Loads the overlay specified.  PWM0 is not available on the CHIP Pro due to the base DTS supporting both PWM0 and PWM1
+
+* Parameters
+  
+  overlay - Overlay to be loaded: SPI2, PWM0, CUST
+  path (optional) - Path to the custom compiled overlay
+
+* Returns
+
+  integer - 0: Success, 1: Fail, 2: Overlay already loaded
+
+* Examples
+
+  ```python
+  resp = OM.load("SPI2")
+  resp = OM.load("PWM0")
+  resp = OM.load("CUST","path/to/custom.dtbo")
+  ```
+
+### unload(overlay)
+Unloads the overlay specified.  PWM0 is not available on the CHIP Pro due to the base DTS supporting both PWM0 and PWM1
+
+* Parameters
+  
+  overlay - Overlay to be loaded: SPI2, PWM0, CUST
+
+* Returns
+
+  None
+
+* Examples
+
+  ```python
+  resp = OM.unload("SPI2")
+  resp = OM.unload("PWM0")
+  resp = OM.unload("CUST")
   ```
 
 ### get_spi_loaded()
