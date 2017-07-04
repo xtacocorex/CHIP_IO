@@ -6,3 +6,4 @@
 * [CHIP_IO.SERVO](./servo.md)
 * [CHIP_IO.LRADC](./lradc.md)
 * [CHIP_IO.Utilities](./utilities.md)
+* [CHIP_IO.OverlayManager](./overlaymanager.md)

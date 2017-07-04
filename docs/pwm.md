@@ -9,6 +9,7 @@ Import the PWM module as follows
 Enable/Disable the Debug
 
 * Parameters
+  
   None
 
 * Examples

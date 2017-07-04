@@ -9,6 +9,7 @@ Import the SOFTPWM module as follows
 Enable/Disable the Debug
 
 * Parameters
+  
   None
 
 * Examples

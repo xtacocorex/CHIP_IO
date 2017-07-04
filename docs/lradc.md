@@ -9,6 +9,7 @@ Import the LRADC module as follows
 Enable/Disable the Debug
 
 * Parameters
+  
   None
 
 * Examples

@@ -9,6 +9,11 @@ Import the Utilities module as follows
 Enable/Disable the Debug
 
 * Parameters
+  
+  None
+
+* Returns
+
   None
 
 * Examples
@@ -16,5 +21,7 @@ Enable/Disable the Debug
   ```python
   UT.toggle_debug()
   ```
+
+
 
 [home](./index.md)
