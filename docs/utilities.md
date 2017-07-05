@@ -93,7 +93,7 @@ This only works on the CHIP.
   ```
 
 
-### get_1v8_pin_voltage(voltage)
+### get_1v8_pin_voltage()
 Get the current voltage of the 1.8V Pin on the CHIP.
 This only works on the CHIP.
 
