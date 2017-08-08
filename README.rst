@@ -2,6 +2,19 @@ CHIP_IO
 ============================
 A CHIP GPIO library
 
+Debian File Installation:
+
+There are now pre-compiled binary deb files for the CHIP that do not require any build tools on a CHIP/CHIP Pro.
+
+Go to this page: https://github.com/xtacocorex/CHIP_IO/releases/latest
+Or
+Go to this page: https://xtacocorex.github.io/chip_io_releases/index.html
+
+Download the .deb file for the version of Python you are running.
+Then install with dpkg, like the following example:
+
+    sudo dpkg -i python-chip-io_0.5.9-1_armhf.deb
+
 Manual Installation::
 
 For Python2.7::
@@ -35,15 +48,6 @@ For Python3::
     sudo apt-get update
     sudo apt-get install git build-essential python3-dev python3-pip flex bison chip-dt-overlays -y
     sudo pip3 install CHIP-IO
-
-Debian File Installation:
-
-Go to this page: https://github.com/xtacocorex/CHIP_IO/releases/latest
-Download the .deb file for the version of Python you are running.
-Then install with dpkg, like the following example:
-
-    sudo dpkg -i python-chip-io_0.5.9-1_armhf.deb
-
 
 **Usage**
 
