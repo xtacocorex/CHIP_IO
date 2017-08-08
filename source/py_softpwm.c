@@ -82,7 +82,7 @@ static int init_module(void)
     return 0;
 }
 
-// python function value = is_chip_pro
+// python function value = is_chip_pro()
 static PyObject *py_is_chip_pro(PyObject *self, PyObject *args)
 {
     PyObject *py_value;
@@ -92,7 +92,7 @@ static PyObject *py_is_chip_pro(PyObject *self, PyObject *args)
     return py_value;
 }
 
-// python function start(channel, duty_cycle, freq)
+// python function start(channel, duty_cycle, freq, polarity)
 static PyObject *py_start_channel(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     char key[8];

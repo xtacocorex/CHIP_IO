@@ -50,6 +50,8 @@ static PyObject *py_toggle_debug(PyObject *self, PyObject *args)
 // python function cleanup()
 static PyObject *py_cleanup(PyObject *self, PyObject *args)
 {
+    // TODO: PER PIN CLEANUP LIKE EVERYTHING ELSE
+
     // unexport the Servo
     servo_cleanup();
 
@@ -68,7 +70,7 @@ static int init_module(void)
     return 0;
 }
 
-// python function value = is_chip_pro
+// python function value = is_chip_pro()
 static PyObject *py_is_chip_pro(PyObject *self, PyObject *args)
 {
     PyObject *py_value;
@@ -185,7 +187,7 @@ static PyObject *py_stop_channel(PyObject *self, PyObject *args, PyObject *kwarg
     Py_RETURN_NONE;
 }
 
-// python method SERVO.set_range(channel, duty_cycle)
+// python method SERVO.set_range(channel, range)
 static PyObject *py_set_range(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int gpio;
@@ -241,7 +243,7 @@ static PyObject *py_set_range(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_RETURN_NONE;
 }
 
-// python method SERVO.set_angle(channel, duty_cycle)
+// python method SERVO.set_angle(channel, angle)
 static PyObject *py_set_angle(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int gpio;

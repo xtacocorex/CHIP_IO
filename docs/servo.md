@@ -32,7 +32,7 @@ Function to report to the calling script if the SBC is a CHIP or a CHIP Pro
 * Examples
 
   ```python
-  is_chip_pro = UT.is_chip_pro()
+  is_chip_pro = SERVO.is_chip_pro()
   ```
 
 ### start(channel, angle=0.0, range=180.0)
