@@ -552,7 +552,7 @@ static int add_py_callback(char *channel, int gpio, int edge, unsigned int bounc
    return 0;
 }
 
-// python function add_event_callback(gpio, callback, bouncetime=0)
+// python function add_event_callback(channel, callback, bouncetime=0)
 static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject *kwargs)
 {
    int gpio;
@@ -623,7 +623,7 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
    Py_RETURN_NONE;
 }
 
-// python function add_event_detect(gpio, edge, callback=None, bouncetime=0
+// python function add_event_detect(channel, edge, callback=None, bouncetime=0)
 static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *kwargs)
 {
    int gpio;
@@ -709,7 +709,7 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
    Py_RETURN_NONE;
 }
 
-// python function remove_event_detect(gpio)
+// python function remove_event_detect(channel)
 static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
 {
    int gpio;
@@ -895,7 +895,7 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
    Py_RETURN_NONE;
 }
 
-// python function value = gpio_function(gpio)
+// python function value = gpio_function(channel)
 static PyObject *py_gpio_function(PyObject *self, PyObject *args)
 {
     int gpio;
@@ -1110,7 +1110,7 @@ static const char moduledocstring[] = "GPIO functionality of a CHIP using Python
 /*
 mine for changing pin directipn
 */
-
+// python function set_direction(channel, direction)
 static PyObject *py_set_direction(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	int gpio;
@@ -1121,7 +1121,7 @@ static PyObject *py_set_direction(PyObject *self, PyObject *args, PyObject *kwar
 
 	clear_error_msg();
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si|ii", kwlist, &channel, &direction))
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si", kwlist, &channel, &direction))
 		return NULL;
 
 	if (!module_setup) {

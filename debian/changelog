@@ -1,3 +1,12 @@
+chip-io (0.6.0-1) unstable; urgency=low
+
+ * Random comment cleanup
+ * Implement fix for #76
+ * API documentation added
+ * Closing #74
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Wed, 09 Aug 2017 22:50:00 -0600
+
 chip-io (0.5.9-1) unstable; urgency=low
 
  * Merged PR#70 to enable the underlying C code to be used properly in C based code

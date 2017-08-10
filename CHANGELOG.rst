@@ -1,3 +1,10 @@
+0.6
+---
+* Random comment cleanup
+* Implement fix for #76
+* API documentation added
+* Closing #74
+
 0.5.9
 ---
 * Merged PR#70 to enable the underlying C code to be used properly in C based code
