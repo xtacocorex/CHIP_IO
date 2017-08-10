@@ -171,9 +171,10 @@ int gpio_export(int gpio)
 
     len = snprintf(str_gpio, sizeof(str_gpio), "%d", gpio); BUF2SMALL(str_gpio);
     ssize_t s = write(fd, str_gpio, len);  e_no = errno;
-    if (DEBUG) && (e_no) { 
-        printf("gpio_export: something went wrong: %s\n", strerror(e_no));
-    }
+    if (DEBUG)
+        if (e_no)
+            printf("gpio_export: something went wrong: %s\n", strerror(e_no));
+    
     close(fd);
     if (s != len)
     {

@@ -1,3 +1,9 @@
+chip-io (0.6.1-1) unstable; urgency=low
+
+ * Fixing implementation for #76
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Wed, 09 Aug 2017 23:09:00 -0600
+
 chip-io (0.6.0-1) unstable; urgency=low
 
  * Random comment cleanup

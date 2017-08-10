@@ -1,3 +1,7 @@
+0.6.1
+---
+* Fixing implementation for #76
+
 0.6
 ---
 * Random comment cleanup
