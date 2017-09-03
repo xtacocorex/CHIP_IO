@@ -1,7 +1,8 @@
 # PyPi Packaging
 package: clean
 	@echo " ** PACKAGING FOR PYPI **"
-	python setup.py sdist
+	python setup.py sdist bdist_wheel
+	python3 setup.py bdist_wheel
 
 # PyPi Publishing
 publish: package
