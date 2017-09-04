@@ -817,18 +817,19 @@ static PyObject *py_event_detected(PyObject *self, PyObject *args)
       Py_RETURN_FALSE;
 }
 
-// python function py_wait_for_edge(gpio, edge)
+// python function py_wait_for_edge(gpio, edge, timeout = -1)
 static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
 {
    int gpio;
-   int edge, result;
+   int edge, result, timeout;
    char *channel;
    char error[81];
    int allowed = -1;
 
    clear_error_msg();
 
-   if (!PyArg_ParseTuple(args, "si", &channel, &edge))
+   timeout = -1;
+   if (!PyArg_ParseTuple(args, "si|i", &channel, &edge, &timeout))
       return NULL;
 
    if (get_gpio_number(channel, &gpio)) {
@@ -877,7 +878,7 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
    }
 
    Py_BEGIN_ALLOW_THREADS // disable GIL
-   result = blocking_wait_for_edge(gpio, edge);
+   result = blocking_wait_for_edge(gpio, edge, timeout);
    Py_END_ALLOW_THREADS   // enable GIL
 
    if (result == 0) {
@@ -1179,7 +1180,7 @@ PyMethodDef gpio_methods[] = {
    {"remove_event_detect", py_remove_event_detect, METH_VARARGS, "Remove edge detection for a particular GPIO channel\ngpio - gpio channel"},
    {"event_detected", py_event_detected, METH_VARARGS, "Returns True if an edge has occured on a given GPIO.  You need to enable edge detection using add_event_detect() first.\ngpio - gpio channel"},
    {"add_event_callback", (PyCFunction)py_add_event_callback, METH_VARARGS | METH_KEYWORDS, "Add a callback for an event already defined using add_event_detect()\ngpio         - gpio channel\ncallback     - a callback function\n[bouncetime] - Switch bounce timeout in ms"},
-   {"wait_for_edge", py_wait_for_edge, METH_VARARGS, "Wait for an edge.\ngpio - gpio channel\nedge - RISING, FALLING or BOTH"},
+   {"wait_for_edge", py_wait_for_edge, METH_VARARGS, "Wait for an edge.\ngpio - gpio channel\nedge - RISING, FALLING or BOTH\ntimeout (optional) - time to wait in miliseconds. -1 will wait forever (default)"},
    {"gpio_function", py_gpio_function, METH_VARARGS, "Return the current GPIO function (IN, OUT, ALT0)\ngpio - gpio channel"},
    {"setwarnings", py_setwarnings, METH_VARARGS, "Enable or disable warning messages"},
    {"get_gpio_base", py_gpio_base, METH_VARARGS, "Get the XIO base number for sysfs"},

@@ -1,3 +1,8 @@
+0.6.2
+---
+* Implementation for #77 - ability to push up binary pypi
+* Implementation for #75 - wait_for_edge timeout
+
 0.6.1
 ---
 * Fixing implementation for #76

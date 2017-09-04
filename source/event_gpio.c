@@ -1027,7 +1027,7 @@ void event_cleanup(void)
 }
 
 // blocking_wait_for_edge assumes the caller has ensured the GPIO is already exported.
-int blocking_wait_for_edge(int gpio, unsigned int edge)
+int blocking_wait_for_edge(int gpio, unsigned int edge, int timeout)
 // standalone from all the event functions above
 {
     int fd = fd_lookup(gpio);
@@ -1082,7 +1082,7 @@ int blocking_wait_for_edge(int gpio, unsigned int edge)
     // epoll for event
     for (i = 0; i<2; i++)  // first time triggers with current state, so ignore
     {
-       if ((n = epoll_wait(epfd, &events, 1, -1)) == -1)
+       if ((n = epoll_wait(epfd, &events, 1, timeout)) == -1)
        {
            gpio_event_remove(gpio);
            return 5;

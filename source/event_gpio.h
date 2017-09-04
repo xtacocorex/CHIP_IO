@@ -86,4 +86,4 @@ int gpio_event_remove(int gpio);
 int gpio_is_evented(int gpio);
 int event_initialise(void);
 void event_cleanup(void);
-int blocking_wait_for_edge(int gpio, unsigned int edge);
+int blocking_wait_for_edge(int gpio, unsigned int edge, int timeout);

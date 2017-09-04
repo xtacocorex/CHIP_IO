@@ -227,13 +227,14 @@ Add callback function to a pin that has been setup for edge detection. Refer to 
   GPIO.add_event_callback("XIO-P7", mycallback, 45)
   ```
 
-### wait_for_edge(channel, edge)
+### wait_for_edge(channel, edge, timeout=-1)
 Wait for an edge to be detected.  This is a blocking function. Refer to main table for which pins are able to use edge detection.
 
 * Parameters
   
   channel - GPIO Pin
   edge - edge: RISING_EDGE, FALLING_EDGE, BOTH_EDGE
+  timeout - timeout in milliseconds to wait before exiting function (optional)
 
 * Returns
 
@@ -245,6 +246,7 @@ Wait for an edge to be detected.  This is a blocking function. Refer to main tab
   GPIO.wait_for_edge("XIO-P3", GPIO.RISING_EDGE)
   GPIO.wait_for_edge("AP-EINT3", GPIO.BOTH_EDGE)
   GPIO.wait_for_edge("I2S-DI", GPIO.FALLING_EDGE)
+  GPIO.wait_for_edge("XIO-P3", GPIO.RISING_EDGE, 40)
   ```
 
 ### gpio_function(channel)

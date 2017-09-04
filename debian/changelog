@@ -1,3 +1,10 @@
+chip-io (0.6.2-1) unstable; urgency=low
+
+ * Implementation for #77 - ability to push up binary pypi
+ * Implementation for #75 - wait_for_edge timeout
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Sun, 03 Sep 2017 21:34:00 -0600
+
 chip-io (0.6.1-1) unstable; urgency=low
 
  * Fixing implementation for #76
