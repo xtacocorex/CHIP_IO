@@ -5,6 +5,8 @@ Import the GPIO module as follows
   import CHIP_IO.GPIO as GPIO
   ```
 
+Note: As of version 0.7.0, all GPIO functions can use the SYSFS pin number for a GPIO for control, a la RPi.GPIO.
+
 ### toggle_debug()
 Enable/Disable the Debug
 
@@ -56,6 +58,7 @@ Setup a GPIO pin.  If pin is already configure, it will reconfigure.
 
   ```python
   GPIO.setup("CSID0", GPIO.IN)
+  GPIO.setup(132, GPIO.IN)
   GPIO.setup("CSID3", GPIO.OUT, initial=1)
   GPIO.setup("CSID2", GPIO.IN, GPIO.PUD_UP)
   ```
@@ -76,6 +79,7 @@ Cleanup GPIO.  If not channel input, all GPIO will be cleaned up
   ```python
   GPIO.cleanup()
   GPIO.cleanup("CSID3")
+  GPIO.cleanup(132)
   ```
 
 ### output(channel, value)
@@ -97,6 +101,7 @@ Write a value to a GPIO pin.
   GPIO.output("XIO-P7", GPIO.LOW)
   GPIO.output("CSID0", 1)
   GPIO.output("CSID0", 0)
+  GPIO.output(132, 1)
   ```
 
 ### input(channel)
@@ -114,6 +119,7 @@ Read a GPIO pin once.
 
   ```python
   value = GPIO.input("XIO-P7")
+  value = GPIO.input(1013)
   ```
 
 ### read_byte(channel)
@@ -131,6 +137,7 @@ Read a GPIO pin multiple times to fill up 8 bits.
 
   ```python
   bits = GPIO.read_byte("XIO-P7")
+  bits = GPIO.read_byte(135)
   ```
 
 ### read_word(channel)
@@ -148,6 +155,7 @@ Read a GPIO pin multiple times to fill up 16 bits.
 
   ```python
   bits = GPIO.read_word("XIO-P7")
+  bits = GPIO.read_word(134)
   ```
 
 ### add_event_detect(channel, edge, callback=None, bouncetime=0)
@@ -171,6 +179,7 @@ Add event detection to a pin. Refer to main table for which pins are able to use
   GPIO.add_event_detect("AP-EINT3", GPIO.RISING_EDGE, mycallback)
   GPIO.add_event_detect("XIO-P7", GPIO.FALLING_EDGE, bouncetime=30)
   GPIO.add_event_detect("XIO-P7", GPIO.RISING_EDGE, mycallback, 45)
+  GPIO.add_event_detect(1013, GPIO.BOTH_EDGE)
   ```
 
 ### remove_event_detect(channel)
@@ -188,6 +197,7 @@ Remove a pins event detection. Refer to main table for which pins are able to us
 
   ```python
   GPIO.remove_event_detect("XIO-P7")
+  GPIO.remove_event_detect(1013)
   ```
 
 ### event_detected(channel)
@@ -205,6 +215,7 @@ Function to determine if an event was detected on a pin.  Pin must have an event
 
   ```python
   have_event = GPIO.event_detected("XIO-P5")
+  have_event = GPIO.event_detected(1014)
   ```
 
 ### add_event_callback(channel, callback, bouncetime=0)
@@ -225,6 +236,7 @@ Add callback function to a pin that has been setup for edge detection. Refer to 
   ```python
   GPIO.add_event_callback("AP-EINT3", mycallback)
   GPIO.add_event_callback("XIO-P7", mycallback, 45)
+  GPIO.add_event_callback(1013, mycallback)
   ```
 
 ### wait_for_edge(channel, edge, timeout=-1)
@@ -247,6 +259,7 @@ Wait for an edge to be detected.  This is a blocking function. Refer to main tab
   GPIO.wait_for_edge("AP-EINT3", GPIO.BOTH_EDGE)
   GPIO.wait_for_edge("I2S-DI", GPIO.FALLING_EDGE)
   GPIO.wait_for_edge("XIO-P3", GPIO.RISING_EDGE, 40)
+  GPIO.wait_for_edge(1013, GPIO.BOTH_EDGE, 35)
   ```
 
 ### gpio_function(channel)
@@ -264,6 +277,7 @@ Function to report get a GPIO Pins directioj
 
   ```python
   funct = GPIO.gpio_function("CSID0")
+  funct = GPIO.gpio_function(132)
   ```
 
 ### setwarnings(state)
@@ -334,6 +348,7 @@ Function to set the direction of an exported GPIO pin
   ```python
   GPIO.set_direction("XIO-P0", GPIO.OUT)
   GPIO.set_direction("XIO-P1", GPIO.IN)
+  GPIO.set_direction(1013, GPIO.OUT)
   ```
 
 [home](./index.md)
