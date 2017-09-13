@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <stdio.h>
 #include "stdlib.h"
 #include "Python.h"
 #include "constants.h"
@@ -129,13 +130,23 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int gpio;
     char *channel;
+    int inchan;
     static char *kwlist[] = {"channel", NULL};
 
     clear_error_msg();
 
     // Channel is optional
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|s", kwlist, &channel)) {
-        return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "|s", kwlist, &channel);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwlist, &inchan);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
     }
 
     // The !channel fixes issues #50
@@ -157,6 +168,7 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
     int gpio;
     int allowed = -1;
     char *channel;
+    int inchan;
     int direction;
     int pud = PUD_OFF;
     int initial = 0;
@@ -164,13 +176,30 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
  
     clear_error_msg();
  
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si|ii", kwlist, &channel, &direction, &pud, &initial))
-        return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "si|ii", kwlist, &channel, &direction, &pud, &initial);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "ii|ii", kwlist, &inchan, &direction, &pud, &initial);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
  
     if (!module_setup) {
         init_module();
     }
- 
+
+    if (get_gpio_number(channel, &gpio) < 0) {
+        char err[2000];
+        snprintf(err, sizeof(err), "Invalid channel %s. (%s)", channel, get_error_msg());
+        PyErr_SetString(PyExc_ValueError, err);
+        return NULL;
+    }
+
     if (direction != INPUT && direction != OUTPUT)
     {
         PyErr_SetString(PyExc_ValueError, "An invalid direction was passed to setup()");
@@ -259,10 +288,9 @@ static PyObject *py_setup_channel(PyObject *self, PyObject *args, PyObject *kwar
     }
  
     remember_gpio_direction(gpio, direction);
- 
+
     Py_RETURN_NONE;
 }  /* py_setup_channel */
-
 
 // python function output(channel, value)
 static PyObject *py_output_gpio(PyObject *self, PyObject *args)
@@ -270,12 +298,23 @@ static PyObject *py_output_gpio(PyObject *self, PyObject *args)
     int gpio;
     int value;
     char *channel;
+    int inchan;
     int allowed = -1;
 
     clear_error_msg();
 
-    if (!PyArg_ParseTuple(args, "si", &channel, &value))
-        return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTuple(args, "si", &channel, &value);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTuple(args, "ii", &inchan, &value);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
     if (get_gpio_number(channel, &gpio)) {
         PyErr_SetString(PyExc_ValueError, "Invalid channel");
@@ -322,14 +361,25 @@ static PyObject *py_input_gpio(PyObject *self, PyObject *args)
 {
     int gpio;
     char *channel;
+    int inchan;
     unsigned int value;
     PyObject *py_value;
     int allowed = -1;
 
     clear_error_msg();
 
-    if (!PyArg_ParseTuple(args, "s", &channel))
-        return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTuple(args, "s", &channel);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTuple(args, "i", &inchan);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
     if (get_gpio_number(channel, &gpio)) {
         PyErr_SetString(PyExc_ValueError, "Invalid channel");
@@ -376,14 +426,25 @@ static PyObject *py_read_byte_gpio(PyObject *self, PyObject *args)
 {
     int gpio;
     char *channel;
+    int inchan;
     unsigned int value = 0;
     PyObject *py_value;
     int allowed = -1;
 
     clear_error_msg();
 
-    if (!PyArg_ParseTuple(args, "s", &channel))
-        return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTuple(args, "s", &channel);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTuple(args, "i", &inchan);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
     if (get_gpio_number(channel, &gpio)) {
         PyErr_SetString(PyExc_ValueError, "Invalid channel");
@@ -430,14 +491,25 @@ static PyObject *py_read_word_gpio(PyObject *self, PyObject *args)
 {
     int gpio;
     char *channel;
+    int inchan;
     unsigned int value = 0;
     PyObject *py_value;
     int allowed = -1;
 
     clear_error_msg();
 
-    if (!PyArg_ParseTuple(args, "s", &channel))
-        return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTuple(args, "s", &channel);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTuple(args, "i", &inchan);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
     if (get_gpio_number(channel, &gpio)) {
         PyErr_SetString(PyExc_ValueError, "Invalid channel");
@@ -557,6 +629,7 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
 {
    int gpio;
    char *channel;
+   int inchan;
    int allowed = -1;
    unsigned int bouncetime = 0;
    PyObject *cb_func;
@@ -564,8 +637,18 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
 
    clear_error_msg();
 
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO|i", kwlist, &channel, &cb_func, &bouncetime))
-      return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "sO|i", kwlist, &channel, &cb_func, &bouncetime);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "iO|i", kwlist, &inchan, &cb_func, &bouncetime);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
    if (!PyCallable_Check(cb_func))
    {
@@ -628,6 +711,7 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
 {
    int gpio;
    char *channel;
+   int inchan;
    int edge, result;
    unsigned int bouncetime = 0;
    int allowed = -1;
@@ -636,8 +720,18 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
 
    clear_error_msg();
 
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si|Oi", kwlist, &channel, &edge, &cb_func, &bouncetime))
-      return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "si|Oi", kwlist, &channel, &edge, &cb_func, &bouncetime);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "ii|Oi", kwlist, &inchan, &edge, &cb_func, &bouncetime);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
    if (cb_func != NULL && !PyCallable_Check(cb_func))
    {
@@ -714,6 +808,7 @@ static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
 {
    int gpio;
    char *channel;
+   int inchan;
    struct py_callback *cb = py_callbacks;
    struct py_callback *temp;
    struct py_callback *prev = NULL;
@@ -721,8 +816,18 @@ static PyObject *py_remove_event_detect(PyObject *self, PyObject *args)
 
    clear_error_msg();
 
-   if (!PyArg_ParseTuple(args, "s", &channel))
-      return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTuple(args, "s", &channel);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTuple(args, "i", &inchan);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
    if (get_gpio_number(channel, &gpio)) {
        PyErr_SetString(PyExc_ValueError, "Invalid channel");
@@ -784,12 +889,23 @@ static PyObject *py_event_detected(PyObject *self, PyObject *args)
 {
    int gpio;
    char *channel;
+   int inchan;
    int allowed = -1;
 
    clear_error_msg();
 
-   if (!PyArg_ParseTuple(args, "s", &channel))
-      return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTuple(args, "s", &channel);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTuple(args, "i", &inchan);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
    if (get_gpio_number(channel, &gpio)) {
        PyErr_SetString(PyExc_ValueError, "Invalid channel");
@@ -823,14 +939,26 @@ static PyObject *py_wait_for_edge(PyObject *self, PyObject *args)
    int gpio;
    int edge, result, timeout;
    char *channel;
+   int inchan;
    char error[81];
    int allowed = -1;
 
    clear_error_msg();
 
    timeout = -1;
-   if (!PyArg_ParseTuple(args, "si|i", &channel, &edge, &timeout))
-      return NULL;
+
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTuple(args, "si|i", &channel, &edge, &timeout);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTuple(args, "ii|i", &inchan, &edge, &timeout);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
    if (get_gpio_number(channel, &gpio)) {
        PyErr_SetString(PyExc_ValueError, "Invalid channel");
@@ -903,12 +1031,23 @@ static PyObject *py_gpio_function(PyObject *self, PyObject *args)
     unsigned int value;
     PyObject *func;
     char *channel;
+    int inchan;
     int allowed = -1;
 
     clear_error_msg();
 
-    if (!PyArg_ParseTuple(args, "s", &channel))
-       return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTuple(args, "s", &channel);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTuple(args, "i", &inchan);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
     if (get_gpio_number(channel, &gpio)) {
         PyErr_SetString(PyExc_ValueError, "Invalid channel");
@@ -1116,14 +1255,25 @@ static PyObject *py_set_direction(PyObject *self, PyObject *args, PyObject *kwar
 {
 	int gpio;
 	char *channel;
+    int inchan;
 	int direction;
 	int allowed = -1;
 	static char *kwlist[] = { "channel", "direction", NULL };
 
 	clear_error_msg();
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si", kwlist, &channel, &direction))
-		return NULL;
+    // Try to parse the string
+    int rtn;
+    rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "si", kwlist, &channel, &direction);
+    if (!rtn) {
+        // Fall into here are try to parse an int
+        rtn = PyArg_ParseTupleAndKeywords(args, kwargs, "ii", kwlist, &inchan, &direction);
+        if (!rtn) {
+            return NULL;
+        }
+        // We make it here, we can convert inchan to a string for us to ensure it's valid
+        asprintf(&channel, "%i", inchan);
+    }
 
 	if (!module_setup) {
 		init_module();

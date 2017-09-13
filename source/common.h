@@ -94,6 +94,7 @@ int get_xio_base(void);
 int is_this_chippro(void);
 int gpio_number(pins_t *pin);
 int gpio_pud_capable(pins_t *pin);
+int lookup_gpio_by_number(const char *num);
 int lookup_gpio_by_key(const char *key);
 int lookup_gpio_by_name(const char *name);
 int lookup_gpio_by_altname(const char *altname);

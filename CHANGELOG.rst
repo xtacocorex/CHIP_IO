@@ -1,3 +1,7 @@
+0.7.0
+---
+* Added ability to specify GPIO only as a number, this doesn't work for PWM/SPWM/LRADC/SERVO
+
 0.6.2
 ---
 * Implementation for #77 - ability to push up binary pypi

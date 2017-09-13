@@ -4,8 +4,13 @@ package: clean
 	python setup.py sdist bdist_wheel
 	python3 setup.py bdist_wheel
 
+# PyPi Packaging
+package3: package
+	@echo " ** PACKAGING FOR PYPI **"
+	python3 setup.py bdist_wheel
+
 # PyPi Publishing
-publish: package
+publish: package package3
 	@echo " ** UPLOADING TO PYPI **"
 	twine upload dist/*
 

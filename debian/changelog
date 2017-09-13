@@ -1,7 +1,13 @@
+chip-io (0.7.0-1) unstable; urgency=low
+
+ * Added ability to specify GPIO only as a number, this doesn't work for PWM/SPWM/LRADC/SERVO
+
+ -- Robert Wolterman <robert.wolterman@gmail.com>  Wed, 13 Sep 2017 09:51:00 -0600
+
 chip-io (0.6.2-1) unstable; urgency=low
 
- * Implementation for #77 - ability to push up binary pypi
- * Implementation for #75 - wait_for_edge timeout
+ * Implementation for number 77 ability to push up binary pypi
+ * Implementation for number 75 wait for edge timeout
 
  -- Robert Wolterman <robert.wolterman@gmail.com>  Sun, 03 Sep 2017 21:34:00 -0600
 

@@ -371,6 +371,28 @@ int gpio_pud_capable(pins_t *pin)
   return capable;
 }
 
+int lookup_gpio_by_number(const char *num) {
+  // Convert the char to an int
+  char *ptr;
+  long ret;
+  int gpnum;
+  ret = strtol(num, &ptr, 10);
+  if (ret == 0) {
+    return -1;
+  }
+  // If we make it here, lets look for the data
+  pins_t *p;
+  for (p = pins_info; p->key != NULL; ++p) {
+      gpnum = gpio_number(p);
+      // If the number of the gpio pin matches the input
+      // we are 
+      if (gpnum == (int)ret) {
+          return gpnum;
+      }
+  }
+  return -1;
+}
+
 int lookup_gpio_by_key(const char *key)
 {
   pins_t *p;
@@ -541,10 +563,13 @@ int get_gpio_number(const char *key, int *gpio)
     if (*gpio <= 0) {
         *gpio = lookup_gpio_by_name(key);
         if (*gpio <= 0) {
-             *gpio = lookup_gpio_by_altname(key);
-             if (*gpio <=0) {
-                 status = -1;  /* error */
-             }
+            *gpio = lookup_gpio_by_altname(key);
+            if (*gpio <=0) {
+                *gpio = lookup_gpio_by_number(key);
+                if (*gpio <= 0) {
+                    status = -1;  /* error */
+                 }
+            }
         }
     }
     return status;
