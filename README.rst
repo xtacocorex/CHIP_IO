@@ -255,7 +255,7 @@ You can quickly change a pins direction::
     GPIO.direction("XIO-P3", GPIO.OUT)
     GPIO.direction("XIO-P3", GPIO.IN)
     
-You can also re-setup a pin in order to change direction, not that this is a slower operation::
+You can also re-setup a pin in order to change direction, note that this is a slower operation::
 
     GPIO.setup("XIO-P3", GPIO.OUT)
     GPIO.setup("XIO-P3", GPIO.IN)
