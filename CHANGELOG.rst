@@ -1,3 +1,9 @@
+0.7.1
+---
+* Merged in PR #79
+* Merged in PR #80
+* Added message notifying user of the gpio set direction retry
+
 0.7.0
 ---
 * Added ability to specify GPIO only as a number, this doesn't work for PWM/SPWM/LRADC/SERVO

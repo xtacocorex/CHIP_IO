@@ -385,10 +385,15 @@ int gpio_set_direction(int gpio, unsigned int in_flag)
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio); BUF2SMALL(filename);
 
     if ((fd = open(filename, O_WRONLY)) < 0) {
+        // NOTIFY THAT WE'RE GOING TO SLEEP AND RETRY
+        char err[256];
+        snprintf(err, sizeof(err), "gpio_set_direction: could not open '%s', sleeping for 1 second and retrying", filename);
+        add_error_msg(err);
         // if called as non-root, udev may need time to adjust file
         // permissions after setting up gpio
         sleep(1);
 
+        // TRY AGAIN AND IF THIS TIME FAILS, KICK OUT
         if ((fd = open(filename, O_WRONLY)) < 0) {
             char err[256];
             snprintf(err, sizeof(err), "gpio_set_direction: could not open '%s' (%s)", filename, strerror(errno));
