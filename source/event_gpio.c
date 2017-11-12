@@ -383,11 +383,18 @@ int gpio_set_direction(int gpio, unsigned int in_flag)
     char filename[MAX_FILENAME];  filename[0] = '\0';
 
     snprintf(filename, sizeof(filename), "/sys/class/gpio/gpio%d/direction", gpio); BUF2SMALL(filename);
+
     if ((fd = open(filename, O_WRONLY)) < 0) {
-        char err[256];
-        snprintf(err, sizeof(err), "gpio_set_direction: could not open '%s' (%s)", filename, strerror(errno));
-        add_error_msg(err);
-        return -1;
+        // if called as non-root, udev may need time to adjust file
+        // permissions after setting up gpio
+        sleep(1);
+
+        if ((fd = open(filename, O_WRONLY)) < 0) {
+            char err[256];
+            snprintf(err, sizeof(err), "gpio_set_direction: could not open '%s' (%s)", filename, strerror(errno));
+            add_error_msg(err);
+            return -1;
+        }
     }
 
     char direction[16];
