@@ -405,7 +405,7 @@ Sample code below details how to talk to the LRADC.::
     
     # Check to see if the LRADC Device exists
     # Returns True/False
-    ADC.get_device_exists()
+    ADC.get_device_exist()
     
     # Setup the LRADC
     # Specify a sampling rate if needed
